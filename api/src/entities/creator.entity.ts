@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Matching } from './matching.entity';
 
 @Entity({ name: 'creator' })
 export class Creator {
@@ -26,6 +28,9 @@ export class Creator {
 
   @Column({ name: 'user_id' })
   userId?: number;
+
+  @OneToMany(() => Matching, (matching) => matching.creator)
+  matchings?: Matching[];
 
   @CreateDateColumn({
     type: 'datetime',

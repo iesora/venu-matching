@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Creator } from '../entities/creator.entity';
 import { Venu } from '../entities/venu.entity';
+import { Matching } from '../entities/matching.entity';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -22,5 +23,5 @@ export const AppDataSource = new DataSource({
       : ['dist/migrations/*.js'],
   synchronize: false,
   logging: true,
-  entities: [User, Creator, Venu],
+  entities: [User, Creator, Venu, Matching],
 });

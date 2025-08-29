@@ -1,16 +1,5 @@
 import { DataSource } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { Staff } from '../entities/staff.entity';
-import { Course } from '../entities/course.entity';
-import { Reservation } from '../entities/reservation.entity';
-import { AvailableTime } from '../entities/availableTime.entity';
-import { BusinessHours } from '../entities/businessHours.entity';
-import { Company } from '../entities/company.entity';
-import { Customer } from '../entities/customer.entity';
-import { Payment } from '../entities/payment.entity';
-import { Dental } from '../entities/dental.entity';
-import { Dentist } from '../entities/dentist.entity';
-import { CandidateDate } from '../entities/candidateDate,entity';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -31,18 +20,5 @@ export const AppDataSource = new DataSource({
       : ['dist/migrations/*.js'],
   synchronize: false,
   logging: true,
-  entities: [
-    User,
-    Staff,
-    Course,
-    Reservation,
-    AvailableTime,
-    BusinessHours,
-    Company,
-    Customer,
-    Payment,
-    Dental,
-    Dentist,
-    CandidateDate,
-  ],
+  entities: [User],
 });

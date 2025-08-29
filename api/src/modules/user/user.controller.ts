@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/entities/user.entity';
 import { Request as RequestType } from 'express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 //import { RegisterUserGuard } from '../auth/register-user.guard';
 
 export type CreateUserRequest = {
@@ -30,16 +30,5 @@ export class UserController {
   async createForClerk(@Body() body: CreateUserRequest) {
     console.log(body);
     return await this.userService.createUser(body);
-  }
-
-  /*
-  @Get('detail')
-  async getUserDetail(@Req() req: RequestWithUser) {}
-  */
-
-  @Get('dental')
-  @UseGuards(JwtAuthGuard)
-  async getUserDetail(@Req() req: RequestWithUser) {
-    return await this.userService.getUserDental(req.user.id);
   }
 }

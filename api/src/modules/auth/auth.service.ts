@@ -60,10 +60,7 @@ export class AuthService {
       where: { email },
     });
     console.log('existUser', existUser);
-    if (
-      existUser.role !== UserRole.ADMIN &&
-      existUser.role !== UserRole.DENTAL
-    ) {
+    if (existUser.role !== UserRole.ADMIN) {
       throw new HttpException(
         'some infomation invalid',
         // tslint:disable-next-line: trailing-comma

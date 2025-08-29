@@ -4,19 +4,13 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { compareSync, hashSync } from 'bcryptjs';
-import { Reservation } from './reservation.entity';
-import { Dental } from './dental.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
   MEMBER = 'member',
-  DENTAL = 'dental',
 }
 
 export type RequestWithUser = {
@@ -50,18 +44,6 @@ export class User {
   @Exclude({ toPlainOnly: true })
   @Column({ length: 500, select: false })
   password: string;
-
-  @OneToMany(() => Reservation, (reservation) => reservation.user)
-  reservations?: Reservation[];
-
-  // dental（親テーブル）とのリレーション
-  @ManyToOne(() => Dental, (dental) => dental.users, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'dental_id' })
-  dental?: Dental;
 
   @CreateDateColumn({
     type: 'datetime',

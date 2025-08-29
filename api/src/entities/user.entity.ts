@@ -4,9 +4,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { compareSync, hashSync } from 'bcryptjs';
+import { Creator } from './creator.entity';
+import { Venu } from './venu.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -56,4 +59,10 @@ export class User {
     name: 'updated_at',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Creator, (creator) => creator.user)
+  creators?: Creator[];
+
+  @OneToMany(() => Venu, (venu) => venu.user)
+  venues?: Venu[];
 }

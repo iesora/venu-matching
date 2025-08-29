@@ -1,0 +1,25 @@
+steps:
+  - name: 'node:18'
+    entrypoint: yarn
+    args:
+      - install
+    dir: api
+  - name: 'node:18'
+    entrypoint: yarn
+    args:
+      - build
+    dir: api
+  - name: 'node:18'
+    entrypoint: yarn
+    args:
+      - 'migration:run'
+    dir: api
+    env:
+      - 'NODE_ENV=$_NODE_ENV'
+      - 'DB_HOST=$_DB_HOST'
+      - 'DB_DATABASE=$_DB_DATABASE'
+      - 'DB_USERNAME=$_DB_USERNAME'
+      - 'DB_PASSWORD=$_DB_PASSWORD'
+      - 'DB_PORT=$_DB_PORT'
+options:
+  logging: CLOUD_LOGGING_ONLY

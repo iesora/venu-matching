@@ -1,0 +1,32 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/quantum-balm-292112/line-reservation-api',
+        '-f',
+        './api/prod.Dockerfile',
+        '.',
+      ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/quantum-balm-292112/line-reservation-api']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run',
+        'deploy',
+        'line-reservation',
+        '--image',
+        'gcr.io/quantum-balm-292112/line-reservation-api',
+        '--region',
+        'asia-northeast1',
+        '--platform',
+        'managed',
+        '--min-instances=0',
+      ]
+images:
+  - gcr.io/quantum-balm-292112/line-reservation-api
+options:
+  logging: CLOUD_LOGGING_ONLY

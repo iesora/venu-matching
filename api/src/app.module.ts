@@ -7,6 +7,7 @@ import { UserModule } from './modules/user/user.module';
 import { User } from './entities/user.entity';
 import { Creator } from './entities/creator.entity';
 import { Venu } from './entities/venu.entity';
+import { Matching } from './entities/matching.entity';
 import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
@@ -21,7 +22,7 @@ import { AuthModule } from './modules/auth/auth.module';
       database: process.env.DB_DATABASE,
       synchronize: false,
       migrationsRun: false,
-      entities: [User, Creator, Venu],
+      entities: [User, Creator, Venu, Matching],
     }),
     UserModule,
     AuthModule,

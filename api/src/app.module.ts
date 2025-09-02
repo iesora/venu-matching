@@ -9,6 +9,8 @@ import { Creator } from './entities/creator.entity';
 import { Venu } from './entities/venu.entity';
 import { Matching } from './entities/matching.entity';
 import { AuthModule } from './modules/auth/auth.module';
+import { VenuModule } from './modules/venu/venu.module';
+import { CreatorModule } from './modules/creator/creator.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    VenuModule,
+    CreatorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

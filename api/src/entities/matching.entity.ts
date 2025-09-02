@@ -34,15 +34,9 @@ export class Matching {
   @JoinColumn({ name: 'creator_id' })
   creator: Creator;
 
-  @Column({ name: 'creator_id', nullable: true })
-  creatorId: number;
-
   @ManyToOne(() => Venu, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'venu_id' })
   venu: Venu;
-
-  @Column({ name: 'venu_id', nullable: true })
-  venuId: number;
 
   @Column({ type: 'datetime', name: 'request_at', nullable: true })
   requestAt: Date;

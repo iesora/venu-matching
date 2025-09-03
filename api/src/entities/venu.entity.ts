@@ -25,12 +25,9 @@ export class Venu {
   @Column({ type: 'varchar', length: 20, name: 'tel', nullable: true })
   tel: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'user_id' })
-  user?: User;
-
-  @Column({ name: 'user_id' })
-  userId?: number;
+  user: User;
 
   @OneToMany(() => Matching, (matching) => matching.venu)
   matchings?: Matching[];

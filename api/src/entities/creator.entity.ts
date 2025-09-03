@@ -22,12 +22,9 @@ export class Creator {
   @Column({ type: 'text', name: 'description', nullable: true })
   description: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'user_id' })
-  user?: User;
-
-  @Column({ name: 'user_id' })
-  userId?: number;
+  user: User;
 
   @OneToMany(() => Matching, (matching) => matching.creator)
   matchings?: Matching[];

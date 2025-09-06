@@ -1,8 +1,8 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Venu } from '../../entities/venu.entity';
-import { User } from '../../entities/user.entity';
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Venu } from "../../entities/venu.entity";
+import { User } from "../../entities/user.entity";
 
 export type CreateVenuRequest = {
   name: string;
@@ -17,7 +17,7 @@ export class VenuService {
     @InjectRepository(Venu)
     private readonly venuRepository: Repository<Venu>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async createVenu(venuData: CreateVenuRequest): Promise<Venu> {
@@ -25,7 +25,7 @@ export class VenuService {
       where: { id: venuData.userId },
     });
     if (!existUser) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const newVenu = new Venu();
@@ -36,20 +36,23 @@ export class VenuService {
     return await this.venuRepository.save(newVenu);
   }
 
-  async getAllVenus(): Promise<Venu[]> {
-    return await this.venuRepository.find({
-      relations: ['user'],
+  async getVenus(userId?: number): Promise<Venu[]> {
+    const existVenus = await this.venuRepository.find({
+      relations: ["user"],
+      where: userId ? { user: { id: userId } } : {},
     });
+    console.log(existVenus);
+    return existVenus;
   }
 
   async getVenuById(id: number): Promise<Venu> {
     const venu = await this.venuRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!venu) {
-      throw new HttpException('Venu not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Venu not found", HttpStatus.NOT_FOUND);
     }
 
     return venu;

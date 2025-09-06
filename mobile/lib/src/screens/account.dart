@@ -188,6 +188,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         : Icons.notifications_none,
                     color: Colors.black),
                 onPressed: () {
+                  /**
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -196,6 +197,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   setState(() {
                     _isUnreadNotifiationExist = false;
                   });
+                   */
                 },
               ),
               if (_isUnreadNotifiationExist)

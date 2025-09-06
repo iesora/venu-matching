@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/src/screens/findUser.dart';
-import 'package:mobile/src/screens/likeUser.dart';
-import 'package:mobile/utils/userInfo.dart';
 import 'package:provider/provider.dart';
-import 'screens/account.dart';
-import 'screens/bookmark.dart';
 import 'screens/home.dart';
-import 'screens/chat.dart';
-import 'screens/dateSpot.dart';
+import 'screens/ranking.dart';
+import 'screens/search.dart';
+import 'screens/request/requestList.dart';
+import 'screens/myPage.dart';
 import 'loginState.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/auth/sign_in_screen.dart';
 import 'helpers/auth_state.dart';
 import 'package:http/http.dart' as http;
-import 'screens/roomList.dart';
-import 'screens/likeUser.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'screens/thread.dart';
 import 'widgets/custom_dialog.dart';
-import 'screens/chatBot.dart';
 import 'widgets/custom_snackbar.dart';
 
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -67,13 +60,12 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   static final _screens = [
-    FindUserScreen(),
-    ThreadScreen(),
-    LikeUserScreen(),
-    RoomListScreen(),
-    ChatBotScreen(),
-    //DateSpotScreen(),
-    AccountScreen(),
+    HomeScreen(),
+    RankingScreen(),
+    // SearchScreen()はNavigator.pushで遷移するためここには入れない
+    Container(), // ダミー（検索タブ用）
+    RequestListScreen(),
+    MyPageScreen(),
   ];
 
   Map<String, dynamic>? _userData;
@@ -187,6 +179,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   void _onItemTapped(int index) async {
+    // 検索タブ（index==2）が押された場合は画面遷移、それ以外は通常通り
+    if (index == 2) {
+      // 検索画面に遷移
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => SearchScreen()),
+      );
+      // ログインボーナスも実行
+      await _loginBonus();
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -215,34 +217,24 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   onTap: _onItemTapped,
                   items: const <BottomNavigationBarItem>[
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.explore),
-                        label: '発見',
+                        icon: Icon(Icons.home_outlined),
+                        label: 'ホーム',
                         backgroundColor: Colors.black87),
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.forum),
-                        label: 'スレッド',
+                        icon: Icon(Icons.emoji_events),
+                        label: 'ランキング',
                         backgroundColor: Colors.white),
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.favorite),
-                        label: 'いいね',
+                        icon: Icon(Icons.search),
+                        label: '検索',
                         backgroundColor: Colors.white),
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.message),
-                        label: 'チャット',
+                        icon: Icon(Icons.list),
+                        label: 'リクエスト',
                         backgroundColor: Colors.white),
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.smart_toy),
-                        label: 'ボット',
-                        backgroundColor: Colors.white),
-                    /*
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.map),
-                        label: 'デート',
-                        backgroundColor: Colors.black87),
-                    */
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.person),
-                        label: 'アカウント',
+                        icon: Icon(Icons.person_outline),
+                        label: 'マイページ',
                         backgroundColor: Colors.white),
                   ],
                   type: BottomNavigationBarType.fixed,

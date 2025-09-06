@@ -7,37 +7,66 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
-} from 'typeorm';
-import { User } from './user.entity';
-import { Matching } from './matching.entity';
+} from "typeorm";
+import { User } from "./user.entity";
+import { Matching } from "./matching.entity";
+import { Opus } from "./opus.entity";
 
-@Entity({ name: 'creator' })
+@Entity({ name: "creator" })
 export class Creator {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255, name: 'name' })
+  @Column({ type: "varchar", length: 255, name: "name" })
   name: string;
 
-  @Column({ type: 'text', name: 'description', nullable: true })
+  @Column({ type: "text", name: "description", nullable: true })
   description: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'user_id' })
+  @Column({ type: "varchar", length: 255, name: "email", nullable: true })
+  email: string;
+
+  @Column({ type: "varchar", length: 255, name: "website", nullable: true })
+  website: string;
+
+  @Column({ type: "varchar", length: 255, name: "image_url", nullable: true })
+  imageUrl: string;
+
+  @Column({
+    type: "varchar",
+    length: 255,
+    name: "phone_number",
+    nullable: true,
+  })
+  phoneNumber: string;
+
+  @Column({
+    type: "varchar",
+    length: 255,
+    name: "social_media_handle",
+    nullable: true,
+  })
+  socialMediaHandle: string;
+
+  @ManyToOne(() => User, { onDelete: "CASCADE", nullable: true })
+  @JoinColumn({ name: "user_id" })
   user: User;
 
   @OneToMany(() => Matching, (matching) => matching.creator)
   matchings?: Matching[];
 
+  @OneToMany(() => Opus, (opus) => opus.creator)
+  opuses?: Opus[];
+
   @CreateDateColumn({
-    type: 'datetime',
-    name: 'created_at',
+    type: "datetime",
+    name: "created_at",
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: 'timestamp',
-    name: 'updated_at',
+    type: "timestamp",
+    name: "updated_at",
   })
   updatedAt: Date;
 }

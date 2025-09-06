@@ -1,27 +1,28 @@
-import { DataSource } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { Creator } from '../entities/creator.entity';
-import { Venu } from '../entities/venu.entity';
-import { Matching } from '../entities/matching.entity';
+import { DataSource } from "typeorm";
+import { User } from "../entities/user.entity";
+import { Creator } from "../entities/creator.entity";
+import { Venu } from "../entities/venu.entity";
+import { Matching } from "../entities/matching.entity";
+import { Opus } from "../entities/opus.entity";
 
 export const AppDataSource = new DataSource({
-  type: 'mysql',
+  type: "mysql",
   host:
-    process.env.NODE_ENV !== 'production' ? 'localhost' : process.env.DB_HOST,
+    process.env.NODE_ENV !== "production" ? "localhost" : process.env.DB_HOST,
   port: 3306,
   username:
-    process.env.NODE_ENV !== 'production' ? 'develop' : process.env.DB_USERNAME,
+    process.env.NODE_ENV !== "production" ? "develop" : process.env.DB_USERNAME,
   password:
-    process.env.NODE_ENV !== 'production'
-      ? 'password'
+    process.env.NODE_ENV !== "production"
+      ? "password"
       : process.env.DB_PASSWORD,
   database:
-    process.env.NODE_ENV !== 'production' ? 'develop' : process.env.DB_DATABASE,
+    process.env.NODE_ENV !== "production" ? "develop" : process.env.DB_DATABASE,
   migrations:
-    process.env.NODE_ENV === 'develop'
-      ? ['src/migrations/*.ts']
-      : ['dist/migrations/*.js'],
+    process.env.NODE_ENV === "develop"
+      ? ["src/migrations/*.ts"]
+      : ["dist/migrations/*.js"],
   synchronize: false,
   logging: true,
-  entities: [User, Creator, Venu, Matching],
+  entities: [User, Creator, Venu, Matching, Opus],
 });

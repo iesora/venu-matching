@@ -56,8 +56,10 @@ class SignInScreenState extends State<SignInScreen> {
         if (response.statusCode == 201) {
           final responseData = jsonDecode(response.body);
           final token = responseData['token'];
+          final userId = responseData['id'];
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('userToken', token);
+          await prefs.setInt('userId', userId);
           Provider.of<AuthState>(context, listen: false).login(responseData);
 
           // ナビゲーションを修正

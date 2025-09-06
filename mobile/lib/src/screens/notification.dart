@@ -1,42 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/src/app.dart';
-import 'package:mobile/src/plugins/swipe_stack/swipe_stack.dart';
-import 'package:mobile/src/screens/account.dart';
-import 'package:mobile/src/screens/bookmark.dart';
-import 'package:mobile/src/screens/chat.dart';
-import 'package:mobile/src/screens/threadDetail.dart';
-import 'package:mobile/src/screens/userDetail.dart';
-import 'package:mobile/src/widgets/profile_card.dart';
-import 'package:mobile/src/datas/user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/services.dart';
-import 'package:mobile/utils/userInfo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_logs/flutter_logs.dart';
-import 'package:mobile/src/widgets/cicle_button.dart';
-import 'searchUser.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({Key? key}) : super(key: key);
+class RequestListScreen extends StatefulWidget {
+  const RequestListScreen({Key? key}) : super(key: key);
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
+  State<RequestListScreen> createState() => _RequestListScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
-  List<Map<String, dynamic>> _notifications = [];
+class _RequestListScreenState extends State<RequestListScreen> {
+  List<Map<String, dynamic>> _requests = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchNotifications();
+    _fetchRequests();
   }
 
-  Future<void> _fetchNotifications() async {
+  Future<void> _fetchRequests() async {
     setState(() {
       _isLoading = true;
     });
@@ -44,7 +30,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('userToken');
       final response = await http.get(
-        Uri.parse('${dotenv.get('API_URL')}/notification/list'),
+        Uri.parse('${dotenv.get('API_URL')}/request'),
         headers: <String, String>{
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -53,12 +39,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       final List<dynamic> data = jsonDecode(response.body);
       setState(() {
-        _notifications = data
-            .map((notification) => notification as Map<String, dynamic>)
-            .toList();
+        _requests =
+            data.map((request) => request as Map<String, dynamic>).toList();
       });
     } catch (e) {
-      print('通知の取得に失敗しました: $e');
+      print('リクエストの取得に失敗しました: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -74,7 +59,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
-          '通知',
+          'リクエスト一覧',
           style: TextStyle(
             color: Colors.black,
             fontFamily: 'Noto Sans JP',
@@ -85,15 +70,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _showNotifications(),
+          : _showRequests(),
     );
   }
 
-  Widget _showNotifications() {
-    if (_notifications.isEmpty) {
+  Widget _showRequests() {
+    if (_requests.isEmpty) {
       return Center(
         child: Text(
-          '通知がありません',
+          'リクエストがありません',
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[700],
@@ -104,7 +89,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
 
     return ListView.separated(
-        itemCount: _notifications.length,
+        itemCount: _requests.length,
         separatorBuilder: (context, index) => Container(
               child: Divider(
                 height: 1,
@@ -112,58 +97,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
             ),
         itemBuilder: (context, index) {
-          final notification = _notifications[index];
+          final request = _requests[index];
           return InkWell(
             onTap: () {
-              if (notification["isUnread"]) {
-                setState(() {
-                  notification["isUnread"] = false;
-                });
-              }
-              if (notification["notificationType"] ==
-                  NotificationType.CHAT.value) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                          groupId: int.parse(
-                              notification['chatGroup']!["id"].toString()))),
-                );
-              }
-              if (notification["notificationType"] ==
-                  NotificationType.LIKE.value) {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserDetailScreen(
-                          userId: int.parse(
-                              notification['likeUser']!["id"].toString())),
-                    ));
-              }
-              if (notification["notificationType"] ==
-                  NotificationType.NEWS.value) {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MyStatefulWidget(),
-                    ));
-              }
-              if (notification["notificationType"] ==
-                  NotificationType.COMMENT.value) {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ThreadDetailScreen(
-                          threadId: int.parse(
-                              notification['threadComment']!["thread"]!["id"]
-                                  .toString())),
-                    ));
-              }
+              // リクエストの詳細画面に遷移する処理をここに追加
             },
             child: Container(
               decoration: BoxDecoration(
-                color:
-                    notification["isUnread"] ? Colors.white : Colors.grey[100],
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(2),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -179,15 +120,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           children: [
                             Text(
                               _formatTimestamp(
-                                  DateTime.parse(notification['createdAt'])),
+                                  DateTime.parse(request['createdAt'])),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: notification["isUnread"]
-                                    ? Colors.black
-                                    : Colors.grey[700],
-                                fontWeight: notification["isUnread"]
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -197,15 +134,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                notification['content'] ?? '',
+                                request['content'] ?? '',
                                 style: TextStyle(
-                                  color: notification["isUnread"]
-                                      ? Colors.black
-                                      : Colors.grey[700],
+                                  color: Colors.black,
                                   fontSize: 14,
-                                  fontWeight: notification["isUnread"]
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                                  fontWeight: FontWeight.bold,
                                 ),
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,

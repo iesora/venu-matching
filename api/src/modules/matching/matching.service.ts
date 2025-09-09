@@ -8,7 +8,9 @@ import { Venu } from "../../entities/venu.entity";
 import {
   CreateMatchingFromCreatorRequest,
   CreateMatchingFromVenuRequest,
+  CreateMatchingEventRequest,
 } from "./matching.controller";
+import { Event, MatchingStatus } from "../../entities/event.entity";
 
 @Injectable()
 export class MatchingService {
@@ -18,7 +20,9 @@ export class MatchingService {
     @InjectRepository(Creator)
     private readonly creatorRepository: Repository<Creator>,
     @InjectRepository(Venu)
-    private readonly venuRepository: Repository<Venu>
+    private readonly venuRepository: Repository<Venu>,
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>
   ) {}
 
   async createMatchingFromCreator(
@@ -152,5 +156,73 @@ export class MatchingService {
     matching.matchingAt = new Date();
 
     return await this.matchingRepository.save(matching);
+  }
+
+  async getCompletedMatchings(reqUser: User) {
+    const completedMatchings = await this.matchingRepository.find({
+      where: { toUser: { id: reqUser.id }, matchingFlag: true },
+      relations: ["creator", "venu", "fromUser", "toUser"],
+      order: { matchingAt: "DESC" },
+    });
+    return completedMatchings;
+  }
+
+  async getMatchingEvents(matchingId: number) {
+    const matchingEvents = await this.eventRepository.find({
+      relations: ["fromUser", "toUser"],
+      where: {
+        matching: { id: matchingId },
+      },
+      order: { matchingAt: "DESC" },
+    });
+    console.log(matchingEvents);
+    return matchingEvents;
+  }
+
+  async createMatchingEvent(
+    matchingId: number,
+    event: CreateMatchingEventRequest
+  ) {
+    const matching = await this.matchingRepository.findOne({
+      where: { id: matchingId },
+    });
+    if (!matching) {
+      throw new HttpException("Matching not found", HttpStatus.NOT_FOUND);
+    }
+    const newEvent = new Event();
+    newEvent.matching = matching;
+    newEvent.title = event.title;
+    newEvent.description = event.description;
+    newEvent.startDate = new Date(event.startDate);
+    newEvent.endDate = new Date(event.endDate);
+    newEvent.fromUser = matching.fromUser;
+    newEvent.toUser = matching.toUser;
+    newEvent.requestAt = new Date();
+    newEvent.matchingStatus = MatchingStatus.PENDING;
+    newEvent.matchingAt = null;
+    return await this.eventRepository.save(newEvent);
+  }
+
+  async acceptMatchingEvent(eventId: number, reqUser: User) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId, toUser: { id: reqUser.id } },
+    });
+    if (!event) {
+      throw new HttpException("Event not found", HttpStatus.NOT_FOUND);
+    }
+    event.matchingStatus = MatchingStatus.MATCHING;
+    event.matchingAt = new Date();
+    return await this.eventRepository.save(event);
+  }
+
+  async rejectMatchingEvent(eventId: number, reqUser: User) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId, toUser: { id: reqUser.id } },
+    });
+    if (!event) {
+      throw new HttpException("Event not found", HttpStatus.NOT_FOUND);
+    }
+    event.matchingStatus = MatchingStatus.REJECTED;
+    return await this.eventRepository.save(event);
   }
 }

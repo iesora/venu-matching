@@ -4,6 +4,7 @@ import { Creator } from "../entities/creator.entity";
 import { Venu } from "../entities/venu.entity";
 import { Matching } from "../entities/matching.entity";
 import { Opus } from "../entities/opus.entity";
+import { Event } from "../entities/event.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -24,5 +25,5 @@ export const AppDataSource = new DataSource({
       : ["dist/migrations/*.js"],
   synchronize: false,
   logging: true,
-  entities: [User, Creator, Venu, Matching, Opus],
+  entities: [User, Creator, Venu, Matching, Opus, Event],
 });

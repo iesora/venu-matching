@@ -13,6 +13,7 @@ import { VenuModule } from "./modules/venu/venu.module";
 import { CreatorModule } from "./modules/creator/creator.module";
 import { Opus } from "./entities/opus.entity";
 import { MatchingModule } from "./modules/matching/matching.module";
+import { Event } from "./entities/event.entity";
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { MatchingModule } from "./modules/matching/matching.module";
       database: process.env.DB_DATABASE,
       synchronize: false,
       migrationsRun: false,
-      entities: [User, Creator, Venu, Matching, Opus],
+      entities: [User, Creator, Venu, Matching, Opus, Event],
     }),
     UserModule,
     AuthModule,

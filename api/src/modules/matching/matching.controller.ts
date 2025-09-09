@@ -9,7 +9,6 @@ import {
   Param,
 } from "@nestjs/common";
 import { MatchingService } from "./matching.service";
-import { Matching } from "../../entities/matching.entity";
 import { RequestWithUser } from "../user/user.controller";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
@@ -21,6 +20,13 @@ export interface CreateMatchingFromCreatorRequest {
 export interface CreateMatchingFromVenuRequest {
   venuId: number;
   creatorId: number;
+}
+
+export interface CreateMatchingEventRequest {
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 @Controller("matching")
@@ -59,5 +65,44 @@ export class MatchingController {
     @Req() req: RequestWithUser
   ) {
     return this.matchingService.acceptMatchingRequest(matchingId, req.user);
+  }
+
+  @Get("completed")
+  @UseGuards(JwtAuthGuard)
+  async getCompletedMatchings(@Req() req: RequestWithUser) {
+    return this.matchingService.getCompletedMatchings(req.user);
+  }
+
+  @Get("events/:matchingId")
+  @UseGuards(JwtAuthGuard)
+  async getMatchingEvents(@Param("matchingId") matchingId: number) {
+    return this.matchingService.getMatchingEvents(matchingId);
+  }
+
+  @Post("events/:matchingId")
+  @UseGuards(JwtAuthGuard)
+  async createMatchingEvent(
+    @Param("matchingId") matchingId: number,
+    @Body() event: CreateMatchingEventRequest
+  ) {
+    return this.matchingService.createMatchingEvent(matchingId, event);
+  }
+
+  @Patch("events/:eventId/accept")
+  @UseGuards(JwtAuthGuard)
+  async acceptMatchingEvent(
+    @Param("eventId") eventId: number,
+    @Req() req: RequestWithUser
+  ) {
+    return this.matchingService.acceptMatchingEvent(eventId, req.user);
+  }
+
+  @Patch("events/:eventId/reject")
+  @UseGuards(JwtAuthGuard)
+  async rejectMatchingEvent(
+    @Param("eventId") eventId: number,
+    @Req() req: RequestWithUser
+  ) {
+    return this.matchingService.rejectMatchingEvent(eventId, req.user);
   }
 }

@@ -11,6 +11,7 @@ import { compareSync, hashSync } from "bcryptjs";
 import { Creator } from "./creator.entity";
 import { Venu } from "./venu.entity";
 import { Matching } from "./matching.entity";
+import { Event } from "./event.entity";
 
 export enum UserRole {
   ADMIN = "admin",
@@ -72,4 +73,10 @@ export class User {
 
   @OneToMany(() => Matching, (matching) => matching.toUser)
   toMatchings?: Matching[];
+
+  @OneToMany(() => Event, (event) => event.fromUser)
+  fromEvents?: Event[];
+
+  @OneToMany(() => Event, (event) => event.toUser)
+  toEvents?: Event[];
 }

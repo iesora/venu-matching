@@ -5,9 +5,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Matching } from "src/entities/matching.entity";
 import { Creator } from "src/entities/creator.entity";
 import { Venu } from "src/entities/venu.entity";
+import { Event } from "src/entities/event.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Matching, Creator, Venu])],
+  imports: [TypeOrmModule.forFeature([Matching, Creator, Venu, Event])],
   controllers: [MatchingController],
   providers: [MatchingService],
 })

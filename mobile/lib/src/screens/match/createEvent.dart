@@ -46,10 +46,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  String _formatDate(DateTime date) {
-    return "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-  }
-
   Future<void> _submitEvent() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -65,8 +61,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           body: jsonEncode(<String, dynamic>{
             'title': _titleController.text,
             'description': _descriptionController.text,
-            'startDate': _startDate.toIso8601String(),
-            'endDate': _endDate.toIso8601String(),
+            'start_date': _startDate.toIso8601String(),
+            'end_date': _endDate.toIso8601String(),
           }),
         );
 
@@ -145,13 +141,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text("開始日: ${_formatDate(_startDate)}"),
+                title: Text("開始日: ${_startDate.toLocal()}".split(' ')[0]),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, true),
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text("終了日: ${_formatDate(_endDate)}"),
+                title: Text("終了日: ${_endDate.toLocal()}".split(' ')[0]),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context, false),
               ),

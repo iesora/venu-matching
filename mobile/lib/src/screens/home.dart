@@ -3,28 +3,36 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../loginState.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'dart:math';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
+// import 'dart:math';
+// import 'package:speech_to_text/speech_recognition_error.dart';
+// import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomeScreen extends HookWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = Provider.of<LoginState>(context).isLoggedIn;
-    final counter = useState(0); // 状態の初期化
+    // final isLoggedIn = Provider.of<LoginState>(context).isLoggedIn;
+    // final counter = useState(0); // 状態の初期化
     // SpeechToTextインスタンスを管理
     final speechToText = useMemoized(() => stt.SpeechToText(), []);
     final isListening = useState(false);
     final text = useState('Press the button to start speaking');
     final answer = useState("");
     final available = useState(false);
+    final markers = <Marker>{
+      const Marker(
+        markerId: MarkerId('tokyo-station'),
+        position: LatLng(35.681236, 139.767125),
+        infoWindow: InfoWindow(title: '東京駅'),
+      ),
+    };
 
     useEffect(() {
       // 音声認識の初期化
@@ -58,7 +66,7 @@ class HomeScreen extends HookWidget {
 
     // FlutterTts インスタンスを作成
     final flutterTts = useMemoized(() => FlutterTts());
-    final textController = useTextEditingController();
+    // final textController = useTextEditingController();
 
     // TTSの初期設定
     useEffect(() {
@@ -135,6 +143,19 @@ class HomeScreen extends HookWidget {
                 // await sendMessage("りんごについておしえてください");
               },
               child: Text("音声ストップ"),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 300,
+              child: GoogleMap(
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(35.681236, 139.767125),
+                  zoom: 14.0,
+                ),
+                markers: markers,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+              ),
             ),
           ],
         ),

@@ -18,6 +18,11 @@ export enum UserRole {
   MEMBER = "member",
 }
 
+export enum UserMode {
+  NORMAL = "normal",
+  BUSINESS = "business",
+}
+
 export type RequestWithUser = {
   user: User;
 };
@@ -49,6 +54,14 @@ export class User {
   @Exclude({ toPlainOnly: true })
   @Column({ length: 500, select: false })
   password: string;
+
+  @Column({
+    type: "enum",
+    enum: UserMode,
+    name: "mode",
+    default: UserMode.NORMAL,
+  })
+  mode: UserMode;
 
   @CreateDateColumn({
     type: "datetime",

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final int eventId;
@@ -22,8 +23,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Future<void> fetchEventDetail() async {
-    final response = await http
-        .get(Uri.parse('http://yourapiurl.com/event/detail/${widget.eventId}'));
+    final response = await http.get(
+        Uri.parse('${dotenv.get('API_URL')}/event/detail/${widget.eventId}'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -48,22 +49,36 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : eventDetail != null
-              ? Padding(
-                  padding: const EdgeInsets.all(16.0),
+              ? SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        eventDetail!['name'] ?? 'イベント名なし',
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                      eventDetail!['imageUrl'] != null
+                          ? Image.network(
+                              eventDetail!['imageUrl'],
+                              width: MediaQuery.of(context).size.width,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              eventDetail!['name'] ?? 'イベント名なし',
+                              style: TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              eventDetail!['description'] ?? '説明なし',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            // 他のイベント詳細情報をここに追加
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 16),
-                      Text(
-                        eventDetail!['description'] ?? '説明なし',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      // 他のイベント詳細情報をここに追加
                     ],
                   ),
                 )

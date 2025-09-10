@@ -6,6 +6,7 @@ import 'screens/search.dart';
 import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
 import 'screens/match/matchingList.dart'; // 追加
+import 'screens/qr_scan_screen.dart';
 import 'loginState.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/auth/sign_in_screen.dart';
@@ -152,6 +153,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       _screens = [
         HomeScreen(),
         RankingScreen(),
+        QrScanScreen(),
         MyPageScreen(),
       ];
     } else {
@@ -160,6 +162,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         SearchScreen(), // ダミー（検索タブ用）
         RequestListScreen(),
         MatchingListScreen(), // 追加
+        QrScanScreen(),
         MyPageScreen(),
       ];
     }
@@ -200,7 +203,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = Provider.of<LoginState>(context).isLoggedIn;
     final authState = Provider.of<AuthState>(context);
 
     return Scaffold(
@@ -229,6 +231,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'ランキング',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
+                              icon: Icon(Icons.qr_code_scanner),
+                              label: 'QR',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),
                               label: 'マイページ',
                               backgroundColor: Colors.white),
@@ -239,10 +245,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'ホーム',
                               backgroundColor: Colors.black87),
                           BottomNavigationBarItem(
-                              icon: Icon(Icons.emoji_events),
-                              label: 'ランキング',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
                               icon: Icon(Icons.search),
                               label: '検索',
                               backgroundColor: Colors.white),
@@ -251,13 +253,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'リクエスト',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
+                              icon: Icon(Icons.list_alt),
+                              label: 'マッチング',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.qr_code_scanner),
+                              label: 'QR',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),
                               label: 'マイページ',
                               backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.list_alt),
-                              label: 'マッチング',
-                              backgroundColor: Colors.white), // 追加
                         ],
                   type: BottomNavigationBarType.fixed,
                   backgroundColor: Colors.white,

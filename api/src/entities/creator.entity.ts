@@ -11,6 +11,7 @@ import {
 import { User } from "./user.entity";
 import { Matching } from "./matching.entity";
 import { Opus } from "./opus.entity";
+import { CreatorEvent } from "./createrEvent.entity";
 
 @Entity({ name: "creator" })
 export class Creator {
@@ -57,6 +58,9 @@ export class Creator {
 
   @OneToMany(() => Opus, (opus) => opus.creator)
   opuses?: Opus[];
+
+  @OneToMany(() => CreatorEvent, (creatorEvent) => creatorEvent.creator)
+  creatorEvents?: CreatorEvent[];
 
   @CreateDateColumn({
     type: "datetime",

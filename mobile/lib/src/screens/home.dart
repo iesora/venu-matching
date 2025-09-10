@@ -3,9 +3,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../loginState.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-// import 'dart:math';
-// import 'package:speech_to_text/speech_recognition_error.dart';
-// import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +15,20 @@ class HomeScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final events = useState<List<dynamic>>([]);
+
+    useEffect(() {
+      Future.microtask(() async {
+        final response = await http
+            .get(Uri.parse('${dotenv.get('API_URL')}/event/matching/list'));
+        if (response.statusCode == 200) {
+          events.value = json.decode(response.body);
+        } else {
+          print('Failed to load events');
+        }
+      });
+      return;
+    }, []);
     // final isLoggedIn = Provider.of<LoginState>(context).isLoggedIn;
     // final counter = useState(0); // 状態の初期化
     // SpeechToTextインスタンスを管理
@@ -100,53 +111,13 @@ class HomeScreen extends HookWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ホーム'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.white, // 画面自体の背景を白に設定
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              text.value,
-              style: const TextStyle(fontSize: 24.0),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isListening.value ? stopListening : startListening,
-              child: Text(
-                  isListening.value ? 'Stop Listening' : 'Start Listening'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              answer.value,
-              style: const TextStyle(fontSize: 24.0),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                // await flutterTts.speak(text.value);
-                await sendData(text.value);
-                //await sendData();
-                // await sendMessage("りんごについておしえてください");
-              },
-              child: Text("AIに質問する"),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                //await flutterTts.speak(text.value);
-                await flutterTts.stop();
-                // await sendMessage("りんごについておしえてください");
-              },
-              child: Text("音声ストップ"),
-            ),
-            const SizedBox(height: 20),
             SizedBox(
-              height: 300,
+              height: 400,
               child: GoogleMap(
                 initialCameraPosition: const CameraPosition(
                   target: LatLng(35.681236, 139.767125),
@@ -155,6 +126,72 @@ class HomeScreen extends HookWidget {
                 markers: markers,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: events.value.length,
+                itemBuilder: (context, index) {
+                  final event = events.value[index];
+                  return Container(
+                    margin:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom:
+                            BorderSide(color: Colors.grey.shade300, width: 1.0),
+                      ),
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '開催中',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  event['title'],
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  event['venu']['name'],
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(4.0),
+                              bottomRight: Radius.circular(4.0),
+                            ),
+                            child: Image.network(
+                              event['imageUrl'],
+                              fit: BoxFit.cover,
+                              height: 120,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],

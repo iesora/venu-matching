@@ -6,9 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from "typeorm";
 import { Matching } from "./matching.entity";
 import { User } from "./user.entity";
+import { CreatorEvent } from "./createrEvent.entity";
+import { Venu } from "./venu.entity";
 
 export enum MatchingStatus {
   PENDING = "pending",
@@ -23,6 +26,9 @@ export class Event {
 
   @Column({ type: "varchar", length: 255, name: "title" })
   title: string;
+
+  @Column({ type: "varchar", length: 255, name: "image_url" })
+  imageUrl: string;
 
   @Column({ type: "text", name: "description", nullable: true })
   description: string;
@@ -52,6 +58,16 @@ export class Event {
   })
   @JoinColumn({ name: "to_user_id" })
   toUser: User;
+
+  @OneToMany(() => CreatorEvent, (creatorEvent) => creatorEvent.event)
+  creatorEvents?: CreatorEvent[];
+
+  @ManyToOne(() => Venu, (venu) => venu.events, {
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  @JoinColumn({ name: "venu_id" })
+  venu: Venu;
 
   @Column({ type: "datetime", name: "request_at", nullable: true })
   requestAt: Date;

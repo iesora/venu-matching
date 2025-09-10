@@ -10,6 +10,7 @@ import {
 } from "typeorm";
 import { User } from "./user.entity";
 import { Matching } from "./matching.entity";
+import { Event } from "./event.entity";
 
 @Entity({ name: "venu" })
 export class Venu {
@@ -21,6 +22,12 @@ export class Venu {
 
   @Column({ type: "varchar", length: 500, name: "address", nullable: true })
   address: string;
+
+  @Column({ type: "varchar", length: 255, name: "latitude", nullable: true })
+  latitude: string;
+
+  @Column({ type: "varchar", length: 255, name: "longitude", nullable: true })
+  longitude: string;
 
   @Column({ type: "varchar", length: 20, name: "tel", nullable: true })
   tel: string;
@@ -56,6 +63,9 @@ export class Venu {
 
   @OneToMany(() => Matching, (matching) => matching.venu)
   matchings?: Matching[];
+
+  @OneToMany(() => Event, (event) => event.venu)
+  events?: Event[];
 
   @CreateDateColumn({
     type: "datetime",

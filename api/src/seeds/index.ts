@@ -4,7 +4,7 @@ import { AppDataSource } from '../utils/data-source';
 async function main() {
   await AppDataSource.initialize();
   await runSeeders(AppDataSource, {
-    seeds: [__dirname + '/creator.seeder.ts', __dirname + '/venu.seeder.ts'],
+    seeds: [__dirname + '/creator.seeder.ts', __dirname + '/venue.seeder.ts'],
   });
   await AppDataSource.destroy();
 }

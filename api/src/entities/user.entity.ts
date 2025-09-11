@@ -5,29 +5,29 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-} from "typeorm";
-import { Exclude } from "class-transformer";
-import { compareSync, hashSync } from "bcryptjs";
-import { Creator } from "./creator.entity";
-import { Venu } from "./venu.entity";
-import { Matching } from "./matching.entity";
-import { Event } from "./event.entity";
+} from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { compareSync, hashSync } from 'bcryptjs';
+import { Creator } from './creator.entity';
+import { Venue } from './venue.entity';
+import { Matching } from './matching.entity';
+import { Event } from './event.entity';
 
 export enum UserRole {
-  ADMIN = "admin",
-  MEMBER = "member",
+  ADMIN = 'admin',
+  MEMBER = 'member',
 }
 
 export enum UserMode {
-  NORMAL = "normal",
-  BUSINESS = "business",
+  NORMAL = 'normal',
+  BUSINESS = 'business',
 }
 
 export type RequestWithUser = {
   user: User;
 };
 
-@Entity({ name: "user" })
+@Entity({ name: 'user' })
 export class User {
   static async comparePassword(pass0, pass1) {
     return compareSync(pass0, pass1);
@@ -41,14 +41,14 @@ export class User {
   id: number;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: UserRole,
-    name: "role",
+    name: 'role',
     nullable: true,
   })
   role: UserRole;
 
-  @Column({ type: "varchar", length: 500, name: "email", default: "" })
+  @Column({ type: 'varchar', length: 500, name: 'email', default: '' })
   email: string;
 
   @Exclude({ toPlainOnly: true })
@@ -56,30 +56,30 @@ export class User {
   password: string;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: UserMode,
-    name: "mode",
+    name: 'mode',
     default: UserMode.NORMAL,
   })
   mode: UserMode;
 
   @CreateDateColumn({
-    type: "datetime",
-    name: "created_at",
+    type: 'datetime',
+    name: 'created_at',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: "timestamp",
-    name: "updated_at",
+    type: 'timestamp',
+    name: 'updated_at',
   })
   updatedAt: Date;
 
   @OneToMany(() => Creator, (creator) => creator.user)
   creators?: Creator[];
 
-  @OneToMany(() => Venu, (venu) => venu.user)
-  venues?: Venu[];
+  @OneToMany(() => Venue, (venue) => venue.user)
+  venues?: Venue[];
 
   @OneToMany(() => Matching, (matching) => matching.fromUser)
   fromMatchings?: Matching[];

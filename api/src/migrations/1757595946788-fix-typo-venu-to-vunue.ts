@@ -53,11 +53,11 @@ export class FixTypoVenuToVunue1757595946788 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE \`event\` CHANGE \`venue_id\` \`venu_id\` int NULL`,
     );
-    // await queryRunner.query(
-    //   `ALTER TABLE \`matching\` ADD CONSTRAINT \`FK_5c65f3f30d9e2ad795300acc518\` FOREIGN KEY (\`venu_id\`) REFERENCES \`venu\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`,
-    // );
-    // await queryRunner.query(
-    //   `ALTER TABLE \`event\` ADD CONSTRAINT \`FK_0c8b444cca000afb0ecf6836058\` FOREIGN KEY (\`venu_id\`) REFERENCES \`venu\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`,
-    // );
+    await queryRunner.query(
+      `ALTER TABLE \`matching\` ADD CONSTRAINT \`FK_5c65f3f30d9e2ad795300acc518\` FOREIGN KEY (\`venu_id\`) REFERENCES \`venu\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE \`event\` ADD CONSTRAINT \`FK_0c8b444cca000afb0ecf6836058\` FOREIGN KEY (\`venu_id\`) REFERENCES \`venu\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
   }
 }

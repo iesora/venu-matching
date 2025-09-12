@@ -73,36 +73,36 @@ export class MatchingController {
     return this.matchingService.getCompletedMatchings(req.user);
   }
 
-  @Get('events/:matchingId')
-  @UseGuards(JwtAuthGuard)
-  async getMatchingEvents(@Param('matchingId') matchingId: number) {
-    return this.matchingService.getMatchingEvents(matchingId);
-  }
+  //   @Get('events/:matchingId')
+  //   @UseGuards(JwtAuthGuard)
+  //   async getMatchingEvents(@Param('matchingId') matchingId: number) {
+  //     return this.matchingService.getMatchingEvents(matchingId);
+  //   }
 
-  @Post('events/:matchingId')
-  @UseGuards(JwtAuthGuard)
-  async createMatchingEvent(
-    @Param('matchingId') matchingId: number,
-    @Body() event: CreateMatchingEventRequest,
-  ) {
-    return this.matchingService.createMatchingEvent(matchingId, event);
-  }
+  //   @Post('events/:matchingId')
+  //   @UseGuards(JwtAuthGuard)
+  //   async createMatchingEvent(
+  //     @Param('matchingId') matchingId: number,
+  //     @Body() event: CreateMatchingEventRequest,
+  //   ) {
+  //     return this.matchingService.createMatchingEvent(matchingId, event);
+  //   }
 
-  @Patch('events/:eventId/accept')
-  @UseGuards(JwtAuthGuard)
-  async acceptMatchingEvent(
-    @Param('eventId') eventId: number,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.matchingService.acceptMatchingEvent(eventId, req.user);
-  }
+  //   @Patch('events/:eventId/accept')
+  //   @UseGuards(JwtAuthGuard)
+  //   async acceptMatchingEvent(
+  //     @Param('eventId') eventId: number,
+  //     @Req() req: RequestWithUser,
+  //   ) {
+  //     return this.matchingService.acceptMatchingEvent(eventId, req.user);
+  //   }
 
-  @Patch('events/:eventId/reject')
-  @UseGuards(JwtAuthGuard)
-  async rejectMatchingEvent(
-    @Param('eventId') eventId: number,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.matchingService.rejectMatchingEvent(eventId, req.user);
-  }
+  //   @Patch('events/:eventId/reject')
+  //   @UseGuards(JwtAuthGuard)
+  //   async rejectMatchingEvent(
+  //     @Param('eventId') eventId: number,
+  //     @Req() req: RequestWithUser,
+  //   ) {
+  //     return this.matchingService.rejectMatchingEvent(eventId, req.user);
+  //   }
 }

@@ -6,12 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany,
 } from 'typeorm';
 import { Creator } from './creator.entity';
 import { Venue } from './venue.entity';
 import { User } from './user.entity';
-import { Event } from './event.entity';
 
 export enum MatchingFrom {
   CREATOR = 'creator',
@@ -54,9 +52,6 @@ export class Matching {
 
   @Column({ type: 'datetime', name: 'matching_at', nullable: true })
   matchingAt: Date;
-
-  @OneToMany(() => Event, (event) => event.matching)
-  events: Event[];
 
   @CreateDateColumn({
     type: 'datetime',

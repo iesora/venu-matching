@@ -6,32 +6,35 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from "typeorm";
-import { Creator } from "./creator.entity";
-import { Event } from "./event.entity";
+} from 'typeorm';
+import { Creator } from './creator.entity';
+import { Event } from './event.entity';
 
-@Entity({ name: "creator_event" })
+@Entity({ name: 'creator_event' })
 export class CreatorEvent {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Creator, { onDelete: "CASCADE", nullable: true })
-  @JoinColumn({ name: "creator_id" })
+  @ManyToOne(() => Creator, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'creator_id' })
   creator: Creator;
 
-  @ManyToOne(() => Event, { onDelete: "CASCADE", nullable: true })
-  @JoinColumn({ name: "event_id" })
+  @ManyToOne(() => Event, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'event_id' })
   event: Event;
 
+  @Column({ type: 'boolean', name: 'acceptFlag', default: false })
+  acceptFlag: boolean;
+
   @CreateDateColumn({
-    type: "datetime",
-    name: "created_at",
+    type: 'datetime',
+    name: 'created_at',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: "timestamp",
-    name: "updated_at",
+    type: 'timestamp',
+    name: 'updated_at',
   })
   updatedAt: Date;
 }

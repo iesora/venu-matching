@@ -48,6 +48,7 @@ export class EventService {
     const newEvent = new Event();
     newEvent.title = event.title;
     newEvent.description = event.description;
+    newEvent.imageUrl = '';
     newEvent.startDate = new Date(event.startDate);
     newEvent.endDate = new Date(event.endDate);
     newEvent.venue = existVenue;
@@ -73,12 +74,11 @@ export class EventService {
 
   //idがないceveは新規追加、あるceveは削除して新規追加,bodyにないがdbにあるcreatorEventは削除
   async updateCreatorEvents(
-    eventId: number,
-    creatorEvents: UpdateCreatorEventDto[],
+    body: UpdateCreatorEventDto,
   ): Promise<CreatorEvent[]> {
     //対象のeventを取得
     const existEvent = await this.eventRepository.findOne({
-      where: { id: eventId },
+      where: { id: body.eventId },
     });
     if (!existEvent) {
       throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
@@ -86,20 +86,17 @@ export class EventService {
 
     //対象のeventに紐づくcreatorEventはすべて削除
     const existCreatorEvents = await this.creatorEventRepository.find({
-      where: { event: { id: eventId } },
+      where: { event: { id: body.eventId } },
     });
     await this.creatorEventRepository.remove(existCreatorEvents);
 
     //creatorを複数取得
-    const creatorIds = creatorEvents.map(
-      (creatorEvent) => creatorEvent.creatorId,
-    );
     const existCreators = await this.creatorRepository.find({
       where: {
-        id: In(creatorIds),
+        id: In(body.creatorIds),
       },
     });
-    if (existCreators.length !== creatorEvents.length) {
+    if (existCreators.length !== body.creatorIds.length) {
       throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
     }
 

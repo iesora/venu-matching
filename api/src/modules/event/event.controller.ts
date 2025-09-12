@@ -19,8 +19,8 @@ export interface CreateEventDto {
 }
 
 export interface UpdateCreatorEventDto {
-  id: number;
-  creatorId: number;
+  eventId: number;
+  creatorIds: number[];
 }
 
 @Controller('event')
@@ -42,12 +42,9 @@ export class EventController {
     return this.eventService.createEvent(event);
   }
 
-  @Patch('creator-event/:eventId')
-  async updateCreatorEvents(
-    @Param('eventId') eventId: number,
-    @Body() creatorEvent: UpdateCreatorEventDto[],
-  ) {
-    return this.eventService.updateCreatorEvents(eventId, creatorEvent);
+  @Patch('creator-event')
+  async updateCreatorEvents(@Body() creatorEvent: UpdateCreatorEventDto) {
+    return this.eventService.updateCreatorEvents(creatorEvent);
   }
 
   @Delete('creator-event/:id')

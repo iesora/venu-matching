@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CreatorCard extends StatelessWidget {
   final Map<String, dynamic> creator;
   final VoidCallback onRequest;
+  final VoidCallback? onTap;
 
   const CreatorCard({
     Key? key,
     required this.creator,
     required this.onRequest,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -15,7 +17,9 @@ class CreatorCard extends StatelessWidget {
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.all(8.0),
-      child: Column(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (creator['opuses'] != null && creator['opuses'].isNotEmpty)
@@ -58,6 +62,7 @@ class CreatorCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

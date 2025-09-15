@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class VenuCard extends StatelessWidget {
   final Map<String, dynamic> venu;
   final VoidCallback onRequest;
+  final VoidCallback? onTap;
 
   const VenuCard({
     Key? key,
     required this.venu,
     required this.onRequest,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -16,42 +18,7 @@ class VenuCard extends StatelessWidget {
       color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(venu['name'] ?? '会場詳細'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('住所: ${venu['address'] ?? '不明'}'),
-                  if (venu['description'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text('説明: ${venu['description']}'),
-                    ),
-                  if (venu['capacity'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text('収容人数: ${venu['capacity']}'),
-                    ),
-                  if (venu['contact'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text('連絡先: ${venu['contact']}'),
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('閉じる'),
-                ),
-              ],
-            ),
-          );
-        },
+        onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,

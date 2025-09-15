@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home.dart';
 import 'screens/ranking.dart';
+import 'screens/event/event_list_screen.dart';
 import 'screens/search.dart';
 import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
@@ -151,6 +152,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     if (_userData != null && _userData!['mode'] == 'normal') {
       _screens = [
         HomeScreen(),
+        EventListScreen(),
         RankingScreen(),
         QrScanScreen(),
         MyPageScreen(),
@@ -225,6 +227,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               icon: Icon(Icons.home_outlined),
                               label: 'ホーム',
                               backgroundColor: Colors.black87),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.event),
+                              label: 'イベント',
+                              backgroundColor: Colors.white),
                           BottomNavigationBarItem(
                               icon: Icon(Icons.emoji_events),
                               label: 'ランキング',

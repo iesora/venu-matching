@@ -8,6 +8,8 @@ import 'package:mobile/src/widgets/venu/venu_card.dart';
 import 'package:mobile/src/widgets/creater/creater_card.dart';
 import 'package:mobile/src/screens/request/requestFromCreater.dart'; // 追加
 import 'package:mobile/src/screens/request/requestFromVenu.dart'; // 追加
+import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
+import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
 
 class SearchScreen extends HookWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -99,6 +101,17 @@ class SearchScreen extends HookWidget {
                                 ),
                               );
                             },
+                            onTap: () {
+                              if (venu['id'] == null) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VenueDetailScreen(
+                                    venueId: venu['id'],
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -118,6 +131,17 @@ class SearchScreen extends HookWidget {
                                 MaterialPageRoute(
                                   builder: (context) => RequestFromVenuScreen(
                                     createrId: creator['id'],
+                                  ),
+                                ),
+                              );
+                            },
+                            onTap: () {
+                              if (creator['id'] == null) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreatorDetailScreen(
+                                    creatorId: creator['id'],
                                   ),
                                 ),
                               );

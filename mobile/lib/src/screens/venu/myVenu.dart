@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/src/widgets/venu/venu_card.dart';
 import 'package:mobile/src/screens/venu/AddVenu.dart'; // AddVenu画面のインポート
+import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
 
 class MyVenuScreen extends HookWidget {
   const MyVenuScreen({Key? key}) : super(key: key);
@@ -58,6 +59,17 @@ class MyVenuScreen extends HookWidget {
                       onRequest: () {
                         // リクエストボタンの処理
                         print('リクエストボタンが押されました');
+                      },
+                      onTap: () {
+                        if (venu['id'] == null) return;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VenueDetailScreen(
+                              venueId: venu['id'],
+                            ),
+                          ),
+                        );
                       },
                     );
                   },

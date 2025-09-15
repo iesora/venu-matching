@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
+import 'eventCreators.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final int eventId;
@@ -270,9 +271,29 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '参加クリエイター',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '参加クリエイター',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventCreatorsScreen(
+                          eventId: widget.eventId,
+                          eventTitle: eventDetail!['title'],
+                          initialCreatorEvents: creatorEvents,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('すべて見る'),
+                )
+              ],
             ),
             const SizedBox(height: 12),
             Wrap(

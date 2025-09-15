@@ -1,8 +1,8 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Venue } from '../../entities/venue.entity';
-import { User } from '../../entities/user.entity';
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Venue } from "../../entities/venue.entity";
+import { User } from "../../entities/user.entity";
 
 export type CreateVenueRequest = {
   name: string;
@@ -17,7 +17,7 @@ export class VenueService {
     @InjectRepository(Venue)
     private readonly venueRepository: Repository<Venue>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async createVenue(venueData: CreateVenueRequest): Promise<Venue> {
@@ -25,7 +25,7 @@ export class VenueService {
       where: { id: venueData.userId },
     });
     if (!existUser) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const newVenue = new Venue();
@@ -38,7 +38,7 @@ export class VenueService {
 
   async getVenues(userId?: number): Promise<Venue[]> {
     const existVenues = await this.venueRepository.find({
-      relations: ['user'],
+      relations: ["user"],
       where: userId ? { user: { id: userId } } : {},
     });
     console.log(existVenues);
@@ -48,11 +48,11 @@ export class VenueService {
   async getVenueById(id: number): Promise<Venue> {
     const venue = await this.venueRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!venue) {
-      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
     }
 
     return venue;

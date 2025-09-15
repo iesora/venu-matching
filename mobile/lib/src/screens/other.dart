@@ -18,7 +18,10 @@ class OtherScreen extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userToken');
     Provider.of<AuthState>(context, listen: false).logout();
-    Navigator.pop(context);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const SignInScreen()),
+    );
   }
 
   void _showDeleteAccountDialog(BuildContext context) {

@@ -21,7 +21,7 @@ class SearchScreen extends HookWidget {
     // 会場一覧を取得する関数
     Future<void> fetchVenues() async {
       isLoading.value = true;
-      final url = Uri.parse("${dotenv.get('API_URL')}/venu");
+      final url = Uri.parse("${dotenv.get('API_URL')}/venue");
       try {
         final response =
             await http.get(url, headers: {'Content-Type': 'application/json'});

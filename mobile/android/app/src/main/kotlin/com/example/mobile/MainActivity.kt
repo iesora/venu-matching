@@ -1,4 +1,4 @@
-package com.example.mobile
+migration:generatepackage com.example.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

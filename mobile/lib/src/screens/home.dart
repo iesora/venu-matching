@@ -20,8 +20,8 @@ class HomeScreen extends HookWidget {
 
     useEffect(() {
       Future.microtask(() async {
-        final response = await http
-            .get(Uri.parse('${dotenv.get('API_URL')}/event/matching/list'));
+        final response =
+            await http.get(Uri.parse('${dotenv.get('API_URL')}/event/list'));
         if (response.statusCode == 200) {
           events.value = json.decode(response.body);
         } else {
@@ -178,7 +178,7 @@ class HomeScreen extends HookWidget {
                                   ),
                                   SizedBox(height: 8),
                                   Text(
-                                    event['venu']['name'],
+                                    event['venue']['name'],
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 ],

@@ -20,6 +20,10 @@ class MyPageScreen extends HookWidget {
     await prefs.remove('userToken');
     await prefs.remove('userId');
     Provider.of<LoginState>(context, listen: false).logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const SignInScreen()),
+    );
   }
 
   void _showDeleteAccountDialog(BuildContext context) {

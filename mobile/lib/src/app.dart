@@ -158,11 +158,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ];
     } else {
       _screens = [
-        HomeScreen(),
+        //HomeScreen(),
         SearchScreen(), // ダミー（検索タブ用）
         RequestListScreen(),
         MatchingListScreen(), // 追加
-        QrScanScreen(),
+        //QrScanScreen(),
         MyPageScreen(),
       ];
     }
@@ -241,10 +241,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                         ]
                       : const <BottomNavigationBarItem>[
                           BottomNavigationBarItem(
-                              icon: Icon(Icons.home_outlined),
-                              label: 'ホーム',
-                              backgroundColor: Colors.black87),
-                          BottomNavigationBarItem(
                               icon: Icon(Icons.search),
                               label: '検索',
                               backgroundColor: Colors.white),
@@ -255,10 +251,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           BottomNavigationBarItem(
                               icon: Icon(Icons.list_alt),
                               label: 'マッチング',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.qr_code_scanner),
-                              label: 'QR',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),

@@ -1,14 +1,14 @@
-import { runSeeders } from 'typeorm-extension';
-import { AppDataSource } from '../utils/data-source';
+import { runSeeders } from "typeorm-extension";
+import { AppDataSource } from "../utils/data-source";
 
 async function main() {
   await AppDataSource.initialize();
   await runSeeders(AppDataSource, {
-    seeds: [__dirname + '/creator.seeder.ts', __dirname + '/venue.seeder.ts'],
+    seeds: [__dirname + "/creator.seeder.ts", __dirname + "/venue.seeder.ts"],
   });
   await AppDataSource.destroy();
 }
 
 main()
-  .then(() => console.log('Seeding completed successfully'))
-  .catch((error) => console.error('Seeding failed:', error));
+  .then(() => console.log("Seeding completed successfully"))
+  .catch((error) => console.error("Seeding failed:", error));

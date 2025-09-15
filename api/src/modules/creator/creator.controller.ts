@@ -29,7 +29,6 @@ export class CreatorController {
 
   @Get()
   async getCreators(@Query() query: { userId?: number }) {
-    console.log(query);
     return await this.creatorService.getCreators(query.userId);
   }
 

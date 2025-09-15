@@ -7,6 +7,7 @@ import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
 import 'screens/match/matchingList.dart'; // 追加
 import 'screens/qr_scan_screen.dart';
+import 'theme/app_theme.dart';
 import 'loginState.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/auth/sign_in_screen.dart';
@@ -30,9 +31,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Flutter Demo',
           scaffoldMessengerKey: scaffoldMessengerKey,
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
+          theme: AppTheme.light,
           navigatorObservers: [CustomNavigatorObserver(context)],
           home: const MyStatefulWidget(),
           localizationsDelegates: const [
@@ -257,14 +256,33 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'マイページ',
                               backgroundColor: Colors.white),
                         ],
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.white,
-                  selectedItemColor: Colors.deepOrangeAccent,
-                  unselectedItemColor: Colors.grey[400],
-                  selectedFontSize: 12,
-                  unselectedFontSize: 12,
-                  elevation: 8,
-                  showUnselectedLabels: true,
+                  type: Theme.of(context).bottomNavigationBarTheme.type ??
+                      BottomNavigationBarType.fixed,
+                  backgroundColor: Theme.of(context)
+                      .bottomNavigationBarTheme
+                      .backgroundColor,
+                  selectedItemColor: Theme.of(context)
+                      .bottomNavigationBarTheme
+                      .selectedItemColor,
+                  unselectedItemColor: Theme.of(context)
+                      .bottomNavigationBarTheme
+                      .unselectedItemColor,
+                  selectedFontSize: Theme.of(context)
+                          .bottomNavigationBarTheme
+                          .selectedLabelStyle
+                          ?.fontSize ??
+                      12,
+                  unselectedFontSize: Theme.of(context)
+                          .bottomNavigationBarTheme
+                          .unselectedLabelStyle
+                          ?.fontSize ??
+                      12,
+                  elevation:
+                      Theme.of(context).bottomNavigationBarTheme.elevation,
+                  showUnselectedLabels: Theme.of(context)
+                          .bottomNavigationBarTheme
+                          .showUnselectedLabels ??
+                      true,
                 ),
               )
             : const SizedBox.shrink());

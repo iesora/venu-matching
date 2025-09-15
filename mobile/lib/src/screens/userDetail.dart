@@ -677,16 +677,11 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        iconTheme: Theme.of(context).appBarTheme.iconTheme,
         title: Text(
           '${_userData?["nickname"] ?? "ユーザー詳細"}',
-          style: const TextStyle(
-            color: Colors.black,
-            fontFamily: 'Noto Sans JP',
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         actions: [
           IconButton(
@@ -715,15 +710,12 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          unselectedLabelColor: Colors.grey,
-          labelColor: Colors.deepOrangeAccent,
-          indicator: const UnderlineTabIndicator(
-            borderSide: BorderSide(
-              width: 2.0,
-              color: Colors.deepOrangeAccent,
-            ),
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
+          unselectedLabelColor:
+              Theme.of(context).tabBarTheme.unselectedLabelColor,
+          labelColor: Theme.of(context).tabBarTheme.labelColor,
+          indicator: Theme.of(context).tabBarTheme.indicator,
+          indicatorSize: Theme.of(context).tabBarTheme.indicatorSize ??
+              TabBarIndicatorSize.tab,
           tabs: const [
             Tab(text: 'ユーザー情報'),
             Tab(text: '写真一覧'),

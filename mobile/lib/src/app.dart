@@ -7,6 +7,7 @@ import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
 import 'screens/match/matchingList.dart'; // 追加
 import 'screens/qr_scan_screen.dart';
+import 'screens/event/event_list_screen.dart';
 import 'theme/app_theme.dart';
 import 'loginState.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -154,6 +155,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         RankingScreen(),
         QrScanScreen(),
         MyPageScreen(),
+        EventListScreen(),
       ];
     } else {
       _screens = [
@@ -163,6 +165,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         MatchingListScreen(), // 追加
         //QrScanScreen(),
         MyPageScreen(),
+        EventListScreen(),
       ];
     }
   }
@@ -237,6 +240,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               icon: Icon(Icons.person_outline),
                               label: 'マイページ',
                               backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.event),
+                              label: 'イベント',
+                              backgroundColor: Colors.white),
                         ]
                       : const <BottomNavigationBarItem>[
                           BottomNavigationBarItem(
@@ -254,6 +261,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),
                               label: 'マイページ',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.event),
+                              label: 'イベント',
                               backgroundColor: Colors.white),
                         ],
                   type: Theme.of(context).bottomNavigationBarTheme.type ??

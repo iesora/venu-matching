@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/web_view_page.dart';
 
 class EventCreatorsScreen extends StatelessWidget {
   final int eventId;
@@ -55,7 +56,19 @@ class EventCreatorsScreen extends StatelessWidget {
                       maxLines: 2, overflow: TextOverflow.ellipsis)
                   : null,
               onTap: () {
-                // クリエイター詳細へ遷移する場合はここに実装
+                final String? website = (creator['website'] as String?);
+                final String url = (website != null && website.isNotEmpty)
+                    ? website
+                    : 'https://buy.stripe.com/test_bJedRbdvEdLyaLp7YzcIE00';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WebViewPage(
+                      title: '支払い - $name',
+                      url: url,
+                    ),
+                  ),
+                );
               },
             ),
           );

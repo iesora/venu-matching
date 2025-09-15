@@ -34,6 +34,13 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - flutter_inappwebview_ios (0.0.1):
+    - Flutter
+    - flutter_inappwebview_ios/Core (= 0.0.1)
+    - OrderedSet (~> 6.0.3)
+  - flutter_inappwebview_ios/Core (0.0.1):
+    - Flutter
+    - OrderedSet (~> 6.0.3)
   - flutter_logs (0.0.1):
     - Flutter
     - ZIPFoundation
@@ -60,6 +67,7 @@ PODS:
     - FlutterMacOS
   - open_filex (0.0.2):
     - Flutter
+  - OrderedSet (6.0.3)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -92,6 +100,7 @@ PODS:
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - flutter_logs (from `.symlinks/plugins/flutter_logs/ios`)
   - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
@@ -112,6 +121,7 @@ SPEC REPOS:
     - DKPhotoGallery
     - Google-Maps-iOS-Utils
     - GoogleMaps
+    - OrderedSet
     - PurchasesHybridCommon
     - RevenueCat
     - SDWebImage
@@ -125,6 +135,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  flutter_inappwebview_ios:
+    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   flutter_logs:
     :path: ".symlinks/plugins/flutter_logs/ios"
   flutter_tts:
@@ -157,6 +169,7 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_inappwebview_ios: 6f63631e2c62a7c350263b13fa5427aedefe81d4
   flutter_logs: 5d0dca26963e0f30b11a995a764744ef77d5d428
   flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
   Google-Maps-iOS-Utils: 66d6de12be1ce6d3742a54661e7a79cb317a9321
@@ -166,6 +179,7 @@ SPEC CHECKSUMS:
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
   mobile_scanner: 77265f3dc8d580810e91849d4a0811a90467ed5e
   open_filex: 6e26e659846ec990262224a12ef1c528bb4edbe4
+  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   purchases_flutter: dab85f12d30ac872802cf2d588750ee2634f5da2
   PurchasesHybridCommon: cce67d208599efd1557e7a4746d964179c00f55e

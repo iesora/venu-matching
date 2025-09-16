@@ -4,11 +4,13 @@ import { UserOutlined, ReloadOutlined, EyeOutlined } from "@ant-design/icons";
 import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
 import { Creator } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
+import { useRouter } from "next/router";
 
 const { Title, Text } = Typography;
 
 const CreatorListPage: React.FC = () => {
   const { data: creators, isLoading, error, refetch } = useAPIGetCreators();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -90,11 +92,11 @@ const CreatorListPage: React.FC = () => {
                 <Card
                   hoverable
                   cover={
-                    creator.profileImageUrl ? (
+                    creator.imageUrl ? (
                       <div style={{ padding: "24px", textAlign: "center" }}>
                         <Avatar
                           size={120}
-                          src={creator.profileImageUrl}
+                          src={creator.imageUrl}
                           icon={<UserOutlined />}
                         />
                       </div>
@@ -109,7 +111,12 @@ const CreatorListPage: React.FC = () => {
                     )
                   }
                   actions={[
-                    <Button type="link" key="detail" icon={<EyeOutlined />}>
+                    <Button
+                      type="link"
+                      key="detail"
+                      icon={<EyeOutlined />}
+                      onClick={() => router.push(`/creators/${creator.id}`)}
+                    >
                       詳細を見る
                     </Button>,
                   ]}

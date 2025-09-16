@@ -5,15 +5,18 @@ import {
   UserOutlined,
   DollarOutlined,
   ReloadOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { Venue } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
+import { useRouter } from "next/router";
 
 const { Title, Text } = Typography;
 
 const VenueListPage: React.FC = () => {
   const { data: venues, isLoading, error, refetch } = useAPIGetVenues();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -117,7 +120,12 @@ const VenueListPage: React.FC = () => {
                     )
                   }
                   actions={[
-                    <Button type="link" key="detail">
+                    <Button
+                      type="link"
+                      key="detail"
+                      icon={<EyeOutlined />}
+                      onClick={() => router.push(`/venues/${venue.id}`)}
+                    >
                       詳細を見る
                     </Button>,
                   ]}
@@ -131,20 +139,29 @@ const VenueListPage: React.FC = () => {
                       </div>
                     }
                     description={
-                      <div>
-                        <div style={{ marginBottom: "8px" }}>
-                          <EnvironmentOutlined style={{ marginRight: "4px" }} />
-                          <Text type="secondary">{venue.address}</Text>
-                        </div>
-                        {venue.description && (
+                      <div
+                        style={{
+                          height: "150px",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
                           <div style={{ marginBottom: "8px" }}>
-                            <Text>{venue.description}</Text>
+                            <EnvironmentOutlined
+                              style={{ marginRight: "4px" }}
+                            />
+                            <Text type="secondary">{venue.address}</Text>
                           </div>
-                        )}
+                          {venue.description && (
+                            <div style={{ marginBottom: "8px" }}>
+                              <Text>{venue.description}</Text>
+                            </div>
+                          )}
+                        </div>
                         <div
                           style={{
-                            display: "flex",
-                            flexWrap: "wrap",
                             gap: "8px",
                           }}
                         >

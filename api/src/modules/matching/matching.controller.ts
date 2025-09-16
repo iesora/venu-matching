@@ -54,7 +54,6 @@ export class MatchingController {
   @Get('request')
   @UseGuards(JwtAuthGuard)
   async getRequestMatchings(@Req() req: RequestWithUser) {
-    console.log(req.user);
     return this.matchingService.getRequestMatchings(req.user);
   }
 

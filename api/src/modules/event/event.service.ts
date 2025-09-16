@@ -1,11 +1,11 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
-import { Event } from "src/entities/event.entity";
-import { CreateEventDto, UpdateCreatorEventDto } from "./event.controller";
-import { CreatorEvent } from "src/entities/createrEvent.entity";
-import { Venue } from "src/entities/venue.entity";
-import { Creator } from "src/entities/creator.entity";
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { Event } from 'src/entities/event.entity';
+import { CreateEventDto, UpdateCreatorEventDto } from './event.controller';
+import { CreatorEvent } from 'src/entities/createrEvent.entity';
+import { Venue } from 'src/entities/venue.entity';
+import { Creator } from 'src/entities/creator.entity';
 
 @Injectable()
 export class EventService {
@@ -17,37 +17,61 @@ export class EventService {
     @InjectRepository(Venue)
     private venueRepository: Repository<Venue>,
     @InjectRepository(Creator)
-    private creatorRepository: Repository<Creator>
+    private creatorRepository: Repository<Creator>,
   ) {}
 
   async getEventsWithMatchingFlagTrue(): Promise<Event[]> {
     return this.eventRepository.find({
-      relations: ["venue", "creatorEvents", "creatorEvents.creator"],
+      relations: ['venue', 'creatorEvents', 'creatorEvents.creator'],
     });
   }
 
   async getEventDetail(id: number): Promise<Event> {
     return this.eventRepository.findOne({
       where: { id },
-      relations: ["venue", "creatorEvents", "creatorEvents.creator"],
+      relations: [
+        'venue',
+        'venue.user',
+        'creatorEvents',
+        'creatorEvents.creator',
+      ],
     });
+  }
+
+  async getCreatorEventsByUserId(userId: number): Promise<CreatorEvent[]> {
+    const existCreators = await this.creatorRepository.find({
+      where: { user: { id: userId } },
+    });
+    if (existCreators.length === 0) {
+      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
+    }
+    const creatorIds = existCreators.map((creator) => creator.id);
+    const creatorEvents = await this.creatorEventRepository
+      .createQueryBuilder('creatorEvent')
+      .leftJoinAndSelect('creatorEvent.creator', 'creator')
+      .leftJoinAndSelect('creatorEvent.event', 'event')
+      .where('creator.id IN (:...creatorIds)', { creatorIds })
+      .getMany();
+    return creatorEvents;
   }
 
   //venueを紐づけてevent作成、さらにそのeventをcreatorごとに紐づけてcreatorEvent作成
   async createEvent(event: CreateEventDto): Promise<CreatorEvent[]> {
+    console.log('event: ', event);
+    console.log('event.creatorIds: ', event.creatorIds);
     //venueを取得
     const existVenue = await this.venueRepository.findOne({
       where: { id: event.venueId },
     });
     if (!existVenue) {
-      throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
+      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
     }
 
     //event作成
     const newEvent = new Event();
     newEvent.title = event.title;
     newEvent.description = event.description;
-    newEvent.imageUrl = "";
+    newEvent.imageUrl = '';
     newEvent.startDate = new Date(event.startDate);
     newEvent.endDate = new Date(event.endDate);
     newEvent.venue = existVenue;
@@ -58,7 +82,7 @@ export class EventService {
       where: { id: In(event.creatorIds) },
     });
     if (existCreators.length !== event.creatorIds.length) {
-      throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
+      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
     }
 
     //保存したeventとcreatorを紐づけてcreator一人ずつにcreatorEventを作成
@@ -73,14 +97,14 @@ export class EventService {
 
   //idがないceveは新規追加、あるceveは削除して新規追加,bodyにないがdbにあるcreatorEventは削除
   async updateCreatorEvents(
-    body: UpdateCreatorEventDto
+    body: UpdateCreatorEventDto,
   ): Promise<CreatorEvent[]> {
     //対象のeventを取得
     const existEvent = await this.eventRepository.findOne({
       where: { id: body.eventId },
     });
     if (!existEvent) {
-      throw new HttpException("Event not found", HttpStatus.NOT_FOUND);
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
     }
 
     //対象のeventに紐づくcreatorEventはすべて削除
@@ -96,7 +120,7 @@ export class EventService {
       },
     });
     if (existCreators.length !== body.creatorIds.length) {
-      throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
+      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
     }
 
     //保存したeventとcreatorを紐づけてcreator一人ずつにcreatorEventを作成

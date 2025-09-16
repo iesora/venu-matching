@@ -52,6 +52,15 @@ export enum MatchingFrom {
   VENUE = "venue",
 }
 
+export type CreatorEvent = {
+  id: number;
+  creator: Creator;
+  event: Event;
+  acceptFlag: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type Event = {
   id: number;
   title: string;
@@ -59,7 +68,7 @@ export type Event = {
   startDate: Date;
   endDate: Date;
   venue: Venue;
-  creators: Creator[];
+  creatorEvents: CreatorEvent[];
   createdAt: Date;
   updatedAt: Date;
 };

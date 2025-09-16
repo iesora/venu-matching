@@ -10,6 +10,7 @@ import {
   Space,
   Divider,
   Spin,
+  Tag,
 } from "antd";
 import {
   UserOutlined,
@@ -19,12 +20,13 @@ import {
 } from "@ant-design/icons";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
-import { Venue, Creator, User } from "@/type";
+import { Venue, Creator, User, CreatorEvent } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { useRouter } from "next/router";
 import CreatorModal from "@/components/Modal/CreatorModal";
 import VenueModal from "@/components/Modal/VenueModal";
+import { useAPIGetCreatorEventsByUserId } from "@/hook/api/event/useAPIGetCreatorEventsByUserId";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -55,6 +57,11 @@ const MyPage: React.FC = () => {
     refetchVenues();
     refetchCreators();
   }, [user]);
+  const {
+    data: requests,
+    refetch: refetchRequests,
+    isLoading: requestsLoading,
+  } = useAPIGetCreatorEventsByUserId(user?.id);
   const [creatorModalVisible, setCreatorModalVisible] = useState(false);
   const [venueModalVisible, setVenueModalVisible] = useState(false);
 
@@ -282,6 +289,102 @@ const MyPage: React.FC = () => {
           )}
         </Card>
       </Col>
+      <Col xs={24} lg={12}>
+        <Card title="参加依頼一覧" size="small">
+          {requestsLoading ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <Spin />
+            </div>
+          ) : requests?.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
+              <div style={{ marginTop: "16px" }}>
+                <Text type="secondary">参加依頼が見つかりません</Text>
+              </div>
+            </div>
+          ) : (
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {requests
+                ?.filter(
+                  (request: CreatorEvent) => request.acceptFlag === false
+                )
+                .map((request: CreatorEvent) => (
+                  <Card
+                    key={request.id}
+                    size="small"
+                    hoverable
+                    onClick={() => router.push(`/events/${request.event.id}`)}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ marginRight: "12px" }}>
+                        <Text strong>{request.event.title}</Text>
+                      </div>
+                      <div style={{ marginRight: "12px" }}>
+                        <Tag icon={<TeamOutlined />} color="green">
+                          {request.creator.name}
+                        </Tag>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              {requests && requests.length > 5 && (
+                <Button type="link" style={{ width: "100%" }}>
+                  すべて表示 ({requests.length}件)
+                </Button>
+              )}
+            </Space>
+          )}
+        </Card>
+      </Col>
+    </Row>
+  );
+
+  const renderRequestsTab = () => (
+    <Row gutter={[24, 24]}>
+      <Col xs={24} lg={12}>
+        <Card title="参加依頼一覧" size="small">
+          {requestsLoading ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <Spin />
+            </div>
+          ) : requests?.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
+              <div style={{ marginTop: "16px" }}>
+                <Text type="secondary">参加依頼が見つかりません</Text>
+              </div>
+            </div>
+          ) : (
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {requests
+                ?.filter(
+                  (request: CreatorEvent) => request.acceptFlag === false
+                )
+                .map((request: CreatorEvent) => (
+                  <Card key={request.id} size="small" hoverable>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <Text strong>{request.event.title}</Text>
+                      {/* <Text type="secondary" style={{ fontSize: "12px" }}>
+                        {request.event.venue.name}
+                      </Text> */}
+                    </div>
+                  </Card>
+                ))}
+              {requests && requests.length > 5 && (
+                <Button type="link" style={{ width: "100%" }}>
+                  すべて表示 ({requests.length}件)
+                </Button>
+              )}
+            </Space>
+          )}
+        </Card>
+      </Col>
     </Row>
   );
 
@@ -294,6 +397,9 @@ const MyPage: React.FC = () => {
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="概要" key="overview">
             {renderOverviewTab()}
+          </TabPane>
+          <TabPane tab="参加依頼" key="requests">
+            {renderRequestsTab()}
           </TabPane>
           <TabPane tab="会場" key="venues">
             {renderVenuesTab()}

@@ -11,7 +11,7 @@ const getVenues = async (userId?: number) => {
 
 export const useAPIGetVenues = (userId?: number) => {
   return useQuery<Venue[], AxiosError>({
-    queryKey: ["venues"],
+    queryKey: userId ? ["venues", userId] : [],
     queryFn: () => getVenues(userId),
   });
 };

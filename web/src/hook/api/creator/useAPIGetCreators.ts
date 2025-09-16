@@ -9,9 +9,10 @@ const getCreators = async (userId?: number) => {
   return response.data;
 };
 
+//idありで呼び出した場合はuserIdがないとリクエストが走らないよう設定
 export const useAPIGetCreators = (userId?: number) => {
   return useQuery<Creator[], AxiosError>({
-    queryKey: ["creators"],
+    queryKey: userId ? ["creators", userId] : [],
     queryFn: () => getCreators(userId),
   });
 };

@@ -33,7 +33,7 @@ const { TabPane } = Tabs;
 
 const MyPage: React.FC = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("venues");
+  const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState<User | undefined>(undefined);
   const {
     data: venues,
@@ -345,49 +345,6 @@ const MyPage: React.FC = () => {
     </Row>
   );
 
-  const renderRequestsTab = () => (
-    <Row gutter={[24, 24]}>
-      <Col xs={24} lg={12}>
-        <Card title="参加依頼一覧" size="small">
-          {requestsLoading ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <Spin />
-            </div>
-          ) : requests?.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
-              <div style={{ marginTop: "16px" }}>
-                <Text type="secondary">参加依頼が見つかりません</Text>
-              </div>
-            </div>
-          ) : (
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {requests
-                ?.filter(
-                  (request: CreatorEvent) => request.acceptFlag === false
-                )
-                .map((request: CreatorEvent) => (
-                  <Card key={request.id} size="small" hoverable>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Text strong>{request.event.title}</Text>
-                      {/* <Text type="secondary" style={{ fontSize: "12px" }}>
-                        {request.event.venue.name}
-                      </Text> */}
-                    </div>
-                  </Card>
-                ))}
-              {requests && requests.length > 5 && (
-                <Button type="link" style={{ width: "100%" }}>
-                  すべて表示 ({requests.length}件)
-                </Button>
-              )}
-            </Space>
-          )}
-        </Card>
-      </Col>
-    </Row>
-  );
-
   return (
     <PageLayout>
       <div style={{ padding: "24px" }}>
@@ -397,9 +354,6 @@ const MyPage: React.FC = () => {
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="概要" key="overview">
             {renderOverviewTab()}
-          </TabPane>
-          <TabPane tab="参加依頼" key="requests">
-            {renderRequestsTab()}
           </TabPane>
           <TabPane tab="会場" key="venues">
             {renderVenuesTab()}

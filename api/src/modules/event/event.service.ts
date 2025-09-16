@@ -145,4 +145,17 @@ export class EventService {
       where: { venue: { id: venueId } },
     });
   }
+
+  async acceptCreatorEvent(creatorEventId: number): Promise<CreatorEvent> {
+    const creatorEvent = await this.creatorEventRepository.findOne({
+      where: { id: creatorEventId },
+    });
+
+    if (!creatorEvent) {
+      throw new HttpException('CreatorEvent not found', HttpStatus.NOT_FOUND);
+    }
+
+    creatorEvent.acceptFlag = true;
+    return await this.creatorEventRepository.save(creatorEvent);
+  }
 }

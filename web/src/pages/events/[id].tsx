@@ -26,8 +26,11 @@ import {
 import { useAPIGetEventById } from "@/hook/api/event/useAPIGetEventById";
 import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
-import { User } from "@/type";
+import { User, Creator } from "@/type";
 import EventModal from "@/components/Modal/EventModal";
+import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
+import { useAPIAcceptCreatorEvent } from "@/hook/api/event/useAPIAcceptCreatorEvent";
+import { notification } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -41,11 +44,53 @@ const EventDetailPage: React.FC = () => {
     refetch,
   } = useAPIGetEventById(id as string);
   const [user, setUser] = useState<User | undefined>(undefined);
+  const [authUserReqestedCreators, setAuthUserReqestedCreators] = useState<
+    Creator[]
+  >([]);
   const { mutate: mutateAuthenticate } = useAPIAuthenticate({
     onSuccess: (user) => {
       setUser(user);
     },
   });
+  //ログインユーザーのクリエイター取得
+  const { data: creators } = useAPIGetCreators(user?.id);
+
+  // クリエイターイベント承認用のhook
+  const { mutate: mutateAcceptCreatorEvent } = useAPIAcceptCreatorEvent({
+    onSuccess: () => {
+      notification.success({
+        message: "クリエイターイベント承認に成功しました",
+      });
+      refetch();
+    },
+    onError: () => {
+      notification.error({
+        message: "クリエイターイベント承認に失敗しました",
+      });
+    },
+  });
+
+  //ログインユーザーのクリエイターでこのイベントからオファーがあったクリエイターを抽出
+  useEffect(() => {
+    // ログインユーザーのクリエイター一覧を取得
+    const authUserCreators =
+      creators?.filter((creator) => creator.user.id === user?.id) || [];
+
+    // イベントに参加しているクリエイター一覧を取得
+    const eventCreators =
+      event?.creatorEvents
+        ?.filter((creatorEvent) => creatorEvent.acceptFlag === false)
+        .map((creatorEvent) => creatorEvent.creator) || [];
+
+    // ログインユーザーのクリエイターとイベントのクリエイターで一致するものを抽出
+    const matchedCreators = authUserCreators.filter((authCreator) =>
+      eventCreators.some((eventCreator) => eventCreator.id === authCreator.id)
+    );
+
+    // console.log("matchedCreators: ", matchedCreators);
+    setAuthUserReqestedCreators(matchedCreators);
+  }, [creators, user, event]);
+
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
@@ -223,7 +268,75 @@ const EventDetailPage: React.FC = () => {
             </div>
           )}
         </div>
-
+        {authUserReqestedCreators.length > 0 && (
+          <Card
+            style={{
+              marginBottom: "24px",
+              border: "2px solid #1890ff",
+              backgroundColor: "#f6ffed",
+            }}
+          >
+            <div style={{ textAlign: "left" }}>
+              <Title
+                level={4}
+                style={{ color: "#1890ff", marginBottom: "16px" }}
+              >
+                {/* <CalendarOutlined style={{ marginRight: "8px" }} /> */}!
+                このイベントへの参加依頼が届いています
+              </Title>
+              <Space size="large">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
+                >
+                  {/* クリエイター承認セクション */}
+                  {authUserReqestedCreators.length > 0 &&
+                    authUserReqestedCreators.map((creator) => (
+                      <Card>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "16px",
+                          }}
+                        >
+                          <Text strong style={{ fontSize: "16px" }}>
+                            {creator.name}
+                          </Text>
+                          <Button
+                            type="primary"
+                            size="large"
+                            style={{
+                              height: "30px",
+                              fontSize: "16px",
+                              minWidth: "120px",
+                              backgroundColor: "#52c41a",
+                              borderColor: "#52c41a",
+                            }}
+                            onClick={() => {
+                              // 該当するcreatorEventのIDを取得
+                              const creatorEvent = event?.creatorEvents?.find(
+                                (ce) => ce.creator.id === creator.id
+                              );
+                              if (creatorEvent) {
+                                mutateAcceptCreatorEvent(creatorEvent.id);
+                              }
+                            }}
+                          >
+                            参加を承認
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                </div>
+              </Space>
+            </div>
+          </Card>
+        )}
         <Row gutter={[24, 24]}>
           {/* メイン情報 */}
           <Col xs={24} lg={16}>
@@ -367,64 +480,68 @@ const EventDetailPage: React.FC = () => {
                   {/* 参加クリエイター */}
                   <div>
                     <Title level={4}>参加クリエイター</Title>
-                    {event.creatorEvents.length > 0 ? (
+                    {event.creatorEvents.filter(
+                      (creatorEvent) => creatorEvent.acceptFlag
+                    ).length > 0 ? (
                       <Row gutter={[16, 16]} style={{ marginTop: "12px" }}>
-                        {event.creatorEvents.map((creatorEvent) => (
-                          <Col xs={24} sm={12} md={8} key={creatorEvent.id}>
-                            <Card size="small" hoverable>
-                              <div style={{ textAlign: "center" }}>
-                                {creatorEvent.creator.imageUrl ? (
-                                  <Avatar
-                                    size={60}
-                                    src={creatorEvent.creator.imageUrl}
-                                    icon={<UserOutlined />}
-                                  />
-                                ) : (
-                                  <Avatar
-                                    size={60}
-                                    icon={<UserOutlined />}
-                                    style={{
-                                      backgroundColor: "#f0f0f0",
-                                      color: "#999",
-                                    }}
-                                  />
-                                )}
-                                <div style={{ marginTop: "8px" }}>
-                                  <Text strong>
-                                    {creatorEvent.creator.name}
-                                  </Text>
-                                  {creatorEvent.creator.description && (
-                                    <div style={{ marginTop: "4px" }}>
-                                      <Text
-                                        type="secondary"
-                                        style={{ fontSize: "12px" }}
-                                      >
-                                        {creatorEvent.creator.description
-                                          .length > 50
-                                          ? `${creatorEvent.creator.description.substring(
-                                              0,
-                                              50
-                                            )}...`
-                                          : creatorEvent.creator.description}
-                                      </Text>
-                                    </div>
+                        {event.creatorEvents
+                          .filter((creatorEvent) => creatorEvent.acceptFlag)
+                          .map((creatorEvent) => (
+                            <Col xs={24} sm={12} md={8} key={creatorEvent.id}>
+                              <Card size="small" hoverable>
+                                <div style={{ textAlign: "center" }}>
+                                  {creatorEvent.creator.imageUrl ? (
+                                    <Avatar
+                                      size={60}
+                                      src={creatorEvent.creator.imageUrl}
+                                      icon={<UserOutlined />}
+                                    />
+                                  ) : (
+                                    <Avatar
+                                      size={60}
+                                      icon={<UserOutlined />}
+                                      style={{
+                                        backgroundColor: "#f0f0f0",
+                                        color: "#999",
+                                      }}
+                                    />
                                   )}
+                                  <div style={{ marginTop: "8px" }}>
+                                    <Text strong>
+                                      {creatorEvent.creator.name}
+                                    </Text>
+                                    {creatorEvent.creator.description && (
+                                      <div style={{ marginTop: "4px" }}>
+                                        <Text
+                                          type="secondary"
+                                          style={{ fontSize: "12px" }}
+                                        >
+                                          {creatorEvent.creator.description
+                                            .length > 50
+                                            ? `${creatorEvent.creator.description.substring(
+                                                0,
+                                                50
+                                              )}...`
+                                            : creatorEvent.creator.description}
+                                        </Text>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Button
+                                    type="link"
+                                    size="small"
+                                    onClick={() =>
+                                      router.push(
+                                        `/creators/${creatorEvent.creator.id}`
+                                      )
+                                    }
+                                  >
+                                    詳細を見る
+                                  </Button>
                                 </div>
-                                <Button
-                                  type="link"
-                                  size="small"
-                                  onClick={() =>
-                                    router.push(
-                                      `/creators/${creatorEvent.creator.id}`
-                                    )
-                                  }
-                                >
-                                  詳細を見る
-                                </Button>
-                              </div>
-                            </Card>
-                          </Col>
-                        ))}
+                              </Card>
+                            </Col>
+                          ))}
                       </Row>
                     ) : (
                       <div
@@ -441,7 +558,7 @@ const EventDetailPage: React.FC = () => {
                         />
                         <div style={{ marginTop: "8px" }}>
                           <Text type="secondary">
-                            参加クリエイターが登録されていません
+                            参加クリエイターはまだいません
                           </Text>
                         </div>
                       </div>

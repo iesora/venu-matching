@@ -56,4 +56,9 @@ export class EventController {
   async deleteCreatorEvent(@Param('id') id: number) {
     return this.eventService.deleteCreatorEvent(id);
   }
+
+  @Patch('creator-event/:id/accept')
+  async acceptCreatorEvent(@Param('id') id: number) {
+    return this.eventService.acceptCreatorEvent(id);
+  }
 }

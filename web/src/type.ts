@@ -17,3 +17,26 @@ export type User = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type Venue = {
+  id: number;
+  name: string;
+  address: string;
+  description?: string;
+  capacity?: number;
+  price?: number;
+  imageUrl?: string;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Creator = {
+  id: number;
+  name: string;
+  description?: string;
+  profileImageUrl?: string;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+};

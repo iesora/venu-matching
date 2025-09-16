@@ -7,6 +7,8 @@ import {
   SettingOutlined,
   MedicineBoxOutlined,
   LogoutOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { accentTextColor, themeColor } from "@/utils/colors";
 import "@/styles/pages/Sidebar.scss";
@@ -42,6 +44,8 @@ const Sidebar: React.FC = () => {
       },
     },
     { key: "/", icon: <HomeOutlined />, label: "ホーム" },
+    { key: "/venues", icon: <EnvironmentOutlined />, label: "会場一覧" },
+    { key: "/creators", icon: <TeamOutlined />, label: "クリエイター一覧" },
     { key: "logout", icon: <LogoutOutlined />, label: "ログアウト" },
   ];
 

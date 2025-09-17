@@ -17,10 +17,7 @@ import {
   useAPICreateEvent,
   CreateEventRequest,
 } from "@/hook/api/event/useAPICreateEvent";
-import {
-  useAPIUpdateEvent,
-  UpdateEventRequest,
-} from "@/hook/api/event/useAPIUpdateEvent";
+import { useAPIUpdateEventOverview } from "@/hook/api/event/useAPIUpdateEventOverview";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
 import { Venue, Creator, User, Event } from "@/type";
@@ -35,8 +32,8 @@ interface EventModalProps {
   onCancel: () => void;
   onSuccess: () => void;
   startStep?: "venue" | "form" | "creators";
-  editEvent?: Event | null; // 編集対象のイベント
-  mode?: "create" | "edit"; // モードを明示的に指定
+  event?: Event | null; // 編集対象のイベント
+  //   mode?: "create" | "edit"; // モードを明示的に指定
 }
 
 const EventModal: React.FC<EventModalProps> = ({
@@ -44,20 +41,20 @@ const EventModal: React.FC<EventModalProps> = ({
   onCancel,
   onSuccess,
   startStep,
-  editEvent,
-  mode = "create",
+  event,
 }) => {
   const [form] = Form.useForm();
-  const isEditMode = mode === "edit" && editEvent;
+  const isEditMode = event;
   const [currentStep, setCurrentStep] = useState<"venue" | "form" | "creators">(
-    isEditMode ? "form" : startStep || "venue"
+    startStep || "venue"
   );
   const [selectedVenueId, setSelectedVenueId] = useState<number | undefined>(
-    editEvent?.venue.id
+    event ? event.venue.id : undefined
   );
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>(
-    editEvent?.creatorEvents.map((creatorEvent) => creatorEvent.creator.id) ||
-      []
+    event
+      ? event.creatorEvents.map((creatorEvent) => creatorEvent.creator.id)
+      : []
   );
   const [formValues, setFormValues] = useState<CreateEventRequest>({
     venueId: 0,
@@ -67,9 +64,6 @@ const EventModal: React.FC<EventModalProps> = ({
     endDate: new Date(),
     creatorIds: [],
   });
-  const [createdEventId, setCreatedEventId] = useState<number | undefined>(
-    editEvent?.id
-  );
   const [user, setUser] = useState<User | undefined>(undefined);
 
   const { mutate: mutateAuthenticate } = useAPIAuthenticate({
@@ -108,53 +102,47 @@ const EventModal: React.FC<EventModalProps> = ({
       },
     });
 
-  //   const { mutate: mutateUpdateEvent, isLoading: isUpdating } =
-  //     useAPIUpdateEvent({
-  //       onSuccess: () => {
-  //         notification.success({
-  //           message: "イベントを更新しました",
-  //         });
-  //         if (currentStep === "form") {
-  //           setCurrentStep("creators");
-  //         } else {
-  //           onSuccess();
-  //           handleCancel();
-  //         }
-  //       },
-  //       onError: () => {
-  //         notification.error({
-  //           message: "イベントの更新に失敗しました",
-  //         });
-  //       },
-  //     });
+  const { mutate: mutateUpdateEventOverview, isLoading: isUpdating } =
+    useAPIUpdateEventOverview({
+      onSuccess: () => {
+        notification.success({
+          message: "イベント概要を更新しました",
+        });
+        onSuccess();
+        handleCancel();
+      },
+      onError: () => {
+        notification.error({
+          message: "イベント概要の更新に失敗しました",
+        });
+      },
+    });
 
   useEffect(() => {
     if (visible) {
       if (isEditMode) {
         // 編集モードの場合、既存データでフォームを初期化
         form.setFieldsValue({
-          title: editEvent.title,
-          description: editEvent.description,
-          dateRange: [dayjs(editEvent.startDate), dayjs(editEvent.endDate)],
+          title: event.title,
+          description: event.description,
+          dateRange: [dayjs(event.startDate), dayjs(event.endDate)],
         });
-        setSelectedVenueId(editEvent.venue.id);
+        setSelectedVenueId(event.venue.id);
         setSelectedCreatorIds(
-          editEvent.creatorEvents.map(
-            (creatorEvent) => creatorEvent.creator.id
-          ) || []
+          event.creatorEvents.length > 0
+            ? event.creatorEvents.map((creatorEvent) => creatorEvent.creator.id)
+            : []
         );
-        setCreatedEventId(editEvent.id);
         setCurrentStep("form");
       } else {
         // 作成モードの場合、フォームをリセット
         form.resetFields();
         setSelectedVenueId(undefined);
         setSelectedCreatorIds([]);
-        setCreatedEventId(undefined);
         setCurrentStep("venue");
       }
     }
-  }, [visible, form, isEditMode, editEvent]);
+  }, [visible, form, isEditMode, event]);
 
   const handleVenueSelect = (venueId: number) => {
     setSelectedVenueId(venueId);
@@ -163,12 +151,22 @@ const EventModal: React.FC<EventModalProps> = ({
 
   const handleSubmit = async (values: any) => {
     const { dateRange } = values;
-    setFormValues({
-      ...formValues,
-      startDate: dateRange[0].toDate(),
-      endDate: dateRange[1].toDate(),
-    });
-    setCurrentStep("creators");
+    if (isEditMode && event) {
+      mutateUpdateEventOverview({
+        eventId: event.id,
+        title: values.title,
+        description: values.description,
+        startDate: dateRange[0].toDate(),
+        endDate: dateRange[1].toDate(),
+      });
+    } else {
+      setFormValues({
+        ...values,
+        startDate: dateRange[0].toDate(),
+        endDate: dateRange[1].toDate(),
+      });
+      setCurrentStep("creators");
+    }
   };
 
   const handleCreatorSelection = () => {
@@ -186,9 +184,6 @@ const EventModal: React.FC<EventModalProps> = ({
       //   mutateUpdateEvent(eventData);
     } else {
       mutateCreateEvent({ ...formValues, creatorIds: selectedCreatorIds });
-      notification.success({
-        message: "クリエイターの選択が完了しました",
-      });
     }
   };
 
@@ -196,7 +191,6 @@ const EventModal: React.FC<EventModalProps> = ({
     form.resetFields();
     setSelectedVenueId(undefined);
     setSelectedCreatorIds([]);
-    setCreatedEventId(undefined);
     setCurrentStep("venue");
     onCancel();
   };

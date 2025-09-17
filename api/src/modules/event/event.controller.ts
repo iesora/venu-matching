@@ -23,6 +23,14 @@ export interface UpdateCreatorEventDto {
   creatorIds: number[];
 }
 
+export interface UpdateEventOverviewDto {
+  eventId: number;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+}
+
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
@@ -40,6 +48,11 @@ export class EventController {
   @Post('')
   async createEvent(@Body() event: CreateEventDto) {
     return this.eventService.createEvent(event);
+  }
+
+  @Patch('overview')
+  async updateEventOverview(@Body() event: UpdateEventOverviewDto) {
+    return this.eventService.updateEventOverview(event);
   }
 
   @Patch('creator-event')

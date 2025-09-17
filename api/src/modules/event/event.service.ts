@@ -2,7 +2,11 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Event } from 'src/entities/event.entity';
-import { CreateEventDto, UpdateCreatorEventDto } from './event.controller';
+import {
+  CreateEventDto,
+  UpdateCreatorEventDto,
+  UpdateEventOverviewDto,
+} from './event.controller';
 import { CreatorEvent } from 'src/entities/createrEvent.entity';
 import { Venue } from 'src/entities/venue.entity';
 import { Creator } from 'src/entities/creator.entity';
@@ -93,6 +97,20 @@ export class EventService {
       return newCreatorEvent;
     });
     return await this.creatorEventRepository.save(newCreatorEvents);
+  }
+
+  async updateEventOverview(event: UpdateEventOverviewDto): Promise<Event> {
+    const existEvent = await this.eventRepository.findOne({
+      where: { id: event.eventId },
+    });
+    if (!existEvent) {
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    }
+    existEvent.title = event.title;
+    existEvent.description = event.description;
+    existEvent.startDate = new Date(event.startDate);
+    existEvent.endDate = new Date(event.endDate);
+    return await this.eventRepository.save(existEvent);
   }
 
   //idがないceveは新規追加、あるceveは削除して新規追加,bodyにないがdbにあるcreatorEventは削除

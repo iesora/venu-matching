@@ -6,8 +6,9 @@ import {
   CreateEventDto,
   UpdateCreatorEventDto,
   UpdateEventOverviewDto,
+  ResponseCreatorEventDto,
 } from './event.controller';
-import { CreatorEvent } from 'src/entities/createrEvent.entity';
+import { AcceptStatus, CreatorEvent } from 'src/entities/createrEvent.entity';
 import { Venue } from 'src/entities/venue.entity';
 import { Creator } from 'src/entities/creator.entity';
 
@@ -164,16 +165,25 @@ export class EventService {
     });
   }
 
-  async acceptCreatorEvent(creatorEventId: number): Promise<CreatorEvent> {
+  //acceptステータスの変更
+  async responseCreatorEvent(
+    body: ResponseCreatorEventDto,
+  ): Promise<{ message: string }> {
     const creatorEvent = await this.creatorEventRepository.findOne({
-      where: { id: creatorEventId },
+      where: { id: body.creatorEventId },
     });
 
     if (!creatorEvent) {
       throw new HttpException('CreatorEvent not found', HttpStatus.NOT_FOUND);
     }
 
-    creatorEvent.acceptFlag = true;
-    return await this.creatorEventRepository.save(creatorEvent);
+    creatorEvent.acceptStatus = body.acceptStatus;
+    await this.creatorEventRepository.save(creatorEvent);
+
+    if (body.acceptStatus === AcceptStatus.ACCEPTED) {
+      return { message: '参加依頼を承認しました' };
+    } else if (body.acceptStatus === AcceptStatus.REJECTED) {
+      return { message: '参加依頼を拒否しました' };
+    }
   }
 }

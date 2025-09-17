@@ -8,6 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { EventService } from './event.service';
+import { AcceptStatus } from 'src/entities/createrEvent.entity';
 
 export interface CreateEventDto {
   title: string;
@@ -29,6 +30,11 @@ export interface UpdateEventOverviewDto {
   description: string;
   startDate: Date;
   endDate: Date;
+}
+
+export interface ResponseCreatorEventDto {
+  creatorEventId: number;
+  acceptStatus: AcceptStatus;
 }
 
 @Controller('event')
@@ -70,8 +76,9 @@ export class EventController {
     return this.eventService.deleteCreatorEvent(id);
   }
 
-  @Patch('creator-event/:id/accept')
-  async acceptCreatorEvent(@Param('id') id: number) {
-    return this.eventService.acceptCreatorEvent(id);
+  //   @Patch('creator-event/:id/accept')
+  @Patch('creator-event/response')
+  async responseCreatorEvent(@Body() body: ResponseCreatorEventDto) {
+    return this.eventService.responseCreatorEvent(body);
   }
 }

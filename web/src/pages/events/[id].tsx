@@ -26,10 +26,10 @@ import {
 import { useAPIGetEventById } from "@/hook/api/event/useAPIGetEventById";
 import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
-import { User, Creator } from "@/type";
+import { User, Creator, AcceptStatus } from "@/type";
 import EventModal from "@/components/Modal/EventModal";
 import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
-import { useAPIAcceptCreatorEvent } from "@/hook/api/event/useAPIAcceptCreatorEvent";
+import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
 import { notification } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
@@ -56,16 +56,16 @@ const EventDetailPage: React.FC = () => {
   const { data: creators } = useAPIGetCreatorsByUserId(user?.id);
 
   // クリエイターイベント承認用のhook
-  const { mutate: mutateAcceptCreatorEvent } = useAPIAcceptCreatorEvent({
-    onSuccess: () => {
+  const { mutate: mutateResponseCreatorEvent } = useAPIResponseCreatorEvent({
+    onSuccess: (data) => {
       notification.success({
-        message: "クリエイターイベント承認に成功しました",
+        message: data.message,
       });
       refetch();
     },
     onError: () => {
       notification.error({
-        message: "クリエイターイベント承認に失敗しました",
+        message: "参加依頼の回答に失敗しました",
       });
     },
   });
@@ -79,7 +79,9 @@ const EventDetailPage: React.FC = () => {
     // イベントに参加しているクリエイター一覧を取得
     const eventCreators =
       event?.creatorEvents
-        ?.filter((creatorEvent) => creatorEvent.acceptFlag === false)
+        ?.filter(
+          (creatorEvent) => creatorEvent.acceptStatus === AcceptStatus.PENDING
+        )
         .map((creatorEvent) => creatorEvent.creator) || [];
 
     // ログインユーザーのクリエイターとイベントのクリエイターで一致するものを抽出
@@ -307,28 +309,59 @@ const EventDetailPage: React.FC = () => {
                           <Text strong style={{ fontSize: "16px" }}>
                             {creator.name}
                           </Text>
-                          <Button
-                            type="primary"
-                            size="large"
-                            style={{
-                              height: "30px",
-                              fontSize: "16px",
-                              minWidth: "120px",
-                              backgroundColor: "#52c41a",
-                              borderColor: "#52c41a",
-                            }}
-                            onClick={() => {
-                              // 該当するcreatorEventのIDを取得
-                              const creatorEvent = event?.creatorEvents?.find(
-                                (ce) => ce.creator.id === creator.id
-                              );
-                              if (creatorEvent) {
-                                mutateAcceptCreatorEvent(creatorEvent.id);
-                              }
-                            }}
-                          >
-                            参加を承認
-                          </Button>
+                          <div>
+                            <Button
+                              type="primary"
+                              size="large"
+                              style={{
+                                marginRight: "16px",
+                                height: "30px",
+                                fontSize: "16px",
+                                minWidth: "120px",
+                                backgroundColor: "#52c41a",
+                                borderColor: "#52c41a",
+                              }}
+                              onClick={() => {
+                                // 該当するcreatorEventのIDを取得
+                                const creatorEvent = event?.creatorEvents?.find(
+                                  (ce) => ce.creator.id === creator.id
+                                );
+                                if (creatorEvent) {
+                                  mutateResponseCreatorEvent({
+                                    creatorEventId: creatorEvent.id,
+                                    acceptStatus: AcceptStatus.ACCEPTED,
+                                  });
+                                }
+                              }}
+                            >
+                              参加を承認
+                            </Button>
+                            <Button
+                              type="primary"
+                              size="large"
+                              style={{
+                                height: "30px",
+                                fontSize: "16px",
+                                minWidth: "120px",
+                                backgroundColor: "#ff4d4f",
+                                borderColor: "#ff4d4f",
+                              }}
+                              onClick={() => {
+                                // 該当するcreatorEventのIDを取得
+                                const creatorEvent = event?.creatorEvents?.find(
+                                  (ce) => ce.creator.id === creator.id
+                                );
+                                if (creatorEvent) {
+                                  mutateResponseCreatorEvent({
+                                    creatorEventId: creatorEvent.id,
+                                    acceptStatus: AcceptStatus.REJECTED,
+                                  });
+                                }
+                              }}
+                            >
+                              参加を拒否
+                            </Button>
+                          </div>
                         </div>
                       </Card>
                     ))}
@@ -481,11 +514,16 @@ const EventDetailPage: React.FC = () => {
                   <div>
                     <Title level={4}>参加クリエイター</Title>
                     {event.creatorEvents.filter(
-                      (creatorEvent) => creatorEvent.acceptFlag
+                      (creatorEvent) =>
+                        creatorEvent.acceptStatus === AcceptStatus.ACCEPTED
                     ).length > 0 ? (
                       <Row gutter={[16, 16]} style={{ marginTop: "12px" }}>
                         {event.creatorEvents
-                          .filter((creatorEvent) => creatorEvent.acceptFlag)
+                          .filter(
+                            (creatorEvent) =>
+                              creatorEvent.acceptStatus ===
+                              AcceptStatus.ACCEPTED
+                          )
                           .map((creatorEvent) => (
                             <Col xs={24} sm={12} md={8} key={creatorEvent.id}>
                               <Card size="small" hoverable>

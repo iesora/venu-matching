@@ -47,6 +47,12 @@ export type Creator = {
   updatedAt: Date;
 };
 
+export enum AcceptStatus {
+  PENDING = "pending",
+  ACCEPTED = "accepted",
+  REJECTED = "rejected",
+}
+
 export enum MatchingFrom {
   CREATOR = "creator",
   VENUE = "venue",
@@ -56,7 +62,7 @@ export type CreatorEvent = {
   id: number;
   creator: Creator;
   event: Event;
-  acceptFlag: boolean;
+  acceptStatus: AcceptStatus;
   createdAt: Date;
   updatedAt: Date;
 };

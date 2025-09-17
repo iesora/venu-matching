@@ -20,7 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
-import { Venue, Creator, User, CreatorEvent } from "@/type";
+import { Venue, Creator, User, CreatorEvent, AcceptStatus } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { useRouter } from "next/router";
@@ -306,7 +306,8 @@ const MyPage: React.FC = () => {
             <Space direction="vertical" size="small" style={{ width: "100%" }}>
               {requests
                 ?.filter(
-                  (request: CreatorEvent) => request.acceptFlag === false
+                  (request: CreatorEvent) =>
+                    request.acceptStatus === AcceptStatus.PENDING
                 )
                 .map((request: CreatorEvent) => (
                   <Card

@@ -11,12 +11,15 @@ import {
   Divider,
   Spin,
   Tag,
+  notification,
 } from "antd";
 import {
   UserOutlined,
   EnvironmentOutlined,
   TeamOutlined,
   EyeOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
@@ -27,6 +30,7 @@ import { useRouter } from "next/router";
 import CreatorModal from "@/components/Modal/CreatorModal";
 import VenueModal from "@/components/Modal/VenueModal";
 import { useAPIGetCreatorEventsByUserId } from "@/hook/api/event/useAPIGetCreatorEventsByUserId";
+import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -64,6 +68,19 @@ const MyPage: React.FC = () => {
   } = useAPIGetCreatorEventsByUserId(user?.id);
   const [creatorModalVisible, setCreatorModalVisible] = useState(false);
   const [venueModalVisible, setVenueModalVisible] = useState(false);
+  const { mutate: mutateAcceptCreatorEvent } = useAPIResponseCreatorEvent({
+    onSuccess: (data: { message: string }) => {
+      notification.success({
+        message: data.message,
+      });
+      refetchRequests();
+    },
+    onError: () => {
+      notification.error({
+        message: "参加依頼の回答に失敗しました",
+      });
+    },
+  });
 
   const renderOverviewTab = () => (
     <Row gutter={[24, 24]}>
@@ -281,7 +298,11 @@ const MyPage: React.FC = () => {
                 </Card>
               ))}
               {creators && creators.length > 5 && (
-                <Button type="link" style={{ width: "100%" }}>
+                <Button
+                  type="link"
+                  style={{ width: "100%" }}
+                  onClick={() => console.log("すべて表示")}
+                >
                   すべて表示 ({creators.length}件)
                 </Button>
               )}
@@ -310,12 +331,7 @@ const MyPage: React.FC = () => {
                     request.acceptStatus === AcceptStatus.PENDING
                 )
                 .map((request: CreatorEvent) => (
-                  <Card
-                    key={request.id}
-                    size="small"
-                    hoverable
-                    onClick={() => router.push(`/events/${request.event.id}`)}
-                  >
+                  <Card key={request.id} size="small" hoverable>
                     <div
                       style={{
                         display: "flex",
@@ -323,22 +339,104 @@ const MyPage: React.FC = () => {
                         justifyContent: "space-between",
                       }}
                     >
-                      <div style={{ marginRight: "12px" }}>
-                        <Text strong>{request.event.title}</Text>
-                      </div>
-                      <div style={{ marginRight: "12px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          width: "100%",
+                        }}
+                        onClick={() =>
+                          router.push(`/events/${request.event.id}`)
+                        }
+                      >
+                        <div style={{ marginBottom: "4px" }}>
+                          <Text strong>{request.event.title}</Text>
+                        </div>
                         <Tag icon={<TeamOutlined />} color="green">
                           {request.creator.name}
                         </Tag>
                       </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <Button
+                          shape="circle"
+                          color="default"
+                          size="small"
+                          icon={<CheckOutlined style={{ color: "#52c41a" }} />}
+                          style={{
+                            borderColor: "#52c41a",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#52c41a";
+                            const icon =
+                              e.currentTarget.querySelector(".anticon");
+                            if (icon)
+                              (icon as HTMLElement).style.color = "#fff";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "";
+                            const icon =
+                              e.currentTarget.querySelector(".anticon");
+                            if (icon)
+                              (icon as HTMLElement).style.color = "#52c41a";
+                          }}
+                          onClick={() => {
+                            mutateAcceptCreatorEvent({
+                              creatorEventId: request.id,
+                              acceptStatus: AcceptStatus.ACCEPTED,
+                            });
+                          }}
+                        />
+                        <Button
+                          color="danger"
+                          shape="circle"
+                          size="small"
+                          icon={<CloseOutlined style={{ color: "#eb2f96" }} />}
+                          style={{
+                            borderColor: "#eb2f96",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#eb2f96";
+                            const icon =
+                              e.currentTarget.querySelector(".anticon");
+                            if (icon)
+                              (icon as HTMLElement).style.color = "#fff";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "";
+                            const icon =
+                              e.currentTarget.querySelector(".anticon");
+                            if (icon)
+                              (icon as HTMLElement).style.color = "#eb2f96";
+                          }}
+                          onClick={(e) => {
+                            mutateAcceptCreatorEvent({
+                              creatorEventId: request.id,
+                              acceptStatus: AcceptStatus.REJECTED,
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
                   </Card>
                 ))}
-              {requests && requests.length > 5 && (
-                <Button type="link" style={{ width: "100%" }}>
-                  すべて表示 ({requests.length}件)
-                </Button>
-              )}
+              {requests &&
+                requests.filter(
+                  (request: CreatorEvent) =>
+                    request.acceptStatus === AcceptStatus.PENDING
+                ).length > 5 && (
+                  <Button type="link" style={{ width: "100%" }}>
+                    すべて表示 (
+                    {
+                      requests.filter(
+                        (request: CreatorEvent) =>
+                          request.acceptStatus === AcceptStatus.PENDING
+                      ).length
+                    }
+                    件)
+                  </Button>
+                )}
             </Space>
           )}
         </Card>

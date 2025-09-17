@@ -28,7 +28,7 @@ import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { User, Creator } from "@/type";
 import EventModal from "@/components/Modal/EventModal";
-import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
+import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
 import { useAPIAcceptCreatorEvent } from "@/hook/api/event/useAPIAcceptCreatorEvent";
 import { notification } from "antd";
 
@@ -53,7 +53,7 @@ const EventDetailPage: React.FC = () => {
     },
   });
   //ログインユーザーのクリエイター取得
-  const { data: creators } = useAPIGetCreators(user?.id);
+  const { data: creators } = useAPIGetCreatorsByUserId(user?.id);
 
   // クリエイターイベント承認用のhook
   const { mutate: mutateAcceptCreatorEvent } = useAPIAcceptCreatorEvent({
@@ -691,6 +691,7 @@ const EventDetailPage: React.FC = () => {
       <EventModal
         visible={modalVisible}
         startStep="form"
+        event={event}
         onCancel={() => {
           setModalVisible(false);
         }}

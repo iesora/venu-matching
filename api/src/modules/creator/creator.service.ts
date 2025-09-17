@@ -73,11 +73,16 @@ export class CreatorService {
     return await this.creatorRepository.save(existCreator);
   }
 
-  async getCreators(userId?: number): Promise<Creator[]> {
-    return await this.creatorRepository.find({
+  async getCreators(): Promise<Creator[]> {
+    return await this.creatorRepository.find();
+  }
+
+  async getCreatorsByUserId(userId?: number): Promise<Creator[]> {
+    const creators = await this.creatorRepository.find({
       relations: ['user', 'opuses'],
       where: userId ? { user: { id: userId } } : {},
     });
+    return creators;
   }
 
   async getCreatorById(id: number): Promise<Creator> {

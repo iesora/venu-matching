@@ -7,7 +7,6 @@ import {
   Param,
   UseGuards,
   Req,
-  Query,
   Patch,
 } from '@nestjs/common';
 import { CreatorService, CreateCreatorRequest } from './creator.service';
@@ -39,8 +38,13 @@ export class CreatorController {
   }
 
   @Get()
-  async getCreators(@Query() query: { userId?: number }) {
-    return await this.creatorService.getCreators(query.userId);
+  async getCreators() {
+    return await this.creatorService.getCreators();
+  }
+
+  @Get('user/:userId')
+  async getCreatorsByUserId(@Param() params: { userId: number }) {
+    return await this.creatorService.getCreatorsByUserId(params.userId);
   }
 
   @Get(':id')

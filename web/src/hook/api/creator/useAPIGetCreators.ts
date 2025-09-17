@@ -4,15 +4,14 @@ import { creatorURL } from "@/utils/url/creator";
 import { Creator } from "@/type";
 import { AxiosError } from "axios";
 
-const getCreators = async (userId?: number) => {
-  const response = await axiosInstance.get(creatorURL, { params: { userId } });
+const getCreators = async () => {
+  const response = await axiosInstance.get(creatorURL);
   return response.data;
 };
 
-//idありで呼び出した場合はuserIdがないとリクエストが走らないよう設定
-export const useAPIGetCreators = (userId?: number) => {
+export const useAPIGetCreators = () => {
   return useQuery<Creator[], AxiosError>({
-    queryKey: userId ? ["creators", userId] : [],
-    queryFn: () => getCreators(userId),
+    queryKey: ["creators"],
+    queryFn: () => getCreators(),
   });
 };

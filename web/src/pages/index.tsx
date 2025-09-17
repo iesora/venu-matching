@@ -19,7 +19,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
-import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
+import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
 import { Venue, Creator, User, CreatorEvent } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
@@ -49,7 +49,7 @@ const MyPage: React.FC = () => {
     data: creators,
     refetch: refetchCreators,
     isLoading: creatorsLoading,
-  } = useAPIGetCreators(user?.id);
+  } = useAPIGetCreatorsByUserId(user?.id);
   useEffect(() => {
     mutateAuthenticate();
   }, []);

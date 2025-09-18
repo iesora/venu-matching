@@ -1,13 +1,14 @@
 import { Layout, Menu, MenuProps } from "antd";
-import { themeColor } from "@/utils/colors";
+import { themeColor, themeColorDeep } from "@/utils/colors";
 import { HomeOutlined } from "@ant-design/icons";
 import { CalendarOutlined } from "@ant-design/icons";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import { TeamOutlined } from "@ant-design/icons";
 import { LogoutOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
-const { Header: AntdHeader } = Layout;
 import "@/styles/pages/Header.scss";
+
+const { Header: AntdHeader } = Layout;
 
 const Header = () => {
   const router = useRouter();
@@ -29,12 +30,27 @@ const Header = () => {
       key: "/",
       icon: <HomeOutlined />,
       label: "ホーム",
-      style: { fontWeight: 800 },
     },
-    { key: "/events", icon: <CalendarOutlined />, label: "イベント" },
-    { key: "/venues", icon: <EnvironmentOutlined />, label: "会場" },
-    { key: "/creators", icon: <TeamOutlined />, label: "クリエイター" },
-    { key: "logout", icon: <LogoutOutlined />, label: "ログアウト" },
+    {
+      key: "/events",
+      icon: <CalendarOutlined />,
+      label: "イベント",
+    },
+    {
+      key: "/venues",
+      icon: <EnvironmentOutlined />,
+      label: "会場",
+    },
+    {
+      key: "/creators",
+      icon: <TeamOutlined />,
+      label: "クリエイター",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "ログアウト",
+    },
   ];
   return (
     <AntdHeader
@@ -48,10 +64,15 @@ const Header = () => {
         justifyContent: "space-between",
         width: "100%",
         borderBottom: "1px solid #e0e0e0",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
       }}
       className="header"
     >
-      <img src={"./vmlogo.png"} alt="logo" style={{ width: 95, height: 80 }} />
+      <img src={"/vmlogo.png"} alt="logo" style={{ width: 95, height: 80 }} />
 
       <div style={{ width: "80%", overflowX: "auto" }}>
         <Menu

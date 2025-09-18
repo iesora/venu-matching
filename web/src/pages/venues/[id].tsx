@@ -25,6 +25,7 @@ import VenueModal from "@/components/Modal/VenueModal";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { User } from "@/type";
 import { useAPIDeleteVenue } from "@/hook/api/venue/useAPIDeleteVenue";
+import { anBlue, anRed } from "@/utils/colors";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -128,6 +129,7 @@ const VenueDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
+                style={{ backgroundColor: anBlue, borderColor: anBlue }}
                 onClick={() => setModalVisible(true)}
               >
                 編集
@@ -135,6 +137,7 @@ const VenueDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 danger
+                style={{ backgroundColor: anRed, borderColor: anRed }}
                 icon={<DeleteOutlined />}
                 onClick={() => mutateDeleteVenue(venue.id)}
               >
@@ -310,13 +313,18 @@ const VenueDetailPage: React.FC = () => {
                   size="small"
                   style={{ width: "100%" }}
                 >
-                  <Button type="primary" block icon={<CalendarOutlined />}>
+                  <Button
+                    type="primary"
+                    block
+                    icon={<CalendarOutlined />}
+                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                  >
                     予約する
                   </Button>
                   <Button block icon={<EditOutlined />}>
                     編集する
                   </Button>
-                  <Button danger block>
+                  <Button danger block style={{ borderColor: anRed }}>
                     削除する
                   </Button>
                 </Space>

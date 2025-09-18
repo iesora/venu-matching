@@ -24,6 +24,7 @@ import PageLayout from "@/components/common/PageLayout";
 import { useRouter } from "next/router";
 import EventModal from "@/components/Modal/EventModal";
 import "@/styles/pages/Card.scss";
+import { anBlue } from "@/utils/colors";
 
 const { Title, Text } = Typography;
 
@@ -91,6 +92,7 @@ const EventListPage: React.FC = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
+            style={{ backgroundColor: anBlue, borderColor: anBlue }}
             onClick={() => setEventModalVisible(true)}
           >
             イベント作成

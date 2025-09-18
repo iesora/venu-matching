@@ -22,6 +22,7 @@ import {
   UpdateVenueRequest,
 } from "@/hook/api/venue/useAPIUpdateVenue";
 import { Venue } from "@/type";
+import { anBlue, themeColor } from "@/utils/colors";
 
 interface VenueModalProps {
   visible: boolean;
@@ -93,6 +94,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
 
   return (
     <Modal
+      //   style={{ backgroundColor: themeColor }}
       title={isEdit ? "会場編集" : "会場作成"}
       open={visible}
       onCancel={handleCancel}
@@ -101,6 +103,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
       destroyOnClose
     >
       <Form
+        // style={{ backgroundColor: themeColor }}
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
@@ -262,6 +265,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
             <Button
               type="primary"
               htmlType="submit"
+              style={{ backgroundColor: anBlue, borderColor: anBlue }}
               //   loading={
               //     mutateCreateVenue.isLoading || mutateUpdateVenue.isLoading
               //   }

@@ -17,7 +17,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Header />
-      <Layout style={{ marginBlockStart: 0, backgroundColor: pageColor }}>
+      <Layout
+        style={{
+          marginBlockStart: 0,
+          backgroundColor: pageColor,
+          marginTop: 80,
+        }}
+      >
         <Content style={{ margin: "16px 16px" }}>
           <div
             style={{

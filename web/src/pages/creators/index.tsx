@@ -5,6 +5,7 @@ import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
 import { Creator } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useRouter } from "next/router";
+import "@/styles/pages/Card.scss";
 
 const { Title, Text } = Typography;
 

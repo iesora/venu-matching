@@ -32,6 +32,7 @@ import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsB
 import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
 import { useAPIDeleteEvent } from "@/hook/api/event/useAPIDeleteEvent";
 import { notification } from "antd";
+import { anBlue, anRed } from "@/utils/colors";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -273,6 +274,7 @@ const EventDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
+                style={{ backgroundColor: anBlue, borderColor: anBlue }}
                 onClick={() => setModalVisibleMode("overview")}
               >
                 概要を編集
@@ -280,6 +282,7 @@ const EventDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
+                style={{ backgroundColor: anBlue, borderColor: anBlue }}
                 onClick={() => setModalVisibleMode("creators")}
               >
                 クリエイターを編集
@@ -287,6 +290,7 @@ const EventDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 danger
+                style={{ backgroundColor: anRed, borderColor: anRed }}
                 icon={<DeleteOutlined />}
                 onClick={() => mutateDeleteEvent(event.id)}
               >
@@ -343,8 +347,8 @@ const EventDetailPage: React.FC = () => {
                                 height: "30px",
                                 fontSize: "16px",
                                 minWidth: "120px",
-                                backgroundColor: "#52c41a",
-                                borderColor: "#52c41a",
+                                backgroundColor: anBlue,
+                                borderColor: anBlue,
                               }}
                               onClick={() => {
                                 // 該当するcreatorEventのIDを取得
@@ -692,10 +696,20 @@ const EventDetailPage: React.FC = () => {
                   size="small"
                   style={{ width: "100%" }}
                 >
-                  <Button type="primary" block icon={<CalendarOutlined />}>
+                  <Button
+                    type="primary"
+                    block
+                    icon={<CalendarOutlined />}
+                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                  >
                     参加申し込み
                   </Button>
-                  <Button block icon={<EnvironmentOutlined />}>
+                  <Button
+                    block
+                    type="primary"
+                    icon={<EnvironmentOutlined />}
+                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                  >
                     会場詳細を見る
                   </Button>
                   <Button block icon={<TeamOutlined />}>

@@ -31,7 +31,8 @@ import CreatorModal from "@/components/Modal/CreatorModal";
 import VenueModal from "@/components/Modal/VenueModal";
 import { useAPIGetCreatorEventsByUserId } from "@/hook/api/event/useAPIGetCreatorEventsByUserId";
 import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
-import { themeColor } from "@/utils/colors";
+import { themeColor, anBlue, anGray } from "@/utils/colors";
+import "@/styles/pages/Card.scss";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -89,9 +90,12 @@ const MyPage: React.FC = () => {
         <Card
           title="会場一覧"
           size="default"
-          style={{ backgroundColor: themeColor }}
           extra={
-            <Button type="primary" onClick={() => setVenueModalVisible(true)}>
+            <Button
+              type="primary"
+              onClick={() => setVenueModalVisible(true)}
+              style={{ backgroundColor: anBlue }}
+            >
               + 登録
             </Button>
           }
@@ -127,9 +131,20 @@ const MyPage: React.FC = () => {
                       </Text>
                     </div>
                     <Button
-                      size="small"
-                      icon={<EyeOutlined />}
+                      size="middle"
                       onClick={() => router.push(`/venues/${venue.id}`)}
+                      style={{ backgroundColor: anGray, fontWeight: "500" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "#000";
+                        e.currentTarget.style.borderColor = anGray;
+                        const icon = e.currentTarget.querySelector(".anticon");
+                        if (icon) (icon as HTMLElement).style.color = "#fff";
+                      }}
+                      //   onMouseLeave={(e) => {
+                      //     e.currentTarget.style.backgroundColor = "";
+                      //     const icon = e.currentTarget.querySelector(".anticon");
+                      //     if (icon) (icon as HTMLElement).style.color = anGray;
+                      //   }}
                     >
                       詳細
                     </Button>
@@ -150,7 +165,11 @@ const MyPage: React.FC = () => {
           title="クリエイター一覧"
           size="default"
           extra={
-            <Button type="primary" onClick={() => setCreatorModalVisible(true)}>
+            <Button
+              type="primary"
+              onClick={() => setCreatorModalVisible(true)}
+              style={{ backgroundColor: anBlue }}
+            >
               + 登録
             </Button>
           }
@@ -184,9 +203,9 @@ const MyPage: React.FC = () => {
                       </Text>
                     </div>
                     <Button
-                      size="small"
-                      icon={<EyeOutlined />}
+                      size="middle"
                       onClick={() => router.push(`/creators/${creator.id}`)}
+                      style={{ backgroundColor: anGray }}
                     >
                       詳細
                     </Button>
@@ -240,6 +259,7 @@ const MyPage: React.FC = () => {
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => router.push(`/venues/${venue.id}`)}
+                    style={{ backgroundColor: anGray }}
                   >
                     詳細
                   </Button>
@@ -293,6 +313,7 @@ const MyPage: React.FC = () => {
                       size="small"
                       icon={<EyeOutlined />}
                       onClick={() => router.push(`/creators/${creator.id}`)}
+                      style={{ backgroundColor: anGray }}
                     >
                       詳細
                     </Button>

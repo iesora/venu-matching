@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from "react";
 import { Button, Modal } from "antd";
+import { anBlue } from "@/utils/colors";
 
 interface ModalLayoutProps {
   isOpen: boolean;
@@ -54,7 +55,15 @@ const ModalLayout: React.FC<ModalLayoutProps> = ({
           </Button>
         )}
         {isDisplayOkButton && (
-          <Button type="primary" onClick={onOk} style={{ marginRight: "8px" }}>
+          <Button
+            type="primary"
+            onClick={onOk}
+            style={{
+              marginRight: "8px",
+              backgroundColor: anBlue,
+              borderColor: anBlue,
+            }}
+          >
             {okText || "完了"}
           </Button>
         )}

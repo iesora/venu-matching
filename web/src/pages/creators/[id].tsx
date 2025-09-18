@@ -28,6 +28,7 @@ import PageLayout from "@/components/common/PageLayout";
 import CreatorModal from "@/components/Modal/CreatorModal";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { User } from "@/type";
+import { anBlue } from "@/utils/colors";
 import { useEffect } from "react";
 import { useAPIDeleteCreator } from "@/hook/api/creator/useAPIDeleteCreator";
 const { Title, Text, Paragraph } = Typography;
@@ -142,6 +143,7 @@ const CreatorDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
+                style={{ backgroundColor: anBlue, borderColor: anBlue }}
                 onClick={() => setModalVisible(true)}
               >
                 編集
@@ -341,7 +343,12 @@ const CreatorDetailPage: React.FC = () => {
                   size="small"
                   style={{ width: "100%" }}
                 >
-                  <Button type="primary" block icon={<CalendarOutlined />}>
+                  <Button
+                    type="primary"
+                    block
+                    icon={<CalendarOutlined />}
+                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                  >
                     イベントを見る
                   </Button>
                   <Button block icon={<EditOutlined />}>

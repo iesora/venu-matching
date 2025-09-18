@@ -25,6 +25,8 @@ import dayjs from "dayjs";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { useAPIUpdateCreatorEvent } from "@/hook/api/event/useAPIUpdateCreatorEvent";
 import { AcceptStatus } from "@/type";
+import { anBlue, themeColorLight } from "@/utils/colors";
+import "@/styles/pages/Table.scss";
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -339,7 +341,7 @@ const EventModal: React.FC<EventModalProps> = ({
               showTime
               format="YYYY-MM-DD HH:mm"
               placeholder={["開始日時", "終了日時"]}
-              style={{ width: "100%" }}
+              style={{ width: "100%", backgroundColor: themeColorLight }}
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")
               }
@@ -359,6 +361,7 @@ const EventModal: React.FC<EventModalProps> = ({
             htmlType="submit"
             loading={isCreating}
             icon={<CalendarOutlined />}
+            style={{ backgroundColor: anBlue, borderColor: anBlue }}
           >
             {isEditMode ? "イベントを更新" : "イベントを作成"}
           </Button>
@@ -383,6 +386,7 @@ const EventModal: React.FC<EventModalProps> = ({
       ) : (
         <>
           <Table
+            style={{ marginBottom: "20px" }}
             rowSelection={{
               type: "checkbox",
               selectedRowKeys: selectedCreatorIds,
@@ -403,7 +407,6 @@ const EventModal: React.FC<EventModalProps> = ({
             ]}
             rowKey="id"
             pagination={false}
-            style={{ marginBottom: "20px" }}
             scroll={{ y: 300 }}
           />
 
@@ -415,6 +418,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 onClick={handleCreatorSelection}
                 loading={isCreating || isUpdatingCreator}
                 icon={<CalendarOutlined />}
+                style={{ backgroundColor: anBlue, borderColor: anBlue }}
               >
                 完了
               </Button>

@@ -6,6 +6,8 @@ import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { RecoilRoot } from "recoil";
 import { useLoginUserMutors } from "@/utils/recoil/loginUser";
+import { ConfigProvider } from "antd";
+import { themeColor, themeColorLight, themeColorDeep } from "@/utils/colors";
 
 const AuthProvider: React.FC<{
   children: React.ReactElement;
@@ -100,7 +102,44 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     <QueryClientProvider client={queryClient}>
       <RecoilRoot>
         {/* <AuthProvider> */}
-        <Component {...pageProps} />
+        <ConfigProvider
+          theme={{
+            components: {
+              Menu: {
+                activeBarHeight: 1,
+                itemSelectedColor: themeColorDeep,
+                horizontalItemSelectedColor: themeColorDeep,
+                horizontalItemHoverColor: themeColorDeep,
+              },
+              Tabs: {
+                itemHoverColor: "#000",
+                inkBarColor: "#000",
+                itemActiveColor: "#000",
+                itemSelectedColor: "#000",
+              },
+              Modal: {
+                contentBg: themeColor,
+                headerBg: themeColor,
+              },
+              Input: {
+                colorBgContainer: themeColorLight,
+              },
+              InputNumber: {
+                colorBgContainer: themeColorLight,
+              },
+              Table: {
+                // bodySortBg: themeColorLight,
+                headerBg: themeColorDeep, // ヘッダー行の背景
+                headerColor: themeColor, // ヘッダー文字色
+                rowHoverBg: themeColorLight, // hover 時の行背景
+                rowSelectedBg: themeColor, // 選択時の行背景
+                rowSelectedHoverBg: themeColor, // 選択時の行背景
+              },
+            },
+          }}
+        >
+          <Component {...pageProps} />
+        </ConfigProvider>
         {/* </AuthProvider> */}
       </RecoilRoot>
     </QueryClientProvider>

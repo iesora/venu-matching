@@ -20,6 +20,7 @@ import {
   UpdateCreatorRequest,
 } from "@/hook/api/creator/useAPIUpdateCreator";
 import { Creator } from "@/type";
+import { anBlue } from "@/utils/colors";
 
 interface CreatorModalProps {
   visible: boolean;
@@ -212,6 +213,7 @@ const CreatorModal: React.FC<CreatorModalProps> = ({
               type="primary"
               htmlType="submit"
               loading={isLoadingCreate || isLoadingUpdate}
+              style={{ backgroundColor: anBlue, borderColor: anBlue }}
             >
               {isEdit ? "更新" : "作成"}
             </Button>

@@ -1,23 +1,29 @@
 $themeColor: #fef7ff;
 $textColor: #3f3f46;
 $focusColor: #000000;
+$themeColorDeep: #d5c0aa;
 .header {
   background-color: $themeColor;
   .ant-menu-item {
     /* 非選択時 */
     color: $textColor;
-    background-color: transparent;
+    // background-color: transparent;
     font-weight: 800;
+    width: 150px;
+    text-align: center;
+    padding-right: 15px;
 
+    //こっちで下線設定するとなぜか一瞬黒くなる
     &:hover {
-      border-bottom: none !important;
+      //   border-bottom: 1px solid $themeColorDeep !important;
+      border-width: 150px;
       background-color: #f5f5f5;
     }
   }
 
+  /* 選択時 */
   .ant-menu-item-selected {
-    /* 選択時 */
+    background-color: $themeColorDeep !important;
     color: #ffffff !important;
-    background-color: $focusColor !important;
   }
 }

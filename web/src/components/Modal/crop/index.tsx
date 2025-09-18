@@ -4,6 +4,7 @@ import { Area } from "react-easy-crop";
 import { Modal } from "antd";
 import { Slider } from "antd";
 import { Button } from "antd";
+import { anBlue } from "@/utils/colors";
 
 interface CropModalProps {
   isOpen: boolean;
@@ -126,7 +127,7 @@ const CropModal: React.FC<CropModalProps> = ({
       }}
       footer={<div></div>}
     >
-      {/** 
+      {/**
       <input type="file" onChange={onFileChange} />
       */}
       <div style={{ position: "relative", width: "100%", height: "400px" }}>
@@ -178,6 +179,8 @@ const CropModal: React.FC<CropModalProps> = ({
             type="primary"
             style={{
               height: "40px",
+              backgroundColor: anBlue,
+              borderColor: anBlue,
             }}
             onClick={() => {
               showCroppedImage();

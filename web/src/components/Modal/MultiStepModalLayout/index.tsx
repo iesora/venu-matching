@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import { Modal, Button, Tooltip } from "antd";
+import { anBlue } from "@/utils/colors";
 
 interface MultiStepModalLayoutProps {
   isOpen: boolean;
@@ -69,7 +70,11 @@ const MultiStepModalLayout: React.FC<MultiStepModalLayoutProps> = ({
                       type="primary"
                       onClick={onOk}
                       disabled
-                      style={{ marginLeft: "8px" }}
+                      style={{
+                        marginLeft: "8px",
+                        backgroundColor: anBlue,
+                        borderColor: anBlue,
+                      }}
                     >
                       {okText || "完了"}
                     </Button>
@@ -79,7 +84,11 @@ const MultiStepModalLayout: React.FC<MultiStepModalLayoutProps> = ({
                 <Button
                   type="primary"
                   onClick={onOk}
-                  style={{ marginLeft: "8px" }}
+                  style={{
+                    marginLeft: "8px",
+                    backgroundColor: anBlue,
+                    borderColor: anBlue,
+                  }}
                 >
                   {okText || "完了"}
                 </Button>

@@ -37,6 +37,9 @@ export class CreatorEvent {
   })
   acceptStatus: AcceptStatus;
 
+  @Column({ type: 'boolean', name: 'delete_flag', default: false })
+  deleteFlag: boolean;
+
   @CreateDateColumn({
     type: 'datetime',
     name: 'created_at',

@@ -43,8 +43,8 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Get('list')
-  async getEventsWithMatchingFlagTrue() {
-    return this.eventService.getEventsWithMatchingFlagTrue();
+  async getEventlist() {
+    return this.eventService.getEventlist();
   }
 
   @Get('detail/:id')

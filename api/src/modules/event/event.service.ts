@@ -25,10 +25,21 @@ export class EventService {
     private creatorRepository: Repository<Creator>,
   ) {}
 
-  async getEventsWithMatchingFlagTrue(): Promise<Event[]> {
-    return this.eventRepository.find({
-      relations: ['venue', 'creatorEvents', 'creatorEvents.creator'],
-    });
+  async getEventlist(): Promise<Event[]> {
+    const existEvents = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.venue', 'venue')
+      .leftJoinAndSelect(
+        'event.creatorEvents',
+        'creatorEvents',
+        'creatorEvents.acceptStatus = :acceptStatus',
+        {
+          acceptStatus: AcceptStatus.ACCEPTED,
+        },
+      )
+      .leftJoinAndSelect('creatorEvents.creator', 'creator')
+      .getMany();
+    return existEvents;
   }
 
   async getEventDetail(id: number): Promise<Event> {

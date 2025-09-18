@@ -3,7 +3,6 @@ import { Card, Row, Col, Spin, Alert, Typography, Tag, Button } from "antd";
 import {
   EnvironmentOutlined,
   UserOutlined,
-  DollarOutlined,
   ReloadOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
@@ -11,6 +10,7 @@ import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { Venue } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useRouter } from "next/router";
+import "@/styles/pages/Card.scss";
 
 const { Title, Text } = Typography;
 
@@ -56,25 +56,6 @@ const VenueListPage: React.FC = () => {
   return (
     <PageLayout>
       <div style={{ padding: "24px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "24px",
-          }}
-        >
-          <Title level={2}>会場一覧</Title>
-          <Button
-            type="primary"
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            loading={isLoading}
-          >
-            更新
-          </Button>
-        </div>
-
         {venues?.length === 0 ? (
           <Card>
             <div style={{ textAlign: "center", padding: "48px 24px" }}>
@@ -92,9 +73,9 @@ const VenueListPage: React.FC = () => {
             </div>
           </Card>
         ) : (
-          <Row gutter={[16, 16]}>
+          <Row gutter={[24, 24]}>
             {venues?.map((venue: Venue) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={venue.id}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} key={venue.id}>
                 <Card
                   hoverable
                   cover={
@@ -102,12 +83,12 @@ const VenueListPage: React.FC = () => {
                       <img
                         alt={venue.name}
                         src={venue.imageUrl}
-                        style={{ height: "200px", objectFit: "cover" }}
+                        style={{ height: "300px", objectFit: "cover" }}
                       />
                     ) : (
                       <div
                         style={{
-                          height: "200px",
+                          height: "300px",
                           backgroundColor: "#f5f5f5",
                           display: "flex",
                           alignItems: "center",
@@ -115,25 +96,27 @@ const VenueListPage: React.FC = () => {
                           color: "#999",
                         }}
                       >
-                        <EnvironmentOutlined style={{ fontSize: "48px" }} />
+                        <EnvironmentOutlined style={{ fontSize: "64px" }} />
                       </div>
                     )
                   }
-                  actions={[
-                    <Button
-                      type="link"
-                      key="detail"
-                      icon={<EyeOutlined />}
-                      onClick={() => router.push(`/venues/${venue.id}`)}
-                    >
-                      詳細を見る
-                    </Button>,
-                  ]}
+                  onClick={() => router.push(`/venues/${venue.id}`)}
+                  //   actions={[
+                  //     <Button
+                  //       type="link"
+                  //       key="detail"
+                  //       icon={<EyeOutlined />}
+                  //       onClick={() => router.push(`/venues/${venue.id}`)}
+                  //     >
+                  //       詳細を見る
+                  //     </Button>,
+                  //   ]}
+                  style={{ height: "100%" }}
                 >
                   <Card.Meta
                     title={
                       <div>
-                        <Text strong style={{ fontSize: "16px" }}>
+                        <Text strong style={{ fontSize: "18px" }}>
                           {venue.name}
                         </Text>
                       </div>
@@ -141,22 +124,26 @@ const VenueListPage: React.FC = () => {
                     description={
                       <div
                         style={{
-                          height: "150px",
+                          minHeight: "200px",
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "space-between",
                         }}
                       >
                         <div>
-                          <div style={{ marginBottom: "8px" }}>
+                          <div style={{ marginBottom: "12px" }}>
                             <EnvironmentOutlined
-                              style={{ marginRight: "4px" }}
+                              style={{ marginRight: "8px" }}
                             />
-                            <Text type="secondary">{venue.address}</Text>
+                            <Text type="secondary" style={{ fontSize: "15px" }}>
+                              {venue.address}
+                            </Text>
                           </div>
                           {venue.description && (
-                            <div style={{ marginBottom: "8px" }}>
-                              <Text>{venue.description}</Text>
+                            <div style={{ marginBottom: "16px" }}>
+                              <Text style={{ fontSize: "14px" }}>
+                                {venue.description}
+                              </Text>
                             </div>
                           )}
                         </div>
@@ -168,11 +155,6 @@ const VenueListPage: React.FC = () => {
                           {venue.capacity && (
                             <Tag icon={<UserOutlined />} color="blue">
                               定員: {venue.capacity}人
-                            </Tag>
-                          )}
-                          {venue.price && (
-                            <Tag icon={<DollarOutlined />} color="green">
-                              料金: ¥{venue.price.toLocaleString()}
                             </Tag>
                           )}
                         </div>

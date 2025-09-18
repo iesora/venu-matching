@@ -31,9 +31,9 @@ const Header = () => {
       label: "ホーム",
       style: { fontWeight: 800 },
     },
-    { key: "/events", icon: <CalendarOutlined />, label: "イベント一覧" },
-    { key: "/venues", icon: <EnvironmentOutlined />, label: "会場一覧" },
-    { key: "/creators", icon: <TeamOutlined />, label: "クリエイター一覧" },
+    { key: "/events", icon: <CalendarOutlined />, label: "イベント" },
+    { key: "/venues", icon: <EnvironmentOutlined />, label: "会場" },
+    { key: "/creators", icon: <TeamOutlined />, label: "クリエイター" },
     { key: "logout", icon: <LogoutOutlined />, label: "ログアウト" },
   ];
   return (

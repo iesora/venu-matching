@@ -50,25 +50,6 @@ const CreatorListPage: React.FC = () => {
   return (
     <PageLayout>
       <div style={{ padding: "24px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "24px",
-          }}
-        >
-          <Title level={2}>クリエイター一覧</Title>
-          <Button
-            type="primary"
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            loading={isLoading}
-          >
-            更新
-          </Button>
-        </div>
-
         {creators?.length === 0 ? (
           <Card>
             <div style={{ textAlign: "center", padding: "48px 24px" }}>
@@ -86,55 +67,61 @@ const CreatorListPage: React.FC = () => {
             </div>
           </Card>
         ) : (
-          <Row gutter={[16, 16]}>
+          <Row gutter={[24, 24]}>
             {creators?.map((creator: Creator) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={creator.id}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} key={creator.id}>
                 <Card
                   hoverable
                   cover={
                     creator.imageUrl ? (
-                      <div style={{ padding: "24px", textAlign: "center" }}>
+                      <div style={{ padding: "40px", textAlign: "center" }}>
                         <Avatar
-                          size={120}
+                          size={200}
                           src={creator.imageUrl}
                           icon={<UserOutlined />}
                         />
                       </div>
                     ) : (
-                      <div style={{ padding: "24px", textAlign: "center" }}>
+                      <div style={{ padding: "40px", textAlign: "center" }}>
                         <Avatar
-                          size={120}
+                          size={200}
                           icon={<UserOutlined />}
                           style={{ backgroundColor: "#f0f0f0", color: "#999" }}
                         />
                       </div>
                     )
                   }
-                  actions={[
-                    <Button
-                      type="link"
-                      key="detail"
-                      icon={<EyeOutlined />}
-                      onClick={() => router.push(`/creators/${creator.id}`)}
-                    >
-                      詳細を見る
-                    </Button>,
-                  ]}
+                  onClick={() => router.push(`/creators/${creator.id}`)}
+                  //   actions={[
+                  //     <Button
+                  //       type="link"
+                  //       key="detail"
+                  //       icon={<EyeOutlined />}
+                  //       onClick={() => router.push(`/creators/${creator.id}`)}
+                  //     >
+                  //       詳細を見る
+                  //     </Button>,
+                  //   ]}
+                  style={{ height: "100%" }}
                 >
                   <Card.Meta
                     title={
-                      <div style={{ textAlign: "center" }}>
-                        <Title level={4} style={{ margin: 0 }}>
+                      <div
+                        style={{ textAlign: "center", marginBottom: "16px" }}
+                      >
+                        <Title level={3} style={{ margin: 0 }}>
                           {creator.name}
                         </Title>
                       </div>
                     }
                     description={
-                      <div style={{ textAlign: "center", marginTop: "12px" }}>
+                      <div style={{ textAlign: "center", minHeight: "100px" }}>
                         {creator.description ? (
-                          <Text type="secondary">{creator.description}</Text>
+                          <Text type="secondary" style={{ fontSize: "16px" }}>
+                            {creator.description}
+                          </Text>
                         ) : (
-                          <Text type="secondary">
+                          <Text type="secondary" style={{ fontSize: "16px" }}>
                             プロフィール情報がありません
                           </Text>
                         )}

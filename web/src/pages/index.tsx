@@ -31,6 +31,7 @@ import CreatorModal from "@/components/Modal/CreatorModal";
 import VenueModal from "@/components/Modal/VenueModal";
 import { useAPIGetCreatorEventsByUserId } from "@/hook/api/event/useAPIGetCreatorEventsByUserId";
 import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
+import { themeColor } from "@/utils/colors";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -88,6 +89,7 @@ const MyPage: React.FC = () => {
         <Card
           title="会場一覧"
           size="default"
+          style={{ backgroundColor: themeColor }}
           extra={
             <Button type="primary" onClick={() => setVenueModalVisible(true)}>
               + 登録

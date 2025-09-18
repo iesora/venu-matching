@@ -1,4 +1,6 @@
 // テーマカラー
+export const pageColor = "#F5F0EF";
+// export const themeColor = "#F2F2F2";
 export const themeColor = "#F5F0EF";
 export const focusColor = "#A8104F";
 export const menuTextColor = "#3F3F46";

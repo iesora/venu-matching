@@ -23,6 +23,7 @@ import { Event } from "@/type";
 import PageLayout from "@/components/common/PageLayout";
 import { useRouter } from "next/router";
 import EventModal from "@/components/Modal/EventModal";
+import "@/styles/pages/Card.scss";
 
 const { Title, Text } = Typography;
 
@@ -87,23 +88,13 @@ const EventListPage: React.FC = () => {
             marginBottom: "24px",
           }}
         >
-          <Title level={2}>イベント一覧</Title>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setEventModalVisible(true)}
-            >
-              イベント作成
-            </Button>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => refetch()}
-              loading={isLoading}
-            >
-              更新
-            </Button>
-          </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setEventModalVisible(true)}
+          >
+            イベント作成
+          </Button>
         </div>
 
         {events?.length === 0 ? (
@@ -123,54 +114,66 @@ const EventListPage: React.FC = () => {
             </div>
           </Card>
         ) : (
-          <Row gutter={[16, 16]}>
+          <Row gutter={[24, 24]}>
             {events?.map((event: Event) => (
-              <Col xs={24} sm={12} lg={8} key={event.id}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} key={event.id}>
                 <Card
                   hoverable
                   cover={
-                    <div style={{ padding: "24px", textAlign: "center" }}>
+                    <div style={{ padding: "32px", textAlign: "center" }}>
                       <CalendarOutlined
                         style={{
-                          fontSize: "48px",
+                          fontSize: "64px",
                           color: "#1890ff",
                           marginBottom: "16px",
                         }}
                       />
-                      <Title level={4} style={{ margin: 0 }}>
+                      <Title level={3} style={{ margin: 0 }}>
                         {event.title}
                       </Title>
                     </div>
                   }
-                  actions={[
-                    <Button
-                      type="link"
-                      key="detail"
-                      icon={<EyeOutlined />}
-                      onClick={() => router.push(`/events/${event.id}`)}
-                    >
-                      詳細を見る
-                    </Button>,
-                  ]}
+                  onClick={() => router.push(`/events/${event.id}`)}
+                  //   actions={[
+                  //     <Button
+                  //       type="link"
+                  //       key="detail"
+                  //       icon={<EyeOutlined />}
+                  //       onClick={() => router.push(`/events/${event.id}`)}
+                  //       className="detail-button"
+                  //       style={{
+                  //         width: "100%",
+                  //       }}
+                  //     >
+                  //       詳細を見る
+                  //     </Button>,
+                  //   ]}
+                  style={{ height: "100%" }}
                 >
                   <Card.Meta
                     description={
-                      <div>
-                        <div style={{ marginBottom: "12px" }}>
-                          <Text type="secondary">{event.description}</Text>
+                      <div style={{ padding: "8px" }}>
+                        <div style={{ marginBottom: "16px" }}>
+                          <Text type="secondary" style={{ fontSize: "14px" }}>
+                            {event.description}
+                          </Text>
                         </div>
 
-                        <div style={{ marginBottom: "8px" }}>
-                          <Text strong>開催期間:</Text>
+                        <div style={{ marginBottom: "12px" }}>
+                          <Text strong style={{ fontSize: "15px" }}>
+                            開催期間:
+                          </Text>
                           <br />
-                          <Text type="secondary">
+                          <Text type="secondary" style={{ fontSize: "14px" }}>
                             {formatDate(event.startDate)} 〜{" "}
                             {formatDate(event.endDate)}
                           </Text>
                         </div>
 
-                        <div style={{ marginBottom: "8px" }}>
-                          <Text strong>会場:</Text>
+                        <div style={{ marginBottom: "12px" }}>
+                          <Text strong style={{ fontSize: "15px" }}>
+                            会場:
+                          </Text>
                           <br />
                           <Tag
                             icon={<EnvironmentOutlined />}
@@ -178,15 +181,18 @@ const EventListPage: React.FC = () => {
                             onClick={() =>
                               router.push(`/venues/${event.venue.id}`)
                             }
+                            style={{ marginTop: "4px", fontSize: "13px" }}
                           >
                             {event.venue.name}
                           </Tag>
                         </div>
 
                         <div>
-                          <Text strong>参加クリエイター:</Text>
+                          <Text strong style={{ fontSize: "15px" }}>
+                            参加クリエイター:
+                          </Text>
                           <br />
-                          <div style={{ marginTop: "4px" }}>
+                          <div style={{ marginTop: "8px" }}>
                             {event.creatorEvents.length > 0 ? (
                               event.creatorEvents.map((creatorEvent) => (
                                 <Tag
@@ -198,12 +204,22 @@ const EventListPage: React.FC = () => {
                                       `/creators/${creatorEvent.creator.id}`
                                     )
                                   }
+                                  style={{
+                                    marginBottom: "4px",
+                                    marginRight: "4px",
+                                    fontSize: "12px",
+                                  }}
                                 >
                                   {creatorEvent.creator.name}
                                 </Tag>
                               ))
                             ) : (
-                              <Text type="secondary">参加者なし</Text>
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: "14px" }}
+                              >
+                                参加者なし
+                              </Text>
                             )}
                           </div>
                         </div>

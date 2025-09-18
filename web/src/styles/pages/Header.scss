@@ -1,0 +1,23 @@
+$themeColor: #fef7ff;
+$textColor: #3f3f46;
+$focusColor: #000000;
+.header {
+  background-color: $themeColor;
+  .ant-menu-item {
+    /* 非選択時 */
+    color: $textColor;
+    background-color: transparent;
+    font-weight: 800;
+
+    &:hover {
+      border-bottom: none !important;
+      background-color: #f5f5f5;
+    }
+  }
+
+  .ant-menu-item-selected {
+    /* 選択時 */
+    color: #ffffff !important;
+    background-color: $focusColor !important;
+  }
+}

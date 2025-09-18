@@ -26,6 +26,7 @@ export interface UpdateCreatorEventDto {
 
 export interface UpdateEventOverviewDto {
   eventId: number;
+  venueId: number;
   title: string;
   description: string;
   startDate: Date;
@@ -80,5 +81,10 @@ export class EventController {
   @Patch('creator-event/response')
   async responseCreatorEvent(@Body() body: ResponseCreatorEventDto) {
     return this.eventService.responseCreatorEvent(body);
+  }
+
+  @Delete(':id')
+  async deleteEvent(@Param('id') id: number) {
+    return this.eventService.deleteEvent(id);
   }
 }

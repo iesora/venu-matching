@@ -32,15 +32,37 @@ export class EventService {
   }
 
   async getEventDetail(id: number): Promise<Event> {
-    return this.eventRepository.findOne({
-      where: { id },
-      relations: [
-        'venue',
-        'venue.user',
-        'creatorEvents',
-        'creatorEvents.creator',
-      ],
-    });
+    const existEvent = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.venue', 'venue')
+      .leftJoinAndSelect('venue.user', 'user')
+      .where('event.id = :id', { id })
+      .getOne();
+    if (!existEvent) {
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    }
+    // return existEvent;
+
+    const existEventsCreatorEvents = await this.creatorEventRepository
+      .createQueryBuilder('creatorEvent')
+      .leftJoinAndSelect('creatorEvent.creator', 'creator')
+      .leftJoinAndSelect('creatorEvent.event', 'event')
+      .where('event.id = :id', { id })
+      .andWhere('creatorEvent.deleteFlag = false')
+      .getMany();
+    return {
+      ...existEvent,
+      creatorEvents: existEventsCreatorEvents,
+    };
+    // return this.eventRepository.findOne({
+    //   where: { id },
+    //   relations: [
+    //     'venue',
+    //     'venue.user',
+    //     'creatorEvents',
+    //     'creatorEvents.creator',
+    //   ],
+    // });
   }
 
   async getCreatorEventsByUserId(userId: number): Promise<CreatorEvent[]> {
@@ -107,6 +129,15 @@ export class EventService {
     if (!existEvent) {
       throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
     }
+    if (event.venueId) {
+      const existVenue = await this.venueRepository.findOne({
+        where: { id: event.venueId },
+      });
+      if (!existVenue) {
+        throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
+      }
+      existEvent.venue = existVenue;
+    }
     existEvent.title = event.title;
     existEvent.description = event.description;
     existEvent.startDate = new Date(event.startDate);
@@ -127,10 +158,24 @@ export class EventService {
     }
 
     //対象のeventに紐づくcreatorEventはすべて削除
-    const existCreatorEvents = await this.creatorEventRepository.find({
-      where: { event: { id: body.eventId } },
+    // const existCreatorEvents = await this.creatorEventRepository.find({
+    //   where: { event: { id: body.eventId } },
+    // });
+    const existCreatorEvents = await this.creatorEventRepository
+      .createQueryBuilder('creatorEvent')
+      .leftJoinAndSelect('creatorEvent.creator', 'creator')
+      .leftJoinAndSelect('creatorEvent.event', 'event')
+      .where('event.id = :eventId', { eventId: body.eventId })
+      .andWhere('creatorEvent.deleteFlag = :deleteFlag', { deleteFlag: false })
+      .andWhere('creatorEvent.acceptStatus != :acceptStatus', {
+        acceptStatus: AcceptStatus.ACCEPTED,
+      })
+      .getMany();
+    existCreatorEvents.map((creatorEvent) => {
+      console.log('creatorEvent', creatorEvent);
+      creatorEvent.deleteFlag = true;
     });
-    await this.creatorEventRepository.remove(existCreatorEvents);
+    await this.creatorEventRepository.save(existCreatorEvents);
 
     //creatorを複数取得
     const existCreators = await this.creatorRepository.find({
@@ -163,6 +208,13 @@ export class EventService {
     return this.eventRepository.find({
       where: { venue: { id: venueId } },
     });
+  }
+
+  async deleteEvent(id: number): Promise<void> {
+    const existEvent = await this.eventRepository.findOne({
+      where: { id },
+    });
+    await this.eventRepository.remove(existEvent);
   }
 
   //acceptステータスの変更

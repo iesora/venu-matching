@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 import { jsonHeader } from "@/utils/url/header";
 
 export interface UpdateEventOverviewRequest {
+  venueId?: number;
   eventId: number;
   title: string;
   description: string;

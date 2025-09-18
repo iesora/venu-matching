@@ -5,12 +5,12 @@ import {
   Input,
   Button,
   DatePicker,
-  Select,
   Space,
   Row,
   Col,
   notification,
   Spin,
+  Table,
 } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import {
@@ -20,9 +20,11 @@ import {
 import { useAPIUpdateEventOverview } from "@/hook/api/event/useAPIUpdateEventOverview";
 import { useAPIGetVenues } from "@/hook/api/venue/useAPIGetVenues";
 import { useAPIGetCreators } from "@/hook/api/creator/useAPIGetCreators";
-import { Venue, Creator, User, Event } from "@/type";
+import { User, Event } from "@/type";
 import dayjs from "dayjs";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
+import { useAPIUpdateCreatorEvent } from "@/hook/api/event/useAPIUpdateCreatorEvent";
+import { AcceptStatus } from "@/type";
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -31,9 +33,8 @@ interface EventModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  startStep?: "venue" | "form" | "creators";
+  startStep?: "venue" | "overview" | "creators";
   event?: Event | null; // 編集対象のイベント
-  //   mode?: "create" | "edit"; // モードを明示的に指定
 }
 
 const EventModal: React.FC<EventModalProps> = ({
@@ -45,15 +46,20 @@ const EventModal: React.FC<EventModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const isEditMode = event;
-  const [currentStep, setCurrentStep] = useState<"venue" | "form" | "creators">(
-    startStep || "venue"
-  );
+  const [currentStep, setCurrentStep] = useState<
+    "venue" | "overview" | "creators"
+  >(startStep || "venue");
   const [selectedVenueId, setSelectedVenueId] = useState<number | undefined>(
     event ? event.venue.id : undefined
   );
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>(
     event
-      ? event.creatorEvents.map((creatorEvent) => creatorEvent.creator.id)
+      ? event.creatorEvents
+          .filter(
+            (creatorEvent) =>
+              creatorEvent.acceptStatus !== AcceptStatus.ACCEPTED
+          )
+          .map((creatorEvent) => creatorEvent.creator.id)
       : []
   );
   const [formValues, setFormValues] = useState<CreateEventRequest>({
@@ -118,6 +124,21 @@ const EventModal: React.FC<EventModalProps> = ({
       },
     });
 
+  const { mutate: mutateUpdateCreatorEvent, isLoading: isUpdatingCreator } =
+    useAPIUpdateCreatorEvent({
+      onSuccess: () => {
+        notification.success({
+          message: "参加依頼を更新しました",
+        });
+        onSuccess();
+        handleCancel();
+      },
+      onError: () => {
+        notification.error({
+          message: "参加依頼の更新に失敗しました",
+        });
+      },
+    });
   useEffect(() => {
     if (visible) {
       if (isEditMode) {
@@ -130,10 +151,15 @@ const EventModal: React.FC<EventModalProps> = ({
         setSelectedVenueId(event.venue.id);
         setSelectedCreatorIds(
           event.creatorEvents.length > 0
-            ? event.creatorEvents.map((creatorEvent) => creatorEvent.creator.id)
+            ? event.creatorEvents
+                .filter(
+                  (creatorEvent) =>
+                    creatorEvent.acceptStatus !== AcceptStatus.ACCEPTED
+                )
+                .map((creatorEvent) => creatorEvent.creator.id)
             : []
         );
-        setCurrentStep("form");
+        setCurrentStep(startStep || "venue");
       } else {
         // 作成モードの場合、フォームをリセット
         form.resetFields();
@@ -144,16 +170,12 @@ const EventModal: React.FC<EventModalProps> = ({
     }
   }, [visible, form, isEditMode, event]);
 
-  const handleVenueSelect = (venueId: number) => {
-    setSelectedVenueId(venueId);
-    setCurrentStep("form");
-  };
-
   const handleSubmit = async (values: any) => {
     const { dateRange } = values;
     if (isEditMode && event) {
       mutateUpdateEventOverview({
         eventId: event.id,
+        venueId: selectedVenueId,
         title: values.title,
         description: values.description,
         startDate: dateRange[0].toDate(),
@@ -169,19 +191,27 @@ const EventModal: React.FC<EventModalProps> = ({
     }
   };
 
+  // イベントに参加しているクリエイター一覧を取得
+  const [acceptedCreatorIds, setAcceptedCreatorIds] = useState<number[]>([]);
+  useEffect(() => {
+    const acceptedCreatorIds = event?.creatorEvents
+      ?.filter(
+        (creatorEvent) => creatorEvent.acceptStatus === AcceptStatus.ACCEPTED
+      )
+      .map((creatorEvent) => creatorEvent.creator.id);
+    setAcceptedCreatorIds(acceptedCreatorIds || []);
+  }, [creators, user, event]);
+
+  useEffect(() => {
+    mutateAuthenticate();
+  }, []);
+
   const handleCreatorSelection = () => {
-    if (isEditMode) {
-      // 編集モードの場合、クリエイター情報も更新
-      //   const eventData: UpdateEventRequest = {
-      //     id: editEvent.id,
-      //     title: editEvent.title,
-      //     description: editEvent.description,
-      //     startDate: editEvent.startDate,
-      //     endDate: editEvent.endDate,
-      //     venueId: editEvent.venue.id,
-      //     creatorIds: selectedCreatorIds,
-      //   };
-      //   mutateUpdateEvent(eventData);
+    if (startStep === "creators" && event) {
+      mutateUpdateCreatorEvent({
+        eventId: event.id,
+        creatorIds: selectedCreatorIds,
+      });
     } else {
       mutateCreateEvent({ ...formValues, creatorIds: selectedCreatorIds });
     }
@@ -195,24 +225,14 @@ const EventModal: React.FC<EventModalProps> = ({
     onCancel();
   };
 
-  const handleBackToVenue = () => {
-    if (!isEditMode) {
-      setCurrentStep("venue");
-      setSelectedVenueId(undefined);
-    }
-  };
-
-  const venueOptions =
-    venues?.map((venue: Venue) => ({
-      label: venue.name,
-      value: venue.id,
-    })) || [];
-
-  const creatorOptions =
-    creators?.map((creator: Creator) => ({
-      label: creator.name,
-      value: creator.id,
-    })) || [];
+  //   const handleBackToVenue = () => {
+  //     if (!isEditMode) {
+  //       setCurrentStep("venue");
+  //       setSelectedVenueId(undefined);
+  //     } else {
+  //       setCurrentStep("venue");
+  //     }
+  //   };
 
   const renderVenueSelection = () => (
     <div style={{ padding: "20px 0" }}>
@@ -227,19 +247,37 @@ const EventModal: React.FC<EventModalProps> = ({
           <Spin size="large" />
         </div>
       ) : (
-        <Select
-          placeholder="会場を選択してください"
-          style={{ width: "100%" }}
-          size="large"
-          value={selectedVenueId}
-          onChange={handleVenueSelect}
-          options={venueOptions}
-          showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-          }
+        <Table
+          rowSelection={{
+            type: "radio",
+            columnWidth: 60,
+            selectedRowKeys: selectedVenueId ? [selectedVenueId] : [],
+            hideSelectAll: true,
+            onChange: (selectedRowKeys) => {
+              console.log("selectedRowKeys-onChange: ", selectedRowKeys);
+              setSelectedVenueId(selectedRowKeys[0] as number);
+              setCurrentStep("overview");
+            },
+          }}
+          dataSource={venues}
+          columns={[
+            {
+              title: "会場名",
+              dataIndex: "name",
+              key: "name",
+            },
+          ]}
+          rowKey="id"
+          pagination={false}
+          style={{ marginBottom: "20px" }}
+          scroll={{ y: 300 }}
         />
       )}
+      <div style={{ textAlign: "right" }}>
+        <Button onClick={() => setCurrentStep("overview")}>
+          イベント概要編集に戻る
+        </Button>
+      </div>
     </div>
   );
 
@@ -312,9 +350,9 @@ const EventModal: React.FC<EventModalProps> = ({
 
       <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
         <Space>
-          {!isEditMode && (
-            <Button onClick={handleBackToVenue}>会場選択に戻る</Button>
-          )}
+          <Button onClick={() => setCurrentStep("venue")}>
+            会場選択に戻る
+          </Button>
           <Button onClick={handleCancel}>キャンセル</Button>
           <Button
             type="primary"
@@ -344,18 +382,29 @@ const EventModal: React.FC<EventModalProps> = ({
         </div>
       ) : (
         <>
-          <Select
-            mode="multiple"
-            placeholder="参加クリエイターを選択してください"
-            style={{ width: "100%", marginBottom: "20px" }}
-            size="large"
-            value={selectedCreatorIds}
-            onChange={setSelectedCreatorIds}
-            options={creatorOptions}
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
+          <Table
+            rowSelection={{
+              type: "checkbox",
+              selectedRowKeys: selectedCreatorIds,
+              onChange: (selectedRowKeys, selectedRows) => {
+                console.log("selectedRowKeys-onChange: ", selectedRowKeys);
+                setSelectedCreatorIds(selectedRowKeys as number[]);
+              },
+            }}
+            dataSource={creators?.filter(
+              (creator) => !acceptedCreatorIds.includes(creator.id)
+            )}
+            columns={[
+              {
+                title: "クリエイター名",
+                dataIndex: "name",
+                key: "name",
+              },
+            ]}
+            rowKey="id"
+            pagination={false}
+            style={{ marginBottom: "20px" }}
+            scroll={{ y: 300 }}
           />
 
           <div style={{ textAlign: "right" }}>
@@ -364,7 +413,7 @@ const EventModal: React.FC<EventModalProps> = ({
               <Button
                 type="primary"
                 onClick={handleCreatorSelection}
-                loading={isCreating}
+                loading={isCreating || isUpdatingCreator}
                 icon={<CalendarOutlined />}
               >
                 完了
@@ -379,7 +428,7 @@ const EventModal: React.FC<EventModalProps> = ({
   const getModalTitle = () => {
     if (isEditMode) {
       switch (currentStep) {
-        case "form":
+        case "overview":
           return "イベント編集";
         case "creators":
           return "クリエイター編集";
@@ -390,7 +439,7 @@ const EventModal: React.FC<EventModalProps> = ({
       switch (currentStep) {
         case "venue":
           return "会場選択";
-        case "form":
+        case "overview":
           return "イベント作成";
         case "creators":
           return "クリエイター選択";
@@ -409,8 +458,8 @@ const EventModal: React.FC<EventModalProps> = ({
       width={800}
       destroyOnClose
     >
-      {!isEditMode && currentStep === "venue" && renderVenueSelection()}
-      {currentStep === "form" && renderEventForm()}
+      {currentStep === "venue" && renderVenueSelection()}
+      {currentStep === "overview" && renderEventForm()}
       {currentStep === "creators" && renderCreatorSelection()}
     </Modal>
   );

@@ -30,6 +30,7 @@ import { User, Creator, AcceptStatus } from "@/type";
 import EventModal from "@/components/Modal/EventModal";
 import { useAPIGetCreatorsByUserId } from "@/hook/api/creator/useAPIGetCreatorsByUserId";
 import { useAPIResponseCreatorEvent } from "@/hook/api/event/useAPIResponseCreatorEvent";
+import { useAPIDeleteEvent } from "@/hook/api/event/useAPIDeleteEvent";
 import { notification } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
@@ -70,6 +71,20 @@ const EventDetailPage: React.FC = () => {
     },
   });
 
+  const { mutate: mutateDeleteEvent } = useAPIDeleteEvent({
+    onSuccess: () => {
+      router.push("/events");
+      notification.success({
+        message: "イベントを削除しました",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "イベントを削除に失敗しました",
+      });
+    },
+  });
+
   //ログインユーザーのクリエイターでこのイベントからオファーがあったクリエイターを抽出
   useEffect(() => {
     // ログインユーザーのクリエイター一覧を取得
@@ -83,17 +98,20 @@ const EventDetailPage: React.FC = () => {
           (creatorEvent) => creatorEvent.acceptStatus === AcceptStatus.PENDING
         )
         .map((creatorEvent) => creatorEvent.creator) || [];
+    console.log("event.creatorEvents: ", event?.creatorEvents);
+    console.log("eventCreators: ", eventCreators);
 
     // ログインユーザーのクリエイターとイベントのクリエイターで一致するものを抽出
     const matchedCreators = authUserCreators.filter((authCreator) =>
       eventCreators.some((eventCreator) => eventCreator.id === authCreator.id)
     );
 
-    // console.log("matchedCreators: ", matchedCreators);
     setAuthUserReqestedCreators(matchedCreators);
   }, [creators, user, event]);
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleMode, setModalVisibleMode] = useState<
+    "overview" | "creators" | undefined
+  >(undefined);
 
   useEffect(() => {
     mutateAuthenticate();
@@ -255,15 +273,22 @@ const EventDetailPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => setModalVisible(true)}
+                onClick={() => setModalVisibleMode("overview")}
               >
-                編集
+                概要を編集
+              </Button>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => setModalVisibleMode("creators")}
+              >
+                クリエイターを編集
               </Button>
               <Button
                 type="primary"
                 danger
                 icon={<DeleteOutlined />}
-                // onClick={() => mutateDeleteEvent(event.id)}
+                onClick={() => mutateDeleteEvent(event.id)}
               >
                 削除
               </Button>
@@ -727,15 +752,15 @@ const EventDetailPage: React.FC = () => {
       </div>
 
       <EventModal
-        visible={modalVisible}
-        startStep="form"
+        visible={modalVisibleMode !== undefined}
+        startStep={modalVisibleMode}
         event={event}
         onCancel={() => {
-          setModalVisible(false);
+          setModalVisibleMode(undefined);
         }}
         onSuccess={() => {
           refetch();
-          setModalVisible(false);
+          setModalVisibleMode(undefined);
         }}
       />
     </PageLayout>

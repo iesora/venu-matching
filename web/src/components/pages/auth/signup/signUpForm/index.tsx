@@ -9,7 +9,6 @@ import * as yup from "yup";
 import { useAPISendEmailForRegister } from "@/hook/api/user/useAPISendEmailForRegister";
 import { useAPICreateForClerk } from "@/hook/api/user/useAPICreateForClerk";
 import { useRouter } from "next/router";
-import { useLogin } from "@/hook/api/auth/useAPILoginForAdmin";
 import { IoIosArrowBack } from "react-icons/io";
 
 const SignUpForm = () => {

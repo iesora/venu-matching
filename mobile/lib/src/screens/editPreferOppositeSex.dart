@@ -161,17 +161,10 @@ class _EditPreferOppositeSexScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '好みの異性条件の編集',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'Noto Sans JP',
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back), // カスタムの戻るアイコン
           onPressed: () {

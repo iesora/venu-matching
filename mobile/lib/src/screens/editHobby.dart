@@ -106,17 +106,10 @@ class _EditHobbyScreenState extends State<EditHobbyScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        title: Text(
           '趣味・興味',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'Noto Sans JP',
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         actions: [
           Padding(

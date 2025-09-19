@@ -687,7 +687,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
           IconButton(
             icon: const Icon(
               Icons.block,
-              color: Colors.black,
+              color: Colors.white,
             ),
             onPressed: () {
               _showBlockConfirmDialog(widget.userId);
@@ -699,7 +699,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
               IconButton(
                 icon: Icon(
                   Icons.flag_outlined,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
                 onPressed: () {
                   _showReportConfirmDialog(widget.userId);

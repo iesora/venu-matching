@@ -431,7 +431,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.black),
+            icon: const Icon(Icons.info_outline, color: Colors.white),
             onPressed: _showInfoDialog,
           ),
         ],

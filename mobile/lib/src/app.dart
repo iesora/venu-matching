@@ -154,18 +154,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         HomeScreen(),
         RankingScreen(),
         QrScanScreen(),
-        MyPageScreen(),
         EventListScreen(),
+        MyPageScreen(),
       ];
     } else {
       _screens = [
-        //HomeScreen(),
         SearchScreen(), // ダミー（検索タブ用）
         RequestListScreen(),
         MatchingListScreen(), // 追加
-        //QrScanScreen(),
-        MyPageScreen(),
         EventListScreen(),
+        MyPageScreen(),
       ];
     }
   }
@@ -237,12 +235,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'QR',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
-                              icon: Icon(Icons.person_outline),
-                              label: 'マイページ',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
                               icon: Icon(Icons.event),
                               label: 'イベント',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.person_outline),
+                              label: 'マイページ',
                               backgroundColor: Colors.white),
                         ]
                       : const <BottomNavigationBarItem>[
@@ -259,12 +257,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'マッチング',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
-                              icon: Icon(Icons.person_outline),
-                              label: 'マイページ',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
                               icon: Icon(Icons.event),
                               label: 'イベント',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.person_outline),
+                              label: 'マイページ',
                               backgroundColor: Colors.white),
                         ],
                   type: Theme.of(context).bottomNavigationBarTheme.type ??

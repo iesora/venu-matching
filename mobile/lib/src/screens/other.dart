@@ -136,16 +136,9 @@ class OtherScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        title: Text(
           'その他',
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'Noto Sans JP',
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
       ),
       body: ListView(

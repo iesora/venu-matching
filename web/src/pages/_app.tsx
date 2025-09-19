@@ -135,6 +135,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                 rowSelectedBg: themeColor, // 選択時の行背景
                 rowSelectedHoverBg: themeColor, // 選択時の行背景
               },
+              Checkbox: {
+                colorPrimaryHover: themeColor,
+                colorPrimary: themeColorDeep,
+              },
+              Radio: {
+                colorPrimaryHover: themeColor,
+                colorPrimary: themeColorDeep,
+              },
             },
           }}
         >

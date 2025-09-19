@@ -7,7 +7,12 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { RecoilRoot } from "recoil";
 import { useLoginUserMutors } from "@/utils/recoil/loginUser";
 import { ConfigProvider } from "antd";
-import { themeColor, themeColorLight, themeColorDeep } from "@/utils/colors";
+import {
+  themeColor,
+  themeColorLight,
+  themeColorDeep,
+  themeColorSuperLight,
+} from "@/utils/colors";
 
 const AuthProvider: React.FC<{
   children: React.ReactElement;
@@ -122,10 +127,16 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                 headerBg: themeColor,
               },
               Input: {
-                colorBgContainer: themeColorLight,
+                colorBgContainer: themeColorSuperLight,
+                activeBorderColor: "#000",
+                hoverBorderColor: "#000",
+                activeShadow: "#000",
               },
               InputNumber: {
                 colorBgContainer: themeColorLight,
+                activeBorderColor: "#000",
+                hoverBorderColor: "#000",
+                activeShadow: "#000",
               },
               Table: {
                 // bodySortBg: themeColorLight,

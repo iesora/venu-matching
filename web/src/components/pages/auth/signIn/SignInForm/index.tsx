@@ -2,6 +2,11 @@ import React from "react";
 import { Input, Button, Form } from "antd";
 import { useLogin } from "@/hook/api/auth/useAPILogin";
 import { useRouter } from "next/router";
+import {
+  themeColor,
+  themeColorLight,
+  themeColorSuperLight,
+} from "@/utils/colors";
 
 type FieldType = {
   email: string;
@@ -55,26 +60,15 @@ const SignInForm = () => {
 
   return (
     <>
-      <div className="authenticationdiv">
+      <div style={{ backgroundColor: themeColor, height: "100vh" }}>
         <div
           style={{
             maxWidth: "510px",
             marginLeft: "auto",
             marginRight: "auto",
-            padding: "50px 0 100px",
+            padding: "100px 0 100px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              fontSize: "28px",
-              fontWeight: "700",
-              marginBottom: "40px",
-            }}
-          >
-            Venue-Matching
-          </div>
           {/*
           <div fontSize="15px" mb="12px">
             &nbsp;アカウントを持っていない場合：{" "}
@@ -95,7 +89,7 @@ const SignInForm = () => {
           <Form form={form} onFinish={handleSubmit}>
             <div
               style={{
-                background: "#fff",
+                background: themeColorLight,
                 padding: "30px 20px",
                 borderRadius: "10px",
                 marginBottom: "20px",
@@ -103,6 +97,17 @@ const SignInForm = () => {
               }}
               className="bg-black"
             >
+              <img
+                src={"/vmLogo_removedBg.png"}
+                alt="logo"
+                style={{
+                  width: 200,
+                  height: 170,
+                  marginBottom: "24px",
+                  display: "flex",
+                  justifySelf: "center",
+                }}
+              />
               <div
                 style={{
                   fontSize: "20px",
@@ -150,7 +155,12 @@ const SignInForm = () => {
                 }}
               >
                 <Form.Item>
-                  <Button htmlType="submit">ログイン</Button>
+                  <Button
+                    htmlType="submit"
+                    style={{ backgroundColor: themeColorSuperLight }}
+                  >
+                    ログイン
+                  </Button>
                 </Form.Item>
               </div>
             </div>

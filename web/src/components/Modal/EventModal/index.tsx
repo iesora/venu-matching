@@ -12,7 +12,7 @@ import {
   Spin,
   Table,
 } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
+import { CalendarOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import {
   useAPICreateEvent,
   CreateEventRequest,
@@ -46,6 +46,24 @@ const EventModal: React.FC<EventModalProps> = ({
   startStep,
   event,
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 500) {
+        setIsMobile(true);
+      } else {
+        setIsMobile(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // 初回チェック
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   const [form] = Form.useForm();
   const isEditMode = event;
   const [currentStep, setCurrentStep] = useState<
@@ -275,11 +293,13 @@ const EventModal: React.FC<EventModalProps> = ({
           scroll={{ y: 300 }}
         />
       )}
-      <div style={{ textAlign: "right" }}>
-        <Button onClick={() => setCurrentStep("overview")}>
-          イベント概要編集に戻る
-        </Button>
-      </div>
+      {isEditMode && (
+        <div style={{ textAlign: "right" }}>
+          <Button onClick={() => setCurrentStep("overview")}>
+            イベント概要編集に戻る
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -352,9 +372,15 @@ const EventModal: React.FC<EventModalProps> = ({
 
       <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
         <Space>
-          <Button onClick={() => setCurrentStep("venue")}>
-            会場選択に戻る
-          </Button>
+          {!isMobile ? (
+            <Button onClick={() => setCurrentStep("venue")}>
+              会場選択に戻る
+            </Button>
+          ) : (
+            <Button onClick={() => setCurrentStep("venue")}>
+              <ArrowLeftOutlined />
+            </Button>
+          )}
           <Button onClick={handleCancel}>キャンセル</Button>
           <Button
             type="primary"

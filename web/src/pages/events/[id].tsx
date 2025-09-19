@@ -12,6 +12,8 @@ import {
   Space,
   Tag,
   Avatar,
+  Dropdown,
+  Menu,
 } from "antd";
 import {
   CalendarOutlined,
@@ -22,6 +24,9 @@ import {
   ClockCircleOutlined,
   EditOutlined,
   DeleteOutlined,
+  MoreOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useAPIGetEventById } from "@/hook/api/event/useAPIGetEventById";
 import PageLayout from "@/components/common/PageLayout";
@@ -49,6 +54,8 @@ const EventDetailPage: React.FC = () => {
   const [authUserReqestedCreators, setAuthUserReqestedCreators] = useState<
     Creator[]
   >([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isBottombarOpen, setIsBottombarOpen] = useState(false);
   const { mutate: mutateAuthenticate } = useAPIAuthenticate({
     onSuccess: (user) => {
       setUser(user);
@@ -113,6 +120,30 @@ const EventDetailPage: React.FC = () => {
   const [modalVisibleMode, setModalVisibleMode] = useState<
     "overview" | "creators" | undefined
   >(undefined);
+
+  // レスポンシブ対応：ウィンドウ幅が 500px 以下の場合はモバイル表示
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 500) {
+        setIsBottombarOpen(true);
+        setIsMobile(true);
+      } else if (window.innerWidth <= 940) {
+        setIsMobile(false);
+        setIsBottombarOpen(true);
+      } else {
+        setIsMobile(false);
+        setIsBottombarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // 初回チェック
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     mutateAuthenticate();
@@ -248,79 +279,166 @@ const EventDetailPage: React.FC = () => {
 
   return (
     <PageLayout>
-      <div style={{ padding: "24px" }}>
+      <div style={{ padding: isMobile ? "16px" : "24px" }}>
         {/* ヘッダー部分 */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "24px",
+            marginBottom: isMobile ? "16px" : "24px",
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? "12px" : "0",
           }}
         >
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => router.back()}
-            style={{ marginRight: "16px" }}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              width: isMobile ? "100%" : "auto",
+            }}
           >
-            戻る
-          </Button>
-          <Title level={2} style={{ margin: 0, flex: 1 }}>
-            {event.title}
-          </Title>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => router.back()}
+              style={{ marginRight: "16px" }}
+              size={isMobile ? "large" : "middle"}
+            >
+              {!isMobile ? "戻る" : undefined}
+            </Button>
+            {isMobile && (
+              <Title
+                level={3}
+                style={{
+                  margin: 0,
+                  flex: 1,
+                  fontSize: isMobile ? "18px" : "24px",
+                }}
+              >
+                {event.title}
+              </Title>
+            )}
+          </div>
+
+          {!isMobile && (
+            <Title level={2} style={{ margin: 0, flex: 1 }}>
+              {event.title}
+            </Title>
+          )}
 
           {event.venue.user.id === user?.id && (
-            <div style={{ display: "flex", gap: "8px" }}>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                style={{ backgroundColor: anBlue, borderColor: anBlue }}
-                onClick={() => setModalVisibleMode("overview")}
-              >
-                概要を編集
-              </Button>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                style={{ backgroundColor: anBlue, borderColor: anBlue }}
-                onClick={() => setModalVisibleMode("creators")}
-              >
-                クリエイターを編集
-              </Button>
-              <Button
-                type="primary"
-                danger
-                style={{ backgroundColor: anRed, borderColor: anRed }}
-                icon={<DeleteOutlined />}
-                onClick={() => mutateDeleteEvent(event.id)}
-              >
-                削除
-              </Button>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                width: isMobile ? "100%" : "auto",
+                justifyContent: isMobile ? "flex-start" : "flex-end",
+              }}
+            >
+              {isBottombarOpen && !isMobile ? (
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      <Menu.Item
+                        key="editOverview"
+                        icon={<EditOutlined />}
+                        onClick={() => setModalVisibleMode("overview")}
+                      >
+                        概要を編集
+                      </Menu.Item>
+                      <Menu.Item
+                        key="editCreators"
+                        icon={<EditOutlined />}
+                        onClick={() => setModalVisibleMode("creators")}
+                      >
+                        クリエイターを編集
+                      </Menu.Item>
+                      <Menu.Item
+                        key="delete"
+                        icon={<DeleteOutlined />}
+                        onClick={() => mutateDeleteEvent(event.id)}
+                      >
+                        削除
+                      </Menu.Item>
+                    </Menu>
+                  }
+                  trigger={["click"]}
+                >
+                  <Button icon={<MoreOutlined />} size="middle" />
+                </Dropdown>
+              ) : (
+                <>
+                  <Button
+                    type="primary"
+                    icon={!isMobile ? <EditOutlined /> : undefined}
+                    size={isMobile ? "small" : "middle"}
+                    style={{
+                      backgroundColor: anBlue,
+                      borderColor: anBlue,
+                      fontSize: isMobile ? "14px" : "16px",
+                    }}
+                    onClick={() => setModalVisibleMode("overview")}
+                  >
+                    概要を編集
+                  </Button>
+                  <Button
+                    size={isMobile ? "small" : "middle"}
+                    type="primary"
+                    icon={!isMobile ? <EditOutlined /> : undefined}
+                    style={{
+                      backgroundColor: anBlue,
+                      borderColor: anBlue,
+                      fontSize: isMobile ? "14px" : "16px",
+                    }}
+                    onClick={() => setModalVisibleMode("creators")}
+                  >
+                    クリエイターを編集
+                  </Button>
+                  <Button
+                    type="primary"
+                    danger
+                    style={{
+                      backgroundColor: anRed,
+                      borderColor: anRed,
+                      fontSize: isMobile ? "14px" : "16px",
+                    }}
+                    icon={!isMobile ? <DeleteOutlined /> : undefined}
+                    size={isMobile ? "small" : "middle"}
+                    onClick={() => mutateDeleteEvent(event.id)}
+                  >
+                    削除
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
         {authUserReqestedCreators.length > 0 && (
           <Card
             style={{
-              marginBottom: "24px",
+              marginBottom: isMobile ? "16px" : "24px",
               border: "2px solid #1890ff",
               backgroundColor: "#f6ffed",
             }}
           >
             <div style={{ textAlign: "left" }}>
               <Title
-                level={4}
+                level={isMobile ? 5 : 4}
                 style={{ color: "#1890ff", marginBottom: "16px" }}
               >
                 {/* <CalendarOutlined style={{ marginRight: "8px" }} /> */}!
                 このイベントへの参加依頼が届いています
               </Title>
-              <Space size="large">
+              <Space
+                size="large"
+                direction="vertical"
+                style={{ width: "100%" }}
+              >
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "16px",
+                    gap: isMobile ? "12px" : "16px",
                   }}
                 >
                   {/* クリエイター承認セクション */}
@@ -332,65 +450,168 @@ const EventDetailPage: React.FC = () => {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            gap: "16px",
+                            gap: isMobile ? "8px" : "16px",
+                            flexDirection: isMobile ? "column" : "row",
                           }}
                         >
-                          <Text strong style={{ fontSize: "16px" }}>
+                          <Text
+                            strong
+                            style={{
+                              fontSize: isMobile ? "14px" : "16px",
+                              textAlign: isMobile ? "center" : "left",
+                            }}
+                          >
                             {creator.name}
                           </Text>
-                          <div>
-                            <Button
-                              type="primary"
-                              size="large"
+                          {!isBottombarOpen && !isMobile ? (
+                            <div>
+                              <Button
+                                type="primary"
+                                size="large"
+                                style={{
+                                  marginRight: "16px",
+                                  height: "30px",
+                                  fontSize: "16px",
+                                  minWidth: "120px",
+                                  backgroundColor: anBlue,
+                                  borderColor: anBlue,
+                                }}
+                                onClick={() => {
+                                  // 該当するcreatorEventのIDを取得
+                                  const creatorEvent =
+                                    event?.creatorEvents?.find(
+                                      (ce) => ce.creator.id === creator.id
+                                    );
+                                  if (creatorEvent) {
+                                    mutateResponseCreatorEvent({
+                                      creatorEventId: creatorEvent.id,
+                                      acceptStatus: AcceptStatus.ACCEPTED,
+                                    });
+                                  }
+                                }}
+                              >
+                                参加を承認
+                              </Button>
+                              <Button
+                                type="primary"
+                                size="large"
+                                style={{
+                                  height: "30px",
+                                  fontSize: "16px",
+                                  minWidth: "120px",
+                                  backgroundColor: "#ff4d4f",
+                                  borderColor: "#ff4d4f",
+                                }}
+                                onClick={() => {
+                                  // 該当するcreatorEventのIDを取得
+                                  const creatorEvent =
+                                    event?.creatorEvents?.find(
+                                      (ce) => ce.creator.id === creator.id
+                                    );
+                                  if (creatorEvent) {
+                                    mutateResponseCreatorEvent({
+                                      creatorEventId: creatorEvent.id,
+                                      acceptStatus: AcceptStatus.REJECTED,
+                                    });
+                                  }
+                                }}
+                              >
+                                参加を拒否
+                              </Button>
+                            </div>
+                          ) : (
+                            <div
                               style={{
-                                marginRight: "16px",
-                                height: "30px",
-                                fontSize: "16px",
-                                minWidth: "120px",
-                                backgroundColor: anBlue,
-                                borderColor: anBlue,
-                              }}
-                              onClick={() => {
-                                // 該当するcreatorEventのIDを取得
-                                const creatorEvent = event?.creatorEvents?.find(
-                                  (ce) => ce.creator.id === creator.id
-                                );
-                                if (creatorEvent) {
-                                  mutateResponseCreatorEvent({
-                                    creatorEventId: creatorEvent.id,
-                                    acceptStatus: AcceptStatus.ACCEPTED,
-                                  });
-                                }
+                                display: "flex",
+                                gap: isMobile ? "12px" : "8px",
+                                width: isMobile ? "100%" : "auto",
+                                justifyContent: isMobile
+                                  ? "center"
+                                  : "flex-end",
                               }}
                             >
-                              参加を承認
-                            </Button>
-                            <Button
-                              type="primary"
-                              size="large"
-                              style={{
-                                height: "30px",
-                                fontSize: "16px",
-                                minWidth: "120px",
-                                backgroundColor: "#ff4d4f",
-                                borderColor: "#ff4d4f",
-                              }}
-                              onClick={() => {
-                                // 該当するcreatorEventのIDを取得
-                                const creatorEvent = event?.creatorEvents?.find(
-                                  (ce) => ce.creator.id === creator.id
-                                );
-                                if (creatorEvent) {
-                                  mutateResponseCreatorEvent({
-                                    creatorEventId: creatorEvent.id,
-                                    acceptStatus: AcceptStatus.REJECTED,
-                                  });
+                              <Button
+                                shape="circle"
+                                color="default"
+                                size={isMobile ? "middle" : "small"}
+                                icon={
+                                  <CheckOutlined style={{ color: "#52c41a" }} />
                                 }
-                              }}
-                            >
-                              参加を拒否
-                            </Button>
-                          </div>
+                                style={{
+                                  borderColor: "#52c41a",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "#52c41a";
+                                  const icon =
+                                    e.currentTarget.querySelector(".anticon");
+                                  if (icon)
+                                    (icon as HTMLElement).style.color = "#fff";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "";
+                                  const icon =
+                                    e.currentTarget.querySelector(".anticon");
+                                  if (icon)
+                                    (icon as HTMLElement).style.color =
+                                      "#52c41a";
+                                }}
+                                onClick={() => {
+                                  // 該当するcreatorEventのIDを取得
+                                  const creatorEvent =
+                                    event?.creatorEvents?.find(
+                                      (ce) => ce.creator.id === creator.id
+                                    );
+                                  if (creatorEvent) {
+                                    mutateResponseCreatorEvent({
+                                      creatorEventId: creatorEvent.id,
+                                      acceptStatus: AcceptStatus.ACCEPTED,
+                                    });
+                                  }
+                                }}
+                              />
+                              <Button
+                                color="danger"
+                                shape="circle"
+                                size={isMobile ? "middle" : "small"}
+                                icon={
+                                  <CloseOutlined style={{ color: "#eb2f96" }} />
+                                }
+                                style={{
+                                  borderColor: "#eb2f96",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "#eb2f96";
+                                  const icon =
+                                    e.currentTarget.querySelector(".anticon");
+                                  if (icon)
+                                    (icon as HTMLElement).style.color = "#fff";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "";
+                                  const icon =
+                                    e.currentTarget.querySelector(".anticon");
+                                  if (icon)
+                                    (icon as HTMLElement).style.color =
+                                      "#eb2f96";
+                                }}
+                                onClick={(e) => {
+                                  // 該当するcreatorEventのIDを取得
+                                  const creatorEvent =
+                                    event?.creatorEvents?.find(
+                                      (ce) => ce.creator.id === creator.id
+                                    );
+                                  if (creatorEvent) {
+                                    mutateResponseCreatorEvent({
+                                      creatorEventId: creatorEvent.id,
+                                      acceptStatus: AcceptStatus.REJECTED,
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
                       </Card>
                     ))}
@@ -399,35 +620,47 @@ const EventDetailPage: React.FC = () => {
             </div>
           </Card>
         )}
-        <Row gutter={[24, 24]}>
+        <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]}>
           {/* メイン情報 */}
           <Col xs={24} lg={16}>
             <Card>
               {/* イベント画像エリア */}
               <div
                 style={{
-                  height: "400px",
+                  height: isMobile ? "250px" : "400px",
                   backgroundColor: "#f5f5f5",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: "8px",
-                  marginBottom: "24px",
+                  marginBottom: isMobile ? "16px" : "24px",
                 }}
               >
-                <CalendarOutlined style={{ fontSize: "64px", color: "#ccc" }} />
+                <CalendarOutlined
+                  style={{
+                    fontSize: isMobile ? "48px" : "64px",
+                    color: "#ccc",
+                  }}
+                />
               </div>
 
               <div>
-                <Title level={3}>イベント詳細</Title>
+                <Title level={isMobile ? 4 : 3}>イベント詳細</Title>
                 <Space
                   direction="vertical"
-                  size="middle"
+                  size={isMobile ? "small" : "middle"}
                   style={{ width: "100%" }}
                 >
                   <div>
                     <Text strong>イベント名:</Text>
-                    <Text style={{ marginLeft: "8px", fontSize: "18px" }}>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "16px" : "18px",
+                        display: isMobile ? "block" : "inline",
+                        marginTop: isMobile ? "4px" : "0",
+                      }}
+                    >
                       {event.title}
                     </Text>
                   </div>
@@ -435,7 +668,13 @@ const EventDetailPage: React.FC = () => {
                   {event.description && (
                     <div>
                       <Text strong>説明:</Text>
-                      <Paragraph style={{ marginTop: "8px", marginBottom: 0 }}>
+                      <Paragraph
+                        style={{
+                          marginTop: "8px",
+                          marginBottom: 0,
+                          fontSize: isMobile ? "14px" : "inherit",
+                        }}
+                      >
                         {event.description}
                       </Paragraph>
                     </div>
@@ -444,13 +683,13 @@ const EventDetailPage: React.FC = () => {
                   <Divider />
 
                   {/* 開催情報 */}
-                  <Row gutter={[16, 16]}>
+                  <Row gutter={[isMobile ? 8 : 16, isMobile ? 8 : 16]}>
                     <Col xs={24} sm={12}>
                       <Card size="small">
                         <div style={{ textAlign: "center" }}>
                           <CalendarOutlined
                             style={{
-                              fontSize: "24px",
+                              fontSize: isMobile ? "20px" : "24px",
                               color: "#1890ff",
                               marginBottom: "8px",
                             }}
@@ -460,7 +699,7 @@ const EventDetailPage: React.FC = () => {
                             <div>
                               <Text
                                 style={{
-                                  fontSize: "16px",
+                                  fontSize: isMobile ? "14px" : "16px",
                                   fontWeight: "bold",
                                 }}
                               >
@@ -476,7 +715,7 @@ const EventDetailPage: React.FC = () => {
                         <div style={{ textAlign: "center" }}>
                           <ClockCircleOutlined
                             style={{
-                              fontSize: "24px",
+                              fontSize: isMobile ? "20px" : "24px",
                               color: "#52c41a",
                               marginBottom: "8px",
                             }}
@@ -486,7 +725,7 @@ const EventDetailPage: React.FC = () => {
                             <div>
                               <Text
                                 style={{
-                                  fontSize: "16px",
+                                  fontSize: isMobile ? "14px" : "16px",
                                   fontWeight: "bold",
                                 }}
                               >
@@ -504,22 +743,55 @@ const EventDetailPage: React.FC = () => {
 
                   {/* 会場情報 */}
                   <div>
-                    <Title level={4}>会場情報</Title>
+                    <Title level={isMobile ? 5 : 4}>会場情報</Title>
                     <Card size="small" style={{ marginTop: "12px" }}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexDirection: isMobile ? "column" : "row",
+                          textAlign: isMobile ? "center" : "left",
+                          gap: isMobile ? "12px" : "0",
+                        }}
+                      >
                         {event.venue.imageUrl ? (
-                          <Avatar size={60} src={event.venue.imageUrl} />
+                          <Avatar
+                            size={isMobile ? 50 : 60}
+                            src={event.venue.imageUrl}
+                          />
                         ) : (
-                          <Avatar size={60} icon={<EnvironmentOutlined />} />
+                          <Avatar
+                            size={isMobile ? 50 : 60}
+                            icon={<EnvironmentOutlined />}
+                          />
                         )}
-                        <div style={{ marginLeft: "16px", flex: 1 }}>
-                          <Title level={5} style={{ margin: 0 }}>
+                        <div
+                          style={{
+                            marginLeft: isMobile ? "0" : "16px",
+                            flex: 1,
+                          }}
+                        >
+                          <Title
+                            level={5}
+                            style={{
+                              margin: 0,
+                              fontSize: isMobile ? "14px" : "16px",
+                            }}
+                          >
                             {event.venue.name}
                           </Title>
-                          <Text type="secondary">{event.venue.address}</Text>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: isMobile ? "12px" : "14px" }}
+                          >
+                            {event.venue.address}
+                          </Text>
                           {event.venue.capacity && (
                             <div style={{ marginTop: "4px" }}>
-                              <Text type="secondary">
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: isMobile ? "12px" : "14px" }}
+                              >
                                 定員: {event.venue.capacity}人
                               </Text>
                             </div>
@@ -527,9 +799,14 @@ const EventDetailPage: React.FC = () => {
                         </div>
                         <Button
                           type="link"
+                          size={isMobile ? "small" : "middle"}
                           onClick={() =>
                             router.push(`/venues/${event.venue.id}`)
                           }
+                          style={{
+                            marginTop: isMobile ? "8px" : "0",
+                            fontSize: isMobile ? "12px" : "14px",
+                          }}
                         >
                           会場詳細を見る
                         </Button>
@@ -541,12 +818,15 @@ const EventDetailPage: React.FC = () => {
 
                   {/* 参加クリエイター */}
                   <div>
-                    <Title level={4}>参加クリエイター</Title>
+                    <Title level={isMobile ? 5 : 4}>参加クリエイター</Title>
                     {event.creatorEvents.filter(
                       (creatorEvent) =>
                         creatorEvent.acceptStatus === AcceptStatus.ACCEPTED
                     ).length > 0 ? (
-                      <Row gutter={[16, 16]} style={{ marginTop: "12px" }}>
+                      <Row
+                        gutter={[isMobile ? 8 : 16, isMobile ? 8 : 16]}
+                        style={{ marginTop: "12px" }}
+                      >
                         {event.creatorEvents
                           .filter(
                             (creatorEvent) =>
@@ -559,13 +839,13 @@ const EventDetailPage: React.FC = () => {
                                 <div style={{ textAlign: "center" }}>
                                   {creatorEvent.creator.imageUrl ? (
                                     <Avatar
-                                      size={60}
+                                      size={isMobile ? 50 : 60}
                                       src={creatorEvent.creator.imageUrl}
                                       icon={<UserOutlined />}
                                     />
                                   ) : (
                                     <Avatar
-                                      size={60}
+                                      size={isMobile ? 50 : 60}
                                       icon={<UserOutlined />}
                                       style={{
                                         backgroundColor: "#f0f0f0",
@@ -574,20 +854,29 @@ const EventDetailPage: React.FC = () => {
                                     />
                                   )}
                                   <div style={{ marginTop: "8px" }}>
-                                    <Text strong>
+                                    <Text
+                                      strong
+                                      style={{
+                                        fontSize: isMobile ? "14px" : "16px",
+                                      }}
+                                    >
                                       {creatorEvent.creator.name}
                                     </Text>
                                     {creatorEvent.creator.description && (
                                       <div style={{ marginTop: "4px" }}>
                                         <Text
                                           type="secondary"
-                                          style={{ fontSize: "12px" }}
+                                          style={{
+                                            fontSize: isMobile
+                                              ? "11px"
+                                              : "12px",
+                                          }}
                                         >
                                           {creatorEvent.creator.description
-                                            .length > 50
+                                            .length > (isMobile ? 30 : 50)
                                             ? `${creatorEvent.creator.description.substring(
                                                 0,
-                                                50
+                                                isMobile ? 30 : 50
                                               )}...`
                                             : creatorEvent.creator.description}
                                         </Text>
@@ -602,6 +891,9 @@ const EventDetailPage: React.FC = () => {
                                         `/creators/${creatorEvent.creator.id}`
                                       )
                                     }
+                                    style={{
+                                      fontSize: isMobile ? "12px" : "14px",
+                                    }}
                                   >
                                     詳細を見る
                                   </Button>
@@ -614,17 +906,23 @@ const EventDetailPage: React.FC = () => {
                       <div
                         style={{
                           textAlign: "center",
-                          padding: "24px",
+                          padding: isMobile ? "16px" : "24px",
                           backgroundColor: "#f5f5f5",
                           borderRadius: "8px",
                           marginTop: "12px",
                         }}
                       >
                         <TeamOutlined
-                          style={{ fontSize: "32px", color: "#ccc" }}
+                          style={{
+                            fontSize: isMobile ? "24px" : "32px",
+                            color: "#ccc",
+                          }}
                         />
                         <div style={{ marginTop: "8px" }}>
-                          <Text type="secondary">
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: isMobile ? "12px" : "14px" }}
+                          >
                             参加クリエイターはまだいません
                           </Text>
                         </div>
@@ -638,7 +936,11 @@ const EventDetailPage: React.FC = () => {
 
           {/* サイドバー情報 */}
           <Col xs={24} lg={8}>
-            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Space
+              direction="vertical"
+              size={isMobile ? "small" : "middle"}
+              style={{ width: "100%" }}
+            >
               {/* 基本情報カード */}
               <Card title="イベント情報" size="small">
                 <Space
@@ -647,42 +949,114 @@ const EventDetailPage: React.FC = () => {
                   style={{ width: "100%" }}
                 >
                   <div>
-                    <Text type="secondary">イベントID:</Text>
-                    <Text style={{ marginLeft: "8px" }}>{event.id}</Text>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      イベントID:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
+                      {event.id}
+                    </Text>
                   </div>
                   <div>
-                    <Text type="secondary">開始日時:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      開始日時:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {formatDate(event.startDate)}
                     </Text>
                   </div>
                   <div>
-                    <Text type="secondary">終了日時:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      終了日時:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {formatDate(event.endDate)}
                     </Text>
                   </div>
                   <div>
-                    <Text type="secondary">会場:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      会場:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {event.venue.name}
                     </Text>
                   </div>
                   <div>
-                    <Text type="secondary">参加クリエイター数:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      参加クリエイター数:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {event.creatorEvents.length}人
                     </Text>
                   </div>
                   <div>
-                    <Text type="secondary">登録日:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      登録日:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {new Date(event.createdAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </div>
                   <div>
-                    <Text type="secondary">最終更新:</Text>
-                    <Text style={{ marginLeft: "8px" }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: isMobile ? "12px" : "14px" }}
+                    >
+                      最終更新:
+                    </Text>
+                    <Text
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: isMobile ? "12px" : "14px",
+                      }}
+                    >
                       {new Date(event.updatedAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </div>
@@ -700,7 +1074,12 @@ const EventDetailPage: React.FC = () => {
                     type="primary"
                     block
                     icon={<CalendarOutlined />}
-                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                    style={{
+                      backgroundColor: anBlue,
+                      borderColor: anBlue,
+                      height: isMobile ? "40px" : "32px",
+                      fontSize: isMobile ? "14px" : "14px",
+                    }}
                   >
                     参加申し込み
                   </Button>
@@ -708,11 +1087,23 @@ const EventDetailPage: React.FC = () => {
                     block
                     type="primary"
                     icon={<EnvironmentOutlined />}
-                    style={{ backgroundColor: anBlue, borderColor: anBlue }}
+                    style={{
+                      backgroundColor: anBlue,
+                      borderColor: anBlue,
+                      height: isMobile ? "40px" : "32px",
+                      fontSize: isMobile ? "14px" : "14px",
+                    }}
                   >
                     会場詳細を見る
                   </Button>
-                  <Button block icon={<TeamOutlined />}>
+                  <Button
+                    block
+                    icon={<TeamOutlined />}
+                    style={{
+                      height: isMobile ? "40px" : "32px",
+                      fontSize: isMobile ? "14px" : "14px",
+                    }}
+                  >
                     クリエイター一覧
                   </Button>
                 </Space>
@@ -725,36 +1116,60 @@ const EventDetailPage: React.FC = () => {
                     <div>
                       <Tag
                         color="green"
-                        style={{ fontSize: "14px", padding: "4px 12px" }}
+                        style={{
+                          fontSize: isMobile ? "12px" : "14px",
+                          padding: isMobile ? "2px 8px" : "4px 12px",
+                        }}
                       >
                         開催予定
                       </Tag>
                       <div style={{ marginTop: "8px" }}>
-                        <Text type="secondary">このイベントは開催予定です</Text>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: isMobile ? "12px" : "14px" }}
+                        >
+                          このイベントは開催予定です
+                        </Text>
                       </div>
                     </div>
                   ) : scheduleStatus === "past" ? (
                     <div>
                       <Tag
                         color="red"
-                        style={{ fontSize: "14px", padding: "4px 12px" }}
+                        style={{
+                          fontSize: isMobile ? "12px" : "14px",
+                          padding: isMobile ? "2px 8px" : "4px 12px",
+                        }}
                       >
                         開催済み
                       </Tag>
                       <div style={{ marginTop: "8px" }}>
-                        <Text type="secondary">このイベントは終了しました</Text>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: isMobile ? "12px" : "14px" }}
+                        >
+                          このイベントは終了しました
+                        </Text>
                       </div>
                     </div>
                   ) : (
                     <div>
                       <Tag
                         color="orange"
-                        style={{ fontSize: "14px", padding: "4px 12px" }}
+                        style={{
+                          fontSize: isMobile ? "12px" : "14px",
+                          padding: isMobile ? "2px 8px" : "4px 12px",
+                        }}
                       >
                         開催中
                       </Tag>
                       <div style={{ marginTop: "8px" }}>
-                        <Text type="secondary">このイベントは開催中です</Text>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: isMobile ? "12px" : "14px" }}
+                        >
+                          このイベントは開催中です
+                        </Text>
                       </div>
                     </div>
                   )}

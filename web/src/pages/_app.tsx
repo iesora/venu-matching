@@ -112,8 +112,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
             components: {
               Menu: {
                 activeBarHeight: 2,
-                itemSelectedColor: themeColorDeep,
                 horizontalItemSelectedColor: themeColorDeep,
+                // horizontalItemSelectedColor: "#000",
                 horizontalItemHoverColor: themeColorDeep,
               },
               Tabs: {

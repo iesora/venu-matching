@@ -40,6 +40,7 @@ const VenueDetailPage: React.FC = () => {
   } = useAPIGetVenueById(id as string);
   const [modalVisible, setModalVisible] = useState(false);
   const [user, setUser] = useState<User | undefined>(undefined);
+  const [isMobile, setIsMobile] = useState(false);
   const { mutate: mutateAuthenticate } = useAPIAuthenticate({
     onSuccess: (user) => {
       setUser(user);
@@ -50,6 +51,27 @@ const VenueDetailPage: React.FC = () => {
       refetch();
     },
   });
+  // レスポンシブ対応：ウィンドウ幅が 500px 以下の場合はモバイル表示
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 500) {
+        setIsMobile(true);
+      } else if (window.innerWidth <= 940) {
+        setIsMobile(false);
+      } else {
+        setIsMobile(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // 初回チェック
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   useEffect(() => {
     mutateAuthenticate();
   }, []);
@@ -121,9 +143,11 @@ const VenueDetailPage: React.FC = () => {
           >
             戻る
           </Button>
-          <Title level={2} style={{ margin: 0, flex: 1 }}>
-            {venue.name}
-          </Title>
+          {!isMobile && (
+            <Title level={2} style={{ margin: 0, flex: 1 }}>
+              {venue.name}
+            </Title>
+          )}
           {venue.user.id === user?.id && (
             <div style={{ display: "flex", gap: "8px" }}>
               <Button

@@ -1,5 +1,10 @@
 import { Layout, Menu, MenuProps } from "antd";
-import { themeColor, themeColorDeep } from "@/utils/colors";
+import {
+  themeColor,
+  themeColorDeep,
+  themeColorSuperLight,
+  themeColorSuperSuperLight,
+} from "@/utils/colors";
 import { HomeOutlined } from "@ant-design/icons";
 import { CalendarOutlined } from "@ant-design/icons";
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -59,7 +64,7 @@ const Header = ({ withBottombar }: HeaderProps) => {
   return (
     <AntdHeader
       style={{
-        backgroundColor: themeColor,
+        backgroundColor: themeColorSuperLight,
         height: withBottombar ? 60 : 80,
         lineHeight: withBottombar ? "60px" : "80px",
         display: "flex",
@@ -70,6 +75,7 @@ const Header = ({ withBottombar }: HeaderProps) => {
         paddingRight: "5%",
         width: "100%",
         borderBottom: "1px solid #e0e0e0",
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
         position: "fixed",
         top: 0,
         left: 0,
@@ -79,7 +85,7 @@ const Header = ({ withBottombar }: HeaderProps) => {
       className="header"
     >
       <img
-        src={"/vmlogo.png"}
+        src={"/vmLogo_removedBg.png"}
         alt="logo"
         style={{
           marginRight: "10%",
@@ -98,7 +104,7 @@ const Header = ({ withBottombar }: HeaderProps) => {
             style={{
               flex: 1,
               justifyContent: "right",
-              backgroundColor: themeColor,
+              backgroundColor: themeColorSuperLight,
             }}
           />
         </div>

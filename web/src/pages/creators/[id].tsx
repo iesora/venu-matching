@@ -28,7 +28,7 @@ import PageLayout from "@/components/common/PageLayout";
 import CreatorModal from "@/components/Modal/CreatorModal";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { User } from "@/type";
-import { anBlue } from "@/utils/colors";
+import { anBlue, themeColorSuperLight } from "@/utils/colors";
 import { useEffect } from "react";
 import { useAPIDeleteCreator } from "@/hook/api/creator/useAPIDeleteCreator";
 const { Title, Text, Paragraph } = Typography;
@@ -42,6 +42,28 @@ const CreatorDetailPage: React.FC = () => {
       setUser(user);
     },
   });
+  //   const [isBottombarOpen, setIsBottombarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  // レスポンシブ対応：ウィンドウ幅が 767px 以下の場合は Sidebar を閉じる
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 500) {
+        setIsMobile(true);
+      } else if (window.innerWidth <= 940) {
+        setIsMobile(false);
+      } else {
+        setIsMobile(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // 初回チェック
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   const { mutate: mutateDeleteCreator } = useAPIDeleteCreator({
     onSuccess: () => {
       router.push("/creators");
@@ -131,13 +153,18 @@ const CreatorDetailPage: React.FC = () => {
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => router.back()}
-            style={{ marginRight: "16px" }}
+            style={{
+              marginRight: "16px",
+              backgroundColor: themeColorSuperLight,
+            }}
           >
             戻る
           </Button>
-          <Title level={2} style={{ margin: 0, flex: 1 }}>
-            {creator.name}
-          </Title>
+          {!isMobile && (
+            <Title level={2} style={{ margin: 0, flex: 1 }}>
+              {creator.name}
+            </Title>
+          )}
           {creator.user.id === user?.id && (
             <div style={{ display: "flex", gap: "8px" }}>
               <Button

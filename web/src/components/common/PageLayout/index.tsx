@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { Layout, theme } from "antd";
 import Header from "@/components/Header";
-import { pageColor } from "@/utils/colors";
+import { pageColor, themeColorSuperLight } from "@/utils/colors";
 import Bottombar from "./Bottombar";
 
 const { Content, Header: AntdHeader } = Layout;
@@ -50,6 +50,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           marginBlockStart: 0,
           backgroundColor: pageColor,
           marginTop: isBottombarOpen ? 60 : 80,
+          marginBottom: isBottombarOpen ? 60 : 0,
         }}
       >
         {isBottombarOpen && (

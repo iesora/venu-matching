@@ -7,6 +7,7 @@ export const themeColor = "#F5F0EF";
 export const themeColorLight = "#FAF5F3";
 //入力欄背景
 export const themeColorSuperLight = "#FFFAF9";
+export const themeColorSuperSuperLight = "#fffdfc";
 //ヘッダーアクティブタブ背景
 export const themeColorDeep = "#D5C0AA";
 //artNowの基本色

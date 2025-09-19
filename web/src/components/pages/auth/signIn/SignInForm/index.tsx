@@ -63,7 +63,8 @@ const SignInForm = () => {
       <div style={{ backgroundColor: themeColor, height: "100vh" }}>
         <div
           style={{
-            maxWidth: "510px",
+            width: "510px",
+            maxWidth: "85%",
             marginLeft: "auto",
             marginRight: "auto",
             padding: "100px 0 100px",
@@ -94,6 +95,8 @@ const SignInForm = () => {
                 borderRadius: "10px",
                 marginBottom: "20px",
                 boxShadow: "0px 1px 12px 1px rgba(0,0,0,0.05)",
+                // width: "490px",
+                // maxWidth: "80%",
               }}
               className="bg-black"
             >

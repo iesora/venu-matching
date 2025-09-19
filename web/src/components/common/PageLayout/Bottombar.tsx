@@ -8,7 +8,12 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import React from "react";
-import { themeColor, themeColorDeep, anRed } from "@/utils/colors";
+import {
+  themeColor,
+  themeColorDeep,
+  anRed,
+  themeColorSuperLight,
+} from "@/utils/colors";
 
 const Bottombar: React.FC = () => {
   const router = useRouter();
@@ -43,7 +48,9 @@ const Bottombar: React.FC = () => {
   const activeStyle: React.CSSProperties = {
     color: "#fff",
     backgroundColor: themeColorDeep,
+    // backgroundColor: "#000",
     borderBottom: `2px solid ${themeColorDeep}`,
+    // borderBottom: `2px solid #000`,
   };
 
   return (
@@ -52,9 +59,9 @@ const Bottombar: React.FC = () => {
         display: "flex",
         justifyContent: "space-between",
         marginBottom: "16px",
-        backgroundColor: themeColor,
+        backgroundColor: themeColorSuperLight,
         height: "60px",
-        boxShadow: "0px -2px 8px rgba(0, 0, 0, 0.05)",
+        boxShadow: "0px -2px 8px rgba(30, 28, 28, 0.05)",
       }}
     >
       <div

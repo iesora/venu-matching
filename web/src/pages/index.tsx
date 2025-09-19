@@ -470,9 +470,6 @@ const MyPage: React.FC = () => {
   return (
     <PageLayout>
       <div style={{ padding: "24px" }}>
-        <Title level={2}>マイページ</Title>
-        <Divider />
-
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="概要" key="overview">
             {renderOverviewTab()}

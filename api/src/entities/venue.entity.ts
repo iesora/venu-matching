@@ -23,11 +23,24 @@ export class Venue {
   @Column({ type: "varchar", length: 500, name: "address", nullable: true })
   address: string;
 
-  @Column({ type: "varchar", length: 255, name: "latitude", nullable: true })
-  latitude: string;
+  // 緯度経度カラムを追加
+  @Column({
+    type: "decimal",
+    precision: 10,
+    scale: 8,
+    name: "latitude",
+    nullable: true,
+  })
+  latitude: number;
 
-  @Column({ type: "varchar", length: 255, name: "longitude", nullable: true })
-  longitude: string;
+  @Column({
+    type: "decimal",
+    precision: 11,
+    scale: 8,
+    name: "longitude",
+    nullable: true,
+  })
+  longitude: number;
 
   @Column({ type: "varchar", length: 20, name: "tel", nullable: true })
   tel: string;

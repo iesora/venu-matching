@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'event/eventDetail.dart'; // イベント詳細画面のインポート
 
 class HomeScreen extends HookWidget {
@@ -17,6 +18,13 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final events = useState<List<dynamic>>([]);
+    final currentCameraPosition = useState<CameraPosition>(
+      const CameraPosition(
+        target: LatLng(35.681236, 139.767125),
+        zoom: 14.0,
+      ),
+    );
+    final mapController = useRef<GoogleMapController?>(null);
 
     useEffect(() {
       Future.microtask(() async {
@@ -53,6 +61,42 @@ class HomeScreen extends HookWidget {
           onStatus: (status) => print('Status: $status'),
           onError: (error) => print('Error: $error'),
         );
+      });
+      return;
+    }, []);
+
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+          if (!serviceEnabled) {
+            // 位置情報サービスが無効の場合は何もしない（初期値を維持）
+            return;
+          }
+
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.denied ||
+              permission == LocationPermission.deniedForever) {
+            // 権限が無い場合は初期値を維持
+            return;
+          }
+
+          final position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
+          final target = LatLng(position.latitude, position.longitude);
+          final newCamera = CameraPosition(target: target, zoom: 14.0);
+          currentCameraPosition.value = newCamera;
+          if (mapController.value != null) {
+            await mapController.value!
+                .animateCamera(CameraUpdate.newCameraPosition(newCamera));
+          }
+        } catch (_) {
+          // noop: 現在地取得失敗時は初期値のまま
+        }
       });
       return;
     }, []);
@@ -120,13 +164,14 @@ class HomeScreen extends HookWidget {
             SizedBox(
               height: 400,
               child: GoogleMap(
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(35.681236, 139.767125),
-                  zoom: 14.0,
-                ),
+                initialCameraPosition: currentCameraPosition.value,
                 markers: markers,
-                myLocationButtonEnabled: false,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
                 zoomControlsEnabled: false,
+                onMapCreated: (controller) {
+                  mapController.value = controller;
+                },
               ),
             ),
             Expanded(

@@ -10,7 +10,11 @@ import "@/styles/pages/Header.scss";
 
 const { Header: AntdHeader } = Layout;
 
-const Header = () => {
+type HeaderProps = {
+  withBottombar: boolean;
+};
+
+const Header = ({ withBottombar }: HeaderProps) => {
   const router = useRouter();
   const currentPath = router.pathname || "/";
 
@@ -56,12 +60,14 @@ const Header = () => {
     <AntdHeader
       style={{
         backgroundColor: themeColor,
-        height: 80,
-        lineHeight: "80px",
+        height: withBottombar ? 60 : 80,
+        lineHeight: withBottombar ? "60px" : "80px",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: withBottombar ? "flex-start" : "space-between",
+        paddingLeft: "5%",
+        paddingRight: "5%",
         width: "100%",
         borderBottom: "1px solid #e0e0e0",
         position: "fixed",
@@ -72,21 +78,31 @@ const Header = () => {
       }}
       className="header"
     >
-      <img src={"/vmlogo.png"} alt="logo" style={{ width: 95, height: 80 }} />
+      <img
+        src={"/vmlogo.png"}
+        alt="logo"
+        style={{
+          marginRight: "10%",
+          width: withBottombar ? 71 : 95,
+          height: withBottombar ? 60 : 80,
+        }}
+      />
 
-      <div style={{ width: "80%", overflowX: "auto" }}>
-        <Menu
-          mode="horizontal"
-          selectedKeys={[currentPath]}
-          onClick={handleMenuClick}
-          items={menuItems}
-          style={{
-            flex: 1,
-            justifyContent: "right",
-            backgroundColor: themeColor,
-          }}
-        />
-      </div>
+      {!withBottombar && (
+        <div style={{ width: "90%" }}>
+          <Menu
+            mode="horizontal"
+            selectedKeys={[currentPath]}
+            onClick={handleMenuClick}
+            items={menuItems}
+            style={{
+              flex: 1,
+              justifyContent: "right",
+              backgroundColor: themeColor,
+            }}
+          />
+        </div>
+      )}
     </AntdHeader>
   );
 };

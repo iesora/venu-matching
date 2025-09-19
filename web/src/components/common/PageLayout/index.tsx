@@ -22,7 +22,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
       if (window.innerWidth <= 500) {
         setIsBottombarOpen(true);
         setIsMobile(true);
-      } else if (window.innerWidth <= 767) {
+      } else if (window.innerWidth <= 940) {
         setIsBottombarOpen(true);
         setIsMobile(false);
       } else {
@@ -44,12 +44,12 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const bottombarHeight = 60;
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      {!isBottombarOpen && <Header />}
+      <Header withBottombar={isBottombarOpen} />
       <Layout
         style={{
           marginBlockStart: 0,
           backgroundColor: pageColor,
-          marginTop: isBottombarOpen ? 0 : 80,
+          marginTop: isBottombarOpen ? 60 : 80,
         }}
       >
         {isBottombarOpen && (

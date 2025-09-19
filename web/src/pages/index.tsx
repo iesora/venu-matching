@@ -256,8 +256,7 @@ const MyPage: React.FC = () => {
                     </Text>
                   </div>
                   <Button
-                    size="small"
-                    icon={<EyeOutlined />}
+                    size="middle"
                     onClick={() => router.push(`/venues/${venue.id}`)}
                     style={{ backgroundColor: anGray }}
                   >
@@ -310,8 +309,7 @@ const MyPage: React.FC = () => {
                       </Text>
                     </div>
                     <Button
-                      size="small"
-                      icon={<EyeOutlined />}
+                      size="middle"
                       onClick={() => router.push(`/creators/${creator.id}`)}
                       style={{ backgroundColor: anGray }}
                     >

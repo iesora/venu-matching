@@ -1,11 +1,10 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { Layout, theme } from "antd";
-import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { pageColor } from "@/utils/colors";
 import Bottombar from "./Bottombar";
 
-const { Content, Footer, Header: AntdHeader } = Layout;
+const { Content, Header: AntdHeader } = Layout;
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -16,11 +15,19 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [isBottombarOpen, setIsBottombarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   // レスポンシブ対応：ウィンドウ幅が 767px 以下の場合は Sidebar を閉じる
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 767) {
+      if (window.innerWidth <= 500) {
         setIsBottombarOpen(true);
+        setIsMobile(true);
+      } else if (window.innerWidth <= 767) {
+        setIsBottombarOpen(true);
+        setIsMobile(false);
+      } else {
+        setIsBottombarOpen(false);
+        setIsMobile(false);
       }
     };
 
@@ -61,12 +68,12 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
             <Bottombar />
           </AntdHeader>
         )}
-        <Content style={{ margin: "16px 16px" }}>
+        <Content style={{ margin: isMobile ? "16px 0px" : "16px 16px" }}>
           <div
             style={{
               background: pageColor,
               minHeight: 280,
-              padding: 24,
+              padding: isBottombarOpen ? 0 : 24,
               borderRadius: borderRadiusLG,
             }}
           >

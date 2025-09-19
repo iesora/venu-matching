@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Layout, Menu, MenuProps, Button } from "antd";
+import { MenuProps } from "antd";
 import {
   HomeOutlined,
   CalendarOutlined,
@@ -8,7 +8,7 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import React from "react";
-import { themeColor, anBlue } from "@/utils/colors";
+import { themeColor, themeColorDeep, anRed } from "@/utils/colors";
 
 const Bottombar: React.FC = () => {
   const router = useRouter();
@@ -41,8 +41,9 @@ const Bottombar: React.FC = () => {
 
   // アクティブなボタンに適用するスタイル
   const activeStyle: React.CSSProperties = {
-    backgroundColor: "#f0f0f0",
-    borderBottom: `2px solid ${anBlue}`,
+    color: "#fff",
+    backgroundColor: themeColorDeep,
+    borderBottom: `2px solid ${themeColorDeep}`,
   };
 
   return (
@@ -173,7 +174,7 @@ const Bottombar: React.FC = () => {
           style={{
             display: "flex",
             alignItems: "center",
-            color: "red",
+            color: anRed,
             height: "20px",
           }}
         />
@@ -183,7 +184,7 @@ const Bottombar: React.FC = () => {
             alignItems: "center",
             fontSize: "11px",
             fontWeight: "bold",
-            color: "red",
+            color: anRed,
             height: "20px",
           }}
         >

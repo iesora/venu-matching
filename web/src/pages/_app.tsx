@@ -43,33 +43,43 @@ const AuthProvider: React.FC<{
       // 認証エラーの場合
       console.log("Authentication error:", error);
       console.log("Auth check - Current path:", router.pathname);
-      router.push("/auth/sign-in");
-      // トークンをクリア
-      localStorage.removeItem("userToken");
-      setUser(undefined);
-      initializeAuth();
+      if (router.pathname !== "/auth/sign-in") {
+        router.push("/auth/sign-in");
+        // トークンをクリア
+        localStorage.removeItem("userToken");
+        setUser(undefined);
+        initializeAuth();
+      }
     },
   });
   useEffect(() => {
     // ベーシック認証
-    const basicAuth = () => {
-      const auth = localStorage.getItem("basicAuth");
-      if (!auth) {
-        const username = prompt("ユーザー名を入力してください:");
-        const password = prompt("パスワードを入力してください:");
-        if (username === "admin" && password === "password") {
-          localStorage.setItem("basicAuth", "authenticated");
-        } else {
-          alert("認証に失敗しました。再試行してください。");
-          basicAuth();
-        }
-      }
-    };
-    basicAuth();
+    // const basicAuth = () => {
+    //   const auth = localStorage.getItem("basicAuth");
+    //   if (!auth) {
+    //     const username = prompt("ユーザー名を入力してください:");
+    //     const password = prompt("パスワードを入力してください:");
+    //     if (username === "admin" && password === "password") {
+    //       localStorage.setItem("basicAuth", "authenticated");
+    //     } else {
+    //       alert("認証に失敗しました。再試行してください。");
+    //       basicAuth();
+    //     }
+    //   }
+    // };
+    // basicAuth();
     // userTokenがあるときだけ認証APIを呼ぶ
     if (localStorage.getItem("userToken")) {
+      console.log("userToken is exists");
       mutateAuthenticate();
     } else {
+      console.log("userToken is not exists");
+      if (
+        router.pathname !== "/auth/sign-in" &&
+        router.pathname !== "/auth/sign-up"
+      ) {
+        router.push("/auth/sign-in");
+      }
       setUser(undefined);
       initializeAuth();
     }
@@ -106,60 +116,60 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <RecoilRoot>
-        {/* <AuthProvider> */}
-        <ConfigProvider
-          theme={{
-            components: {
-              Menu: {
-                activeBarHeight: 2,
-                horizontalItemSelectedColor: themeColorDeep,
-                // horizontalItemSelectedColor: "#000",
-                horizontalItemHoverColor: themeColorDeep,
+        <AuthProvider>
+          <ConfigProvider
+            theme={{
+              components: {
+                Menu: {
+                  activeBarHeight: 2,
+                  horizontalItemSelectedColor: themeColorDeep,
+                  // horizontalItemSelectedColor: "#000",
+                  horizontalItemHoverColor: themeColorDeep,
+                },
+                Tabs: {
+                  itemHoverColor: "#000",
+                  inkBarColor: "#000",
+                  itemActiveColor: "#000",
+                  itemSelectedColor: "#000",
+                },
+                Modal: {
+                  contentBg: themeColor,
+                  headerBg: themeColor,
+                },
+                Input: {
+                  colorBgContainer: themeColorSuperLight,
+                  activeBorderColor: "#000",
+                  hoverBorderColor: "#000",
+                  activeShadow: "#000",
+                },
+                InputNumber: {
+                  colorBgContainer: themeColorLight,
+                  activeBorderColor: "#000",
+                  hoverBorderColor: "#000",
+                  activeShadow: "#000",
+                },
+                Table: {
+                  // bodySortBg: themeColorLight,
+                  headerBg: themeColorDeep, // ヘッダー行の背景
+                  headerColor: themeColor, // ヘッダー文字色
+                  rowHoverBg: themeColorLight, // hover 時の行背景
+                  rowSelectedBg: themeColor, // 選択時の行背景
+                  rowSelectedHoverBg: themeColor, // 選択時の行背景
+                },
+                Checkbox: {
+                  colorPrimaryHover: themeColor,
+                  colorPrimary: themeColorDeep,
+                },
+                Radio: {
+                  colorPrimaryHover: themeColor,
+                  colorPrimary: themeColorDeep,
+                },
               },
-              Tabs: {
-                itemHoverColor: "#000",
-                inkBarColor: "#000",
-                itemActiveColor: "#000",
-                itemSelectedColor: "#000",
-              },
-              Modal: {
-                contentBg: themeColor,
-                headerBg: themeColor,
-              },
-              Input: {
-                colorBgContainer: themeColorSuperLight,
-                activeBorderColor: "#000",
-                hoverBorderColor: "#000",
-                activeShadow: "#000",
-              },
-              InputNumber: {
-                colorBgContainer: themeColorLight,
-                activeBorderColor: "#000",
-                hoverBorderColor: "#000",
-                activeShadow: "#000",
-              },
-              Table: {
-                // bodySortBg: themeColorLight,
-                headerBg: themeColorDeep, // ヘッダー行の背景
-                headerColor: themeColor, // ヘッダー文字色
-                rowHoverBg: themeColorLight, // hover 時の行背景
-                rowSelectedBg: themeColor, // 選択時の行背景
-                rowSelectedHoverBg: themeColor, // 選択時の行背景
-              },
-              Checkbox: {
-                colorPrimaryHover: themeColor,
-                colorPrimary: themeColorDeep,
-              },
-              Radio: {
-                colorPrimaryHover: themeColor,
-                colorPrimary: themeColorDeep,
-              },
-            },
-          }}
-        >
-          <Component {...pageProps} />
-        </ConfigProvider>
-        {/* </AuthProvider> */}
+            }}
+          >
+            <Component {...pageProps} />
+          </ConfigProvider>
+        </AuthProvider>
       </RecoilRoot>
     </QueryClientProvider>
   );

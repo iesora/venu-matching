@@ -606,17 +606,10 @@ class _ThreadDetailScreenState extends State<ThreadDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
           '${_threadData?["title"] ?? "スレッド詳細"}',
-          style: const TextStyle(
-            color: Colors.black,
-            fontFamily: 'Noto Sans JP',
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

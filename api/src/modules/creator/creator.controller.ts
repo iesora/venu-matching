@@ -45,6 +45,9 @@ export class CreatorController {
   @Get('user/:userId')
   async getCreatorsByUserId(@Param() params: { userId: number }) {
     return await this.creatorService.getCreatorsByUserId(params.userId);
+    }
+  async getCreators(@Query() query: { userId?: number }) {
+    return await this.creatorService.getCreators(query.userId);
   }
 
   @Get(':id')

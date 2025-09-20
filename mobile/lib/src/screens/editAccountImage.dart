@@ -199,16 +199,10 @@ class _EditAccountImageScreenState extends State<EditAccountImageScreen> {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
           elevation: 1.0,
-          iconTheme: const IconThemeData(color: Colors.black),
-          title: const Text(
+          title: Text(
             'プロフィール画像の編集',
-            style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'Noto Sans JP',
-                fontWeight: FontWeight.bold,
-                fontSize: 14),
+            style: Theme.of(context).appBarTheme.titleTextStyle,
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back), // カスタムの戻るアイコン

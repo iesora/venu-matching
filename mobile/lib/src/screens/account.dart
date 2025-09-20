@@ -162,7 +162,6 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0.0,
         leadingWidth: 140,
@@ -186,7 +185,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     _isUnreadNotifiationExist
                         ? Icons.notifications
                         : Icons.notifications_none,
-                    color: Colors.black),
+                    color: Colors.white),
                 onPressed: () {
                   /**
                   Navigator.push(
@@ -216,7 +215,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: Colors.black),
+            icon: const Icon(Icons.more_horiz, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,

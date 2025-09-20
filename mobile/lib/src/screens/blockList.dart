@@ -152,15 +152,9 @@ class _BlockListScreenState extends State<BlockListScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        title: Text(
           'ブロック中のユーザー',
-          style: TextStyle(
-              color: Colors.black,
-              fontFamily: 'Noto Sans JP',
-              fontWeight: FontWeight.bold,
-              fontSize: 14),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back), // カスタムの戻るアイコン

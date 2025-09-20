@@ -95,15 +95,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        title: Text(
           'イベント作成',
-          style: TextStyle(
-              color: Colors.black,
-              fontFamily: 'Noto Sans JP',
-              fontWeight: FontWeight.bold,
-              fontSize: 14),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

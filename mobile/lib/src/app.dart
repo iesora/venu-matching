@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home.dart';
 import 'screens/ranking.dart';
-import 'screens/event/event_list_screen.dart';
 import 'screens/search.dart';
 import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
 import 'screens/match/matchingList.dart'; // 追加
 import 'screens/qr_scan_screen.dart';
+import 'screens/event/event_list_screen.dart';
 import 'theme/app_theme.dart';
 import 'loginState.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,18 +152,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     if (_userData != null && _userData!['mode'] == 'normal') {
       _screens = [
         HomeScreen(),
-        EventListScreen(),
         RankingScreen(),
         QrScanScreen(),
+        EventListScreen(),
         MyPageScreen(),
       ];
     } else {
       _screens = [
-        //HomeScreen(),
         SearchScreen(), // ダミー（検索タブ用）
         RequestListScreen(),
         MatchingListScreen(), // 追加
-        //QrScanScreen(),
+        EventListScreen(),
         MyPageScreen(),
       ];
     }
@@ -228,16 +227,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               label: 'ホーム',
                               backgroundColor: Colors.black87),
                           BottomNavigationBarItem(
-                              icon: Icon(Icons.event),
-                              label: 'イベント',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
                               icon: Icon(Icons.emoji_events),
                               label: 'ランキング',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
                               icon: Icon(Icons.qr_code_scanner),
                               label: 'QR',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.event),
+                              label: 'イベント',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),
@@ -256,6 +255,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           BottomNavigationBarItem(
                               icon: Icon(Icons.list_alt),
                               label: 'マッチング',
+                              backgroundColor: Colors.white),
+                          BottomNavigationBarItem(
+                              icon: Icon(Icons.event),
+                              label: 'イベント',
                               backgroundColor: Colors.white),
                           BottomNavigationBarItem(
                               icon: Icon(Icons.person_outline),

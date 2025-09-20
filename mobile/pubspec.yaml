@@ -38,7 +38,7 @@ dependencies:
   provider: ^6.0.1
   flutter_dotenv: ^5.0.2
   photo_view: ^0.15.0
-  webview_flutter: ^4.10.0
+  webview_flutter: ^4.13.0
   purchases_flutter: ^8.10.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -65,6 +65,7 @@ dependencies:
   flutter_logs: ^2.2.1
   google_maps_flutter: ^2.13.1
   mobile_scanner: ^7.0.1
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../widgets/web_view_page.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart'; // InAppWebViewを使用するためのインポート
+
+class WebViewPage extends StatelessWidget {
+  final String url;
+
+  const WebViewPage({Key? key, required this.url}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Web View'),
+      ),
+      body: InAppWebView(
+        initialUrlRequest: URLRequest(url: WebUri(url)),
+      ),
+    );
+  }
+}
 
 class EventCreatorsScreen extends StatelessWidget {
   final int eventId;
@@ -37,6 +55,7 @@ class EventCreatorsScreen extends StatelessWidget {
           final String name = creator['name'] ?? '未設定';
           final String? image = creator['imageUrl'];
           final String? description = creator['description'];
+          final String? website = creator['website'];
 
           return Card(
             elevation: 1,
@@ -55,21 +74,18 @@ class EventCreatorsScreen extends StatelessWidget {
                   ? Text(description,
                       maxLines: 2, overflow: TextOverflow.ellipsis)
                   : null,
-              onTap: () {
-                final String? website = (creator['website'] as String?);
-                final String url = (website != null && website.isNotEmpty)
-                    ? website
-                    : 'https://buy.stripe.com/test_bJedRbdvEdLyaLp7YzcIE00';
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WebViewPage(
-                      title: '支払い - $name',
-                      url: url,
-                    ),
-                  ),
-                );
-              },
+              onTap: website != null && website.isNotEmpty
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WebViewPage(
+                              url:
+                                  "https://buy.stripe.com/test_bJedRbdvEdLyaLp7YzcIE00"),
+                        ),
+                      );
+                    }
+                  : null,
             ),
           );
         },

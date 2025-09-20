@@ -687,8 +687,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
         title: GestureDetector(
           onTap: () {
             if (_groupInfo?["otherUser"]?["id"] != null) {

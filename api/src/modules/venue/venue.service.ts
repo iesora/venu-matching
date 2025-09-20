@@ -1,8 +1,8 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Venue } from "../../entities/venue.entity";
-import { User } from "../../entities/user.entity";
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Venue } from '../../entities/venue.entity';
+import { User } from '../../entities/user.entity';
 
 export type CreateVenueRequest = {
   name: string;
@@ -11,13 +11,24 @@ export type CreateVenueRequest = {
   userId: number;
 };
 
+export type UpdateVenueRequest = {
+  name?: string;
+  address?: string;
+  tel?: string;
+  description?: string;
+  capacity?: number;
+  facilities?: string;
+  availableTime?: string;
+  imageUrl?: string;
+};
+
 @Injectable()
 export class VenueService {
   constructor(
     @InjectRepository(Venue)
     private readonly venueRepository: Repository<Venue>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async createVenue(venueData: CreateVenueRequest): Promise<Venue> {
@@ -25,7 +36,7 @@ export class VenueService {
       where: { id: venueData.userId },
     });
     if (!existUser) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     const newVenue = new Venue();
@@ -36,23 +47,40 @@ export class VenueService {
     return await this.venueRepository.save(newVenue);
   }
 
+  async updateVenue(id: number, venueData: UpdateVenueRequest): Promise<Venue> {
+    const existVenue = await this.venueRepository.findOne({
+      where: { id },
+    });
+    if (!existVenue) {
+      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
+    }
+    existVenue.name = venueData.name;
+    existVenue.address = venueData.address;
+    existVenue.tel = venueData.tel;
+    existVenue.description = venueData.description;
+    existVenue.capacity = venueData.capacity;
+    existVenue.facilities = venueData.facilities;
+    existVenue.availableTime = venueData.availableTime;
+    existVenue.imageUrl = venueData.imageUrl;
+    return await this.venueRepository.save(existVenue);
+  }
+
   async getVenues(userId?: number): Promise<Venue[]> {
     const existVenues = await this.venueRepository.find({
-      relations: ["user"],
+      relations: ['user'],
       where: userId ? { user: { id: userId } } : {},
     });
-    console.log(existVenues);
     return existVenues;
   }
 
   async getVenueById(id: number): Promise<Venue> {
     const venue = await this.venueRepository.findOne({
       where: { id },
-      relations: ["user"],
+      relations: ['user'],
     });
 
     if (!venue) {
-      throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
+      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
     }
 
     return venue;

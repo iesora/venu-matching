@@ -10,6 +10,12 @@ import {
 import { Creator } from './creator.entity';
 import { Event } from './event.entity';
 
+export enum AcceptStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}
+
 @Entity({ name: 'creator_event' })
 export class CreatorEvent {
   @PrimaryGeneratedColumn()
@@ -23,8 +29,16 @@ export class CreatorEvent {
   @JoinColumn({ name: 'event_id' })
   event: Event;
 
-  @Column({ type: 'boolean', name: 'acceptFlag', default: false })
-  acceptFlag: boolean;
+  @Column({
+    type: 'enum',
+    enum: AcceptStatus,
+    name: 'acceptStatus',
+    default: AcceptStatus.PENDING,
+  })
+  acceptStatus: AcceptStatus;
+
+  @Column({ type: 'boolean', name: 'delete_flag', default: false })
+  deleteFlag: boolean;
 
   @CreateDateColumn({
     type: 'datetime',

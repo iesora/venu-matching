@@ -46,13 +46,43 @@ class HomeScreen extends HookWidget {
     final text = useState('Press the button to start speaking');
     final answer = useState("");
     final available = useState(false);
-    final markers = <Marker>{
-      const Marker(
-        markerId: MarkerId('tokyo-station'),
-        position: LatLng(35.681236, 139.767125),
-        infoWindow: InfoWindow(title: '東京駅'),
-      ),
-    };
+    double? toDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
+    // イベントの会場位置からマーカー集合を生成
+    final Set<Marker> markers = () {
+      final result = <Marker>{};
+      for (final event in events.value) {
+        final venue = event['venue'];
+        if (venue == null) continue;
+        final double? lat = toDouble(venue['latitude']);
+        final double? lng = toDouble(venue['longitude']);
+        if (lat == null || lng == null) continue;
+        final String id = (event['id']?.toString() ?? UniqueKey().toString());
+        result.add(
+          Marker(
+            markerId: MarkerId('event-$id'),
+            position: LatLng(lat, lng),
+            infoWindow: InfoWindow(
+              title: (event['title'] ?? '').toString(),
+              snippet: (venue['name'] ?? '').toString(),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetailScreen(eventId: event['id']),
+                ),
+              );
+            },
+          ),
+        );
+      }
+      return result;
+    }();
 
     useEffect(() {
       // 音声認識の初期化

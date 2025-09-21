@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,6 +18,12 @@ class EventDetailScreen extends StatefulWidget {
 class _EventDetailScreenState extends State<EventDetailScreen> {
   Map<String, dynamic>? eventDetail;
   bool isLoading = true;
+
+  double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
 
   String _formatDateTime(dynamic value) {
     if (value == null) return '';
@@ -229,6 +236,47 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
+  Widget _buildMapCard() {
+    final venue = eventDetail!['venue'];
+    if (venue == null) return const SizedBox.shrink();
+
+    final double? lat = _toDouble(venue['latitude']);
+    final double? lng = _toDouble(venue['longitude']);
+    if (lat == null || lng == null) return const SizedBox.shrink();
+
+    final camera = CameraPosition(target: LatLng(lat, lng), zoom: 15);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          height: 220,
+          child: GoogleMap(
+            initialCameraPosition: camera,
+            markers: {
+              Marker(
+                markerId: MarkerId('venue-${venue['id'] ?? ''}'),
+                position: LatLng(lat, lng),
+                infoWindow:
+                    InfoWindow(title: (venue['name'] ?? '会場').toString()),
+              ),
+            },
+            zoomControlsEnabled: false,
+            myLocationEnabled: false,
+            myLocationButtonEnabled: false,
+            rotateGesturesEnabled: false,
+            tiltGesturesEnabled: false,
+            scrollGesturesEnabled: false,
+            zoomGesturesEnabled: false,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDescriptionCard() {
     final description = eventDetail!['description'] ?? '説明なし';
     return Card(
@@ -370,6 +418,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       _buildHeroImage(),
                       _buildEventInfoCard(),
                       _buildVenueCard(),
+                      _buildMapCard(),
                       _buildDescriptionCard(),
                       _buildCreatorsSection(),
                       const SizedBox(height: 24),

@@ -100,11 +100,11 @@ class SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFefe9e2),
       body: Container(
         height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFFefe9e2),
         ),
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
@@ -116,7 +116,7 @@ class SignInScreenState extends State<SignInScreen> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                 // ロゴ (※背景が明るくなるため、必要に応じてロゴ画像を変更してください)
                 Image.asset(
-                  'assets/images/sashimeshi_vertical_title_logo.png',
+                  'assets/images/icon_1024x1024.png',
                   width: 400,
                   height: 160,
                 ),

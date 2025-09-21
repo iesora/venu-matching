@@ -1,4 +1,3 @@
-import 'package:mobile/src/screens/auth/select_hobby_screen.dart';
 import 'package:mobile/src/widgets/terms_of_service_row.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/src/widgets/default_button.dart';
@@ -8,9 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/src/helpers/auth_state.dart';
-import 'package:mobile/src/screens/auth/send_verification_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mobile/src/screens/dateSpot.dart';
 import 'package:mobile/src/app.dart';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
 import 'package:mobile/src/screens/auth/terms_of_service_screen.dart';
@@ -53,7 +50,7 @@ class SignInScreenState extends State<SignInScreen> {
           }),
         );
         print('response.statusCode: ${response.statusCode}');
-        if (response.statusCode == 201) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           final responseData = jsonDecode(response.body);
           final token = responseData['token'];
           final userId = responseData['id'];
@@ -77,16 +74,23 @@ class SignInScreenState extends State<SignInScreen> {
             type: SnackBarType.success,
           );
         } else {
+          String message = 'ログインに失敗しました';
+          try {
+            final data = jsonDecode(response.body);
+            if (data is Map && data['message'] is String) {
+              message = data['message'];
+            }
+          } catch (_) {}
           showAnimatedSnackBar(
             context,
-            message: 'ログインに失敗しました',
+            message: message,
             type: SnackBarType.error,
           );
         }
       } catch (e) {
         showAnimatedSnackBar(
           context,
-          message: 'ログインに失敗しました',
+          message: 'ネットワークエラーが発生しました',
           type: SnackBarType.error,
         );
       } finally {

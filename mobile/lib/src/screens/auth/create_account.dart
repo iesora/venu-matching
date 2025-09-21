@@ -63,11 +63,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           }),
         );
 
-        final responseData = jsonDecode(response.body);
-        final token = responseData['token'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userToken', token);
-        Provider.of<AuthState>(context, listen: false).login(responseData);
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final responseData = jsonDecode(response.body);
+          final token = responseData['token'];
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userToken', token);
+          Provider.of<AuthState>(context, listen: false).login(responseData);
+        } else {
+          String message = 'ログインに失敗しました';
+          try {
+            final data = jsonDecode(response.body);
+            if (data is Map && data['message'] is String) {
+              message = data['message'];
+            }
+          } catch (_) {}
+          showAnimatedSnackBar(
+            context,
+            message: message,
+            type: SnackBarType.error,
+          );
+        }
       } catch (e) {
         showAnimatedSnackBar(
           context,

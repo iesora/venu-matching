@@ -12,13 +12,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'event/eventDetail.dart'; // イベント詳細画面のインポート
 
-double? parseToDoubleOrNull(dynamic value) {
-  if (value == null) return null;
-  if (value is num) return value.toDouble();
-  if (value is String) return double.tryParse(value);
-  return null;
-}
-
 class HomeScreen extends HookWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -53,7 +46,13 @@ class HomeScreen extends HookWidget {
     final text = useState('Press the button to start speaking');
     final answer = useState("");
     final available = useState(false);
-    final mapMarkers = useState<Set<Marker>>({});
+    final markers = <Marker>{
+      const Marker(
+        markerId: MarkerId('tokyo-station'),
+        position: LatLng(35.681236, 139.767125),
+        infoWindow: InfoWindow(title: '東京駅'),
+      ),
+    };
 
     useEffect(() {
       // 音声認識の初期化
@@ -101,30 +100,6 @@ class HomeScreen extends HookWidget {
       });
       return;
     }, []);
-
-    useEffect(() {
-      final createdMarkers = <Marker>{};
-      for (final dynamic e in events.value) {
-        final dynamic venueDyn = (e as Map<String, dynamic>)['venue'];
-        if (venueDyn == null || venueDyn is! Map) continue;
-        final Map<String, dynamic> venue = venueDyn.cast<String, dynamic>();
-        final double? lat = parseToDoubleOrNull(venue['latitude']);
-        final double? lng = parseToDoubleOrNull(venue['longitude']);
-        if (lat == null || lng == null) continue;
-        final String title = (e['title'] ?? '').toString();
-        final String venueName = (venue['name'] ?? '').toString();
-        final String idStr = (e['id'] ?? title).toString();
-        createdMarkers.add(
-          Marker(
-            markerId: MarkerId('event-$idStr'),
-            position: LatLng(lat, lng),
-            infoWindow: InfoWindow(title: title, snippet: venueName),
-          ),
-        );
-      }
-      mapMarkers.value = createdMarkers;
-      return;
-    }, [events.value]);
 
     void startListening() async {
       if (available.value && !isListening.value) {
@@ -190,7 +165,7 @@ class HomeScreen extends HookWidget {
               height: 400,
               child: GoogleMap(
                 initialCameraPosition: currentCameraPosition.value,
-                markers: mapMarkers.value,
+                markers: markers,
                 myLocationEnabled: true,
                 myLocationButtonEnabled: true,
                 zoomControlsEnabled: false,

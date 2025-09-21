@@ -30,18 +30,23 @@ export class AuthService {
       where: { email },
     });
     console.log(existUser);
-    const isMatchPassword = compareSync(password, existUser.password);
-
-    if (!existUser || !isMatchPassword) {
+    if (!existUser) {
       throw new HttpException(
-        "some infomation invalid",
-        // tslint:disable-next-line: trailing-comma
+        "メールアドレスまたはパスワードが正しくありません",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const isMatchPassword = compareSync(password, existUser.password);
+    if (!isMatchPassword) {
+      throw new HttpException(
+        "メールアドレスまたはパスワードが正しくありません",
         HttpStatus.BAD_REQUEST
       );
     }
     const token = this.createToken(existUser);
-    const res = { ...existUser, token };
-    console.log("res", res);
+    const { password: _removed, ...safeUser } = existUser as any;
+    const res = { ...safeUser, token };
     return res;
   }
 
@@ -58,25 +63,27 @@ export class AuthService {
       where: { email },
     });
     console.log("existUser", existUser);
-    if (existUser.role !== UserRole.ADMIN) {
+    if (!existUser) {
       throw new HttpException(
-        "some infomation invalid",
-        // tslint:disable-next-line: trailing-comma
+        "メールアドレスまたはパスワードが正しくありません",
         HttpStatus.BAD_REQUEST
       );
+    }
+    if (existUser.role !== UserRole.ADMIN) {
+      throw new HttpException("管理者権限がありません", HttpStatus.BAD_REQUEST);
     }
 
     const isMatchPassword = compareSync(password, existUser.password);
     console.log("isMatchPassword", isMatchPassword);
-    if (!existUser || !isMatchPassword) {
+    if (!isMatchPassword) {
       throw new HttpException(
-        "some infomation invalid",
-        // tslint:disable-next-line: trailing-comma
+        "メールアドレスまたはパスワードが正しくありません",
         HttpStatus.BAD_REQUEST
       );
     }
     const token = this.createToken(existUser);
-    const res = { ...existUser, token };
+    const { password: _removed, ...safeUser } = existUser as any;
+    const res = { ...safeUser, token };
     return res;
   }
 }

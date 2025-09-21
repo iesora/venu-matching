@@ -291,7 +291,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         builder: (context) => EventCreatorsScreen(
                           eventId: widget.eventId,
                           eventTitle: eventDetail!['title'] ?? 'イベント',
-                          initialCreatorEvents: creatorEvents,
                         ),
                       ),
                     );

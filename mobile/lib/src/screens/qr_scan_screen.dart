@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile/src/screens/event/event_creators_screen.dart'; // EventCreatorsScreenのインポート
 
 class QrScanScreen extends StatefulWidget {
   const QrScanScreen({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class QrScanScreen extends StatefulWidget {
 class _QrScanScreenState extends State<QrScanScreen> {
   final MobileScannerController _controller = MobileScannerController(
     formats: const [BarcodeFormat.qrCode],
-    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionSpeed: DetectionSpeed.normal, // 変更: QRコードが映った瞬間に発火するように
     facing: CameraFacing.back,
   );
 
@@ -58,8 +59,15 @@ class _QrScanScreenState extends State<QrScanScreen> {
               if (_lastRawValue == value) return; // 同じ値の重複検出を防止
               _lastRawValue = value;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('読み取り: $value')),
+              // QRコードが読み取られたらEventCreatorsScreenに遷移
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventCreatorsScreen(
+                    eventId: 1, // QRコードの値をeventIdとして渡す
+                    eventTitle: 'イベント', // 仮のタイトル
+                  ),
+                ),
               );
             },
           ),

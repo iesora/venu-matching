@@ -151,11 +151,11 @@ const MyPage: React.FC = () => {
                   </div>
                 </Card>
               ))}
-              {venues && venues.length > 5 && (
+              {/* {venues && venues.length > 5 && (
                 <Button type="link" style={{ width: "100%" }}>
                   すべて表示 ({venues.length}件)
                 </Button>
-              )}
+              )} */}
             </Space>
           )}
         </Card>
@@ -212,11 +212,11 @@ const MyPage: React.FC = () => {
                   </div>
                 </Card>
               ))}
-              {creators && creators.length > 5 && (
+              {/* {creators && creators.length > 5 && (
                 <Button type="link" style={{ width: "100%" }}>
                   すべて表示 ({creators.length}件)
                 </Button>
-              )}
+              )} */}
             </Space>
           )}
         </Card>
@@ -265,11 +265,11 @@ const MyPage: React.FC = () => {
                 </div>
               </Card>
             ))}
-            {venues && venues.length > 5 && (
+            {/* {venues && venues.length > 5 && (
               <Button type="link" style={{ width: "100%" }}>
                 すべて表示 ({venues.length}件)
               </Button>
-            )}
+            )} */}
           </Space>
         )}
       </Col>
@@ -318,7 +318,7 @@ const MyPage: React.FC = () => {
                   </div>
                 </Card>
               ))}
-              {creators && creators.length > 5 && (
+              {/* {creators && creators.length > 5 && (
                 <Button
                   type="link"
                   style={{ width: "100%" }}
@@ -326,7 +326,7 @@ const MyPage: React.FC = () => {
                 >
                   すべて表示 ({creators.length}件)
                 </Button>
-              )}
+              )} */}
             </Space>
           )}
         </Card>
@@ -442,7 +442,7 @@ const MyPage: React.FC = () => {
                     </div>
                   </Card>
                 ))}
-              {requests &&
+              {/* {requests &&
                 requests.filter(
                   (request: CreatorEvent) =>
                     request.acceptStatus === AcceptStatus.PENDING
@@ -457,7 +457,7 @@ const MyPage: React.FC = () => {
                     }
                     件)
                   </Button>
-                )}
+                )} */}
             </Space>
           )}
         </Card>

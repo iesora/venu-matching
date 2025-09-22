@@ -122,18 +122,15 @@ const EventListPage: React.FC = () => {
                 <Card
                   hoverable
                   cover={
-                    <div style={{ padding: "32px", textAlign: "center" }}>
-                      <CalendarOutlined
-                        style={{
-                          fontSize: "64px",
-                          color: "#1890ff",
-                          marginBottom: "16px",
-                        }}
-                      />
-                      <Title level={3} style={{ margin: 0 }}>
-                        {event.title}
-                      </Title>
-                    </div>
+                    // event.imageUrl ? (
+                    <img
+                      alt={event.title}
+                      src={
+                        "https://lh3.googleusercontent.com/gps-cs-s/AC9h4nrsyTCKZEan5oDviaQCbxpCR8GQn3UYHzxU12itXdFMNJtF8J8gDPw3mPPZajcLxVLPmCtwdXeocNG9B4NIMDZPdZ9_940fVgZ2gu_itjHlkQ04DgIcGjpv8xyoOndcStJibCnW=s1360-w1360-h1020-rw"
+                      }
+                      style={{ height: "300px", objectFit: "cover" }}
+                    />
+                    // ) : null
                   }
                   onClick={() => router.push(`/events/${event.id}`)}
                   //   actions={[
@@ -153,6 +150,13 @@ const EventListPage: React.FC = () => {
                   style={{ height: "100%" }}
                 >
                   <Card.Meta
+                    title={
+                      <div>
+                        <Text strong style={{ fontSize: "18px" }}>
+                          {event.title}
+                        </Text>
+                      </div>
+                    }
                     description={
                       <div style={{ padding: "8px" }}>
                         <div style={{ marginBottom: "16px" }}>

@@ -24,13 +24,15 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyB9LT6ExYOT318lzVpueUvYIrMkLj2h7qM</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>カメラにアクセスする必要があります</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>地図表示のために現在地を使用します</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>地図表示のために現在地を使用します</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>地図表示のために現在地を使用します</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>音声入力のためにマイクにアクセスする必要があります</string>
@@ -59,8 +61,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Google Maps API Key -->
-	<key>GMSApiKey</key>
-	<string>AIzaSyB9LT6ExYOT318lzVpueUvYIrMkLj2h7qM</string>
 </dict>
 </plist>

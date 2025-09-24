@@ -330,22 +330,46 @@ const CreatorDetailPage: React.FC = () => {
                   </div>
                   <div>
                     <Text type="secondary">メールアドレス:</Text>
-                    <Text style={{ marginLeft: "8px" }}>{creator.email}</Text>
+                    <Text style={{ marginLeft: "8px" }}>
+                      {creator.email ? (
+                        <a href={`mailto:${creator.email}`}>{creator.email}</a>
+                      ) : (
+                        "未設定"
+                      )}
+                    </Text>
                   </div>
                   <div>
                     <Text type="secondary">電話番号:</Text>
                     <Text style={{ marginLeft: "8px" }}>
-                      {creator.phoneNumber}
+                      {creator.phoneNumber ? (
+                        <a href={`tel:${creator.phoneNumber}`}>
+                          {creator.phoneNumber}
+                        </a>
+                      ) : (
+                        "未設定"
+                      )}
                     </Text>
                   </div>
                   <div>
                     <Text type="secondary">ウェブサイト:</Text>
-                    <Text style={{ marginLeft: "8px" }}>{creator.website}</Text>
+                    <Text style={{ marginLeft: "8px" }}>
+                      {creator.website ? (
+                        <a
+                          href={creator.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {creator.website}
+                        </a>
+                      ) : (
+                        "未設定"
+                      )}
+                    </Text>
                   </div>
                   <div>
                     <Text type="secondary">SNSハンドル:</Text>
                     <Text style={{ marginLeft: "8px" }}>
-                      {creator.socialMediaHandle}
+                      {creator.socialMediaHandle || "未設定"}
                     </Text>
                   </div>
                   <div>

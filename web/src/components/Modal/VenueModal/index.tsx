@@ -79,13 +79,15 @@ const VenueModal: React.FC<VenueModalProps> = ({
   }, [visible, venue, form]);
 
   const handleSubmit = async (values: any) => {
-    if (isEdit && venue) {
-      mutateUpdateVenue({
-        id: venue.id.toString(),
-        data: values,
-      });
-    } else {
-      mutateCreateVenue(values);
+    if (confirm(isEdit ? "会場を更新しますか？" : "会場を登録しますか？")) {
+      if (isEdit && venue) {
+        mutateUpdateVenue({
+          id: venue.id.toString(),
+          data: values,
+        });
+      } else {
+        mutateCreateVenue(values);
+      }
     }
   };
 
@@ -93,6 +95,10 @@ const VenueModal: React.FC<VenueModalProps> = ({
     form.resetFields();
     onCancel();
   };
+
+  useEffect(() => {
+    console.log(form.getFieldsValue());
+  }, [form.getFieldsValue()]);
 
   return (
     <Modal
@@ -227,14 +233,15 @@ const VenueModal: React.FC<VenueModalProps> = ({
             <Form.Item
               label="緯度"
               name="latitude"
-              rules={[
-                {
-                  type: "number",
-                  min: -90,
-                  max: 90,
-                  message: "-90から90の間で入力してください",
-                },
-              ]}
+              validateTrigger="onChange"
+              //   rules={[
+              //     {
+              //       type: "number",
+              //       min: -90,
+              //       max: 90,
+              //       message: "-90から90の間で入力してください",
+              //     },
+              //   ]}
             >
               <InputNumber
                 placeholder="緯度を入力してください"
@@ -250,14 +257,16 @@ const VenueModal: React.FC<VenueModalProps> = ({
             <Form.Item
               label="経度"
               name="longitude"
-              rules={[
-                {
-                  type: "number",
-                  min: -180,
-                  max: 180,
-                  message: "-180から180の間で入力してください",
-                },
-              ]}
+              validateTrigger="onChange"
+              //   validateTrigger="onBlur"
+              //   rules={[
+              //     {
+              //       type: "number",
+              //       min: -180,
+              //       max: 180,
+              //       message: "-180から180の間で入力してください",
+              //     },
+              //   ]}
             >
               <InputNumber
                 placeholder="経度を入力してください"

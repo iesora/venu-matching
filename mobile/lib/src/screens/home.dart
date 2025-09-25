@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import '../loginState.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -272,12 +270,6 @@ class HomeScreen extends HookWidget {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            {Provider.of<LoginState>(context, listen: false).login()}, // 状態の更新
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
       ),
     );
   }

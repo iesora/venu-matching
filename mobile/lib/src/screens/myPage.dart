@@ -164,16 +164,6 @@ class MyPageScreen extends HookWidget {
               _showDeleteAccountDialog(context);
             },
           ),
-          ListTile(
-            leading: Icon(Icons.location_on, color: Colors.blue),
-            title: const Text('マイ会場一覧', style: TextStyle(color: Colors.blue)),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyVenuScreen()),
-              );
-            },
-          ),
         ],
       ),
     );

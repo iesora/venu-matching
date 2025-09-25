@@ -121,14 +121,14 @@ const EventModal: React.FC<EventModalProps> = ({
     useAPICreateEvent({
       onSuccess: (data) => {
         notification.success({
-          message: "イベントを作成しました",
+          message: "イベントを登録しました",
         });
         onSuccess();
         handleCancel();
       },
       onError: () => {
         notification.error({
-          message: "イベントの作成に失敗しました",
+          message: "イベントの登録に失敗しました",
         });
       },
     });
@@ -186,7 +186,7 @@ const EventModal: React.FC<EventModalProps> = ({
         );
         setCurrentStep(startStep || "venue");
       } else {
-        // 作成モードの場合、フォームをリセット
+        // 登録モードの場合、フォームをリセット
         form.resetFields();
         setSelectedVenueId(undefined);
         setSelectedCreatorIds([]);
@@ -430,7 +430,7 @@ const EventModal: React.FC<EventModalProps> = ({
             icon={<CalendarOutlined />}
             style={{ backgroundColor: anBlue, borderColor: anBlue }}
           >
-            {isEditMode ? "イベントを更新" : "イベントを作成"}
+            {isEditMode ? "イベントを更新" : "イベントを登録"}
           </Button>
         </Space>
       </Form.Item>
@@ -511,11 +511,11 @@ const EventModal: React.FC<EventModalProps> = ({
         case "venue":
           return "会場選択";
         case "overview":
-          return "イベント作成";
+          return "イベント登録";
         case "creators":
           return "クリエイター選択";
         default:
-          return "イベント作成";
+          return "イベント登録";
       }
     }
   };

@@ -95,7 +95,7 @@ const EventListPage: React.FC = () => {
             style={{ backgroundColor: anBlue, borderColor: anBlue }}
             onClick={() => setEventModalVisible(true)}
           >
-            イベント作成
+            イベント登録
           </Button>
         </div>
 

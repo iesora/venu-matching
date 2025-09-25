@@ -26,7 +26,7 @@ import { anBlue, themeColor } from "@/utils/colors";
 
 interface VenueModalProps {
   visible: boolean;
-  venue?: Venue | null; // nullの場合は新規作成
+  venue?: Venue | null; // nullの場合は新規登録
   onCancel: () => void;
   onSuccess: () => void;
 }
@@ -41,7 +41,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
   const { mutate: mutateCreateVenue } = useAPIPostVenue({
     onSuccess: () => {
       notification.success({
-        message: "会場を作成しました",
+        message: "会場を登録しました",
       });
       onSuccess();
     },
@@ -95,7 +95,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
   return (
     <Modal
       //   style={{ backgroundColor: themeColor }}
-      title={isEdit ? "会場編集" : "会場作成"}
+      title={isEdit ? "会場編集" : "会場登録"}
       open={visible}
       onCancel={handleCancel}
       footer={null}
@@ -270,7 +270,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
               //     mutateCreateVenue.isLoading || mutateUpdateVenue.isLoading
               //   }
             >
-              {isEdit ? "更新" : "作成"}
+              {isEdit ? "更新" : "登録"}
             </Button>
           </Space>
         </Form.Item>

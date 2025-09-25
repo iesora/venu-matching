@@ -209,6 +209,7 @@ const EventModal: React.FC<EventModalProps> = ({
     } else {
       setFormValues({
         ...values,
+        venueId: selectedVenueId,
         startDate: dateRange[0].toDate(),
         endDate: dateRange[1].toDate(),
       });

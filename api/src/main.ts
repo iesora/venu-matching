@@ -12,6 +12,7 @@ async function bootstrap() {
       "https://five-zero-develop-admin-584693937256.asia-northeast1.run.app",
       "https://five-zero-develop-web-584693937256.asia-northeast1.run.app",
       "https://venue-matching-web-584693937256.asia-northeast1.run.app",
+      "https://venue-matching-web-584693937256.asia-northeast1.run.app",
     ],
   });
   await app.listen(process.env.PORT);

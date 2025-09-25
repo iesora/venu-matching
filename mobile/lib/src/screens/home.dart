@@ -85,17 +85,6 @@ class HomeScreen extends HookWidget {
     }();
 
     useEffect(() {
-      // 音声認識の初期化
-      Future.microtask(() async {
-        available.value = await speechToText.initialize(
-          onStatus: (status) => print('Status: $status'),
-          onError: (error) => print('Error: $error'),
-        );
-      });
-      return;
-    }, []);
-
-    useEffect(() {
       Future.microtask(() async {
         try {
           bool serviceEnabled = await Geolocator.isLocationServiceEnabled();

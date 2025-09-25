@@ -26,7 +26,7 @@ interface CreatorModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  creator?: Creator | null; // nullの場合は新規作成
+  creator?: Creator | null; // nullの場合は新規登録
 }
 
 const CreatorModal: React.FC<CreatorModalProps> = ({
@@ -40,7 +40,7 @@ const CreatorModal: React.FC<CreatorModalProps> = ({
     useAPICreateCreator({
       onSuccess: () => {
         notification.success({
-          message: "クリエイターを作成しました",
+          message: "クリエイターを登録しました",
         });
         onSuccess();
         form.resetFields();
@@ -48,7 +48,7 @@ const CreatorModal: React.FC<CreatorModalProps> = ({
       },
       onError: (error) => {
         notification.error({
-          message: "クリエイターを作成に失敗しました",
+          message: "クリエイターを登録に失敗しました",
         });
       },
     });
@@ -107,7 +107,7 @@ const CreatorModal: React.FC<CreatorModalProps> = ({
 
   return (
     <Modal
-      title={isEdit ? "クリエイター編集" : "クリエイター作成"}
+      title={isEdit ? "クリエイター編集" : "クリエイター登録"}
       open={visible}
       onCancel={handleCancel}
       footer={null}
@@ -215,7 +215,7 @@ const CreatorModal: React.FC<CreatorModalProps> = ({
               loading={isLoadingCreate || isLoadingUpdate}
               style={{ backgroundColor: anBlue, borderColor: anBlue }}
             >
-              {isEdit ? "更新" : "作成"}
+              {isEdit ? "更新" : "登録"}
             </Button>
           </Space>
         </Form.Item>

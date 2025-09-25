@@ -8,7 +8,13 @@ export type CreateVenueRequest = {
   name: string;
   tel?: string;
   address?: string;
+  description?: string;
+  capacity?: number;
+  facilities?: string;
+  availableTime?: string;
   userId: number;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type UpdateVenueRequest = {
@@ -20,6 +26,8 @@ export type UpdateVenueRequest = {
   facilities?: string;
   availableTime?: string;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 @Injectable()
@@ -43,6 +51,12 @@ export class VenueService {
     newVenue.name = venueData.name;
     newVenue.address = venueData.address;
     newVenue.tel = venueData.tel;
+    newVenue.latitude = venueData.latitude;
+    newVenue.longitude = venueData.longitude;
+    newVenue.description = venueData.description;
+    newVenue.capacity = venueData.capacity;
+    newVenue.facilities = venueData.facilities;
+    newVenue.availableTime = venueData.availableTime;
     newVenue.user = existUser;
     return await this.venueRepository.save(newVenue);
   }
@@ -62,6 +76,8 @@ export class VenueService {
     existVenue.facilities = venueData.facilities;
     existVenue.availableTime = venueData.availableTime;
     existVenue.imageUrl = venueData.imageUrl;
+    existVenue.latitude = venueData.latitude;
+    existVenue.longitude = venueData.longitude;
     return await this.venueRepository.save(existVenue);
   }
 

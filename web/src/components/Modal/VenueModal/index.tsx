@@ -26,7 +26,7 @@ import { anBlue, themeColor } from "@/utils/colors";
 
 interface VenueModalProps {
   visible: boolean;
-  venue?: Venue | null; // nullの場合は新規作成
+  venue?: Venue | null; // nullの場合は新規登録
   onCancel: () => void;
   onSuccess: () => void;
 }
@@ -41,7 +41,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
   const { mutate: mutateCreateVenue } = useAPIPostVenue({
     onSuccess: () => {
       notification.success({
-        message: "会場を作成しました",
+        message: "会場を登録しました",
       });
       onSuccess();
     },
@@ -69,6 +69,8 @@ const VenueModal: React.FC<VenueModalProps> = ({
           facilities: venue.facilities,
           availableTime: venue.availableTime,
           imageUrl: venue.imageUrl,
+          latitude: venue.latitude,
+          longitude: venue.longitude,
         });
       } else {
         form.resetFields();
@@ -77,13 +79,15 @@ const VenueModal: React.FC<VenueModalProps> = ({
   }, [visible, venue, form]);
 
   const handleSubmit = async (values: any) => {
-    if (isEdit && venue) {
-      mutateUpdateVenue({
-        id: venue.id.toString(),
-        data: values,
-      });
-    } else {
-      mutateCreateVenue(values);
+    if (confirm(isEdit ? "会場を更新しますか？" : "会場を登録しますか？")) {
+      if (isEdit && venue) {
+        mutateUpdateVenue({
+          id: venue.id.toString(),
+          data: values,
+        });
+      } else {
+        mutateCreateVenue(values);
+      }
     }
   };
 
@@ -92,10 +96,14 @@ const VenueModal: React.FC<VenueModalProps> = ({
     onCancel();
   };
 
+  useEffect(() => {
+    console.log(form.getFieldsValue());
+  }, [form.getFieldsValue()]);
+
   return (
     <Modal
       //   style={{ backgroundColor: themeColor }}
-      title={isEdit ? "会場編集" : "会場作成"}
+      title={isEdit ? "会場編集" : "会場登録"}
       open={visible}
       onCancel={handleCancel}
       footer={null}
@@ -177,7 +185,6 @@ const VenueModal: React.FC<VenueModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-
         <Row gutter={16}>
           <Col span={24}>
             <Form.Item
@@ -217,6 +224,57 @@ const VenueModal: React.FC<VenueModalProps> = ({
                 style={{ width: "100%" }}
                 min={1}
                 max={500000}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="緯度"
+              name="latitude"
+              validateTrigger="onChange"
+              //   rules={[
+              //     {
+              //       type: "number",
+              //       min: -90,
+              //       max: 90,
+              //       message: "-90から90の間で入力してください",
+              //     },
+              //   ]}
+            >
+              <InputNumber
+                placeholder="緯度を入力してください"
+                style={{ width: "100%" }}
+                min={-90}
+                max={90}
+                step={0.000001}
+                precision={8}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="経度"
+              name="longitude"
+              validateTrigger="onChange"
+              //   validateTrigger="onBlur"
+              //   rules={[
+              //     {
+              //       type: "number",
+              //       min: -180,
+              //       max: 180,
+              //       message: "-180から180の間で入力してください",
+              //     },
+              //   ]}
+            >
+              <InputNumber
+                placeholder="経度を入力してください"
+                style={{ width: "100%" }}
+                min={-180}
+                max={180}
+                step={0.000001}
+                precision={8}
               />
             </Form.Item>
           </Col>
@@ -270,7 +328,7 @@ const VenueModal: React.FC<VenueModalProps> = ({
               //     mutateCreateVenue.isLoading || mutateUpdateVenue.isLoading
               //   }
             >
-              {isEdit ? "更新" : "作成"}
+              {isEdit ? "更新" : "登録"}
             </Button>
           </Space>
         </Form.Item>

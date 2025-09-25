@@ -28,6 +28,8 @@ export type Venue = {
   facilities?: string;
   availableTime?: string;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
   user: User;
   createdAt: Date;
   updatedAt: Date;

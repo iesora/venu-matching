@@ -14,6 +14,8 @@ export interface CreateVenueRequest {
   facilities?: string;
   availableTime?: string;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const postVenue = async (body: CreateVenueRequest) => {

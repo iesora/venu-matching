@@ -14,6 +14,8 @@ export interface UpdateVenueRequest {
   facilities?: string;
   availableTime?: string;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const updateVenue = async (body: { id: string; data: UpdateVenueRequest }) => {

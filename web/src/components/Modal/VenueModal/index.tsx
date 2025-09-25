@@ -69,6 +69,8 @@ const VenueModal: React.FC<VenueModalProps> = ({
           facilities: venue.facilities,
           availableTime: venue.availableTime,
           imageUrl: venue.imageUrl,
+          latitude: venue.latitude,
+          longitude: venue.longitude,
         });
       } else {
         form.resetFields();
@@ -177,7 +179,6 @@ const VenueModal: React.FC<VenueModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-
         <Row gutter={16}>
           <Col span={24}>
             <Form.Item
@@ -217,6 +218,54 @@ const VenueModal: React.FC<VenueModalProps> = ({
                 style={{ width: "100%" }}
                 min={1}
                 max={500000}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="緯度"
+              name="latitude"
+              rules={[
+                {
+                  type: "number",
+                  min: -90,
+                  max: 90,
+                  message: "-90から90の間で入力してください",
+                },
+              ]}
+            >
+              <InputNumber
+                placeholder="緯度を入力してください"
+                style={{ width: "100%" }}
+                min={-90}
+                max={90}
+                step={0.000001}
+                precision={8}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="経度"
+              name="longitude"
+              rules={[
+                {
+                  type: "number",
+                  min: -180,
+                  max: 180,
+                  message: "-180から180の間で入力してください",
+                },
+              ]}
+            >
+              <InputNumber
+                placeholder="経度を入力してください"
+                style={{ width: "100%" }}
+                min={-180}
+                max={180}
+                step={0.000001}
+                precision={8}
               />
             </Form.Item>
           </Col>

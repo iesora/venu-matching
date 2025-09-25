@@ -25,7 +25,12 @@ import dayjs from "dayjs";
 import { useAPIAuthenticate } from "@/hook/api/auth/useAPIAuthenticate";
 import { useAPIUpdateCreatorEvent } from "@/hook/api/event/useAPIUpdateCreatorEvent";
 import { AcceptStatus } from "@/type";
-import { anBlue, themeColorLight } from "@/utils/colors";
+import {
+  anBlue,
+  themeColorLight,
+  themeColor,
+  themeColorDeep,
+} from "@/utils/colors";
 import "@/styles/pages/Table.scss";
 
 const { TextArea } = Input;
@@ -267,31 +272,66 @@ const EventModal: React.FC<EventModalProps> = ({
           <Spin size="large" />
         </div>
       ) : (
-        <Table
-          rowSelection={{
-            type: "radio",
-            columnWidth: 60,
-            selectedRowKeys: selectedVenueId ? [selectedVenueId] : [],
-            hideSelectAll: true,
-            onChange: (selectedRowKeys) => {
-              console.log("selectedRowKeys-onChange: ", selectedRowKeys);
-              setSelectedVenueId(selectedRowKeys[0] as number);
-              setCurrentStep("overview");
-            },
+        <div
+          style={{
+            maxHeight: "300px",
+            overflowY: "auto",
+            marginBottom: "20px",
           }}
-          dataSource={venues}
-          columns={[
-            {
-              title: "会場名",
-              dataIndex: "name",
-              key: "name",
-            },
-          ]}
-          rowKey="id"
-          pagination={false}
-          style={{ marginBottom: "20px" }}
-          scroll={{ y: 300 }}
-        />
+        >
+          {venues?.map((venue) => (
+            <div
+              key={venue.id}
+              onClick={() => {
+                setSelectedVenueId(venue.id);
+                setCurrentStep("overview");
+              }}
+              style={{
+                padding: "16px",
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                marginBottom: "0px",
+                cursor: "pointer",
+                backgroundColor: "#fff",
+                borderColor:
+                  selectedVenueId === venue.id ? "#52c41a" : "#d9d9d9",
+                transition: "all 0.3s ease",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+              onMouseEnter={(e) => {
+                if (selectedVenueId !== venue.id) {
+                  e.currentTarget.style.backgroundColor = themeColorLight;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedVenueId !== venue.id) {
+                  e.currentTarget.style.backgroundColor = "#fff";
+                }
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: selectedVenueId === venue.id ? "bold" : "normal",
+                }}
+              >
+                {venue.name}
+              </div>
+              {selectedVenueId === venue.id && (
+                <div
+                  style={{
+                    color: "#52c41a",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  ✓
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
       {isEditMode && (
         <div style={{ textAlign: "right" }}>

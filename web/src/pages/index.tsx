@@ -161,65 +161,208 @@ const MyPage: React.FC = () => {
         </Card>
       </Col>
       <Col xs={24} lg={12}>
-        <Card
-          title="クリエイター一覧"
-          size="default"
-          extra={
-            <Button
-              type="primary"
-              onClick={() => setCreatorModalVisible(true)}
-              style={{ backgroundColor: anBlue }}
-            >
-              + 登録
-            </Button>
-          }
-        >
-          {creatorsLoading ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <Spin />
-            </div>
-          ) : creators?.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
-              <div style={{ marginTop: "16px" }}>
-                <Text type="secondary">クリエイターが見つかりません</Text>
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <Card
+            title="クリエイター一覧"
+            size="default"
+            extra={
+              <Button
+                type="primary"
+                onClick={() => setCreatorModalVisible(true)}
+                style={{ backgroundColor: anBlue }}
+              >
+                + 登録
+              </Button>
+            }
+          >
+            {creatorsLoading ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <Spin />
               </div>
-            </div>
-          ) : (
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {creators?.map((creator: Creator) => (
-                <Card key={creator.id} size="small" hoverable>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    {creator.imageUrl ? (
-                      <Avatar size={40} src={creator.imageUrl} />
-                    ) : (
-                      <Avatar size={40} icon={<UserOutlined />} />
-                    )}
-                    <div style={{ marginLeft: "12px", flex: 1 }}>
-                      <Text strong>{creator.name}</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        {creator.description || "説明なし"}
-                      </Text>
+            ) : creators?.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
+                <div style={{ marginTop: "16px" }}>
+                  <Text type="secondary">クリエイターが見つかりません</Text>
+                </div>
+              </div>
+            ) : (
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: "100%" }}
+              >
+                {creators?.map((creator: Creator) => (
+                  <Card key={creator.id} size="small" hoverable>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {creator.imageUrl ? (
+                        <Avatar size={40} src={creator.imageUrl} />
+                      ) : (
+                        <Avatar size={40} icon={<UserOutlined />} />
+                      )}
+                      <div style={{ marginLeft: "12px", flex: 1 }}>
+                        <Text strong>{creator.name}</Text>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: "12px" }}>
+                          {creator.description || "説明なし"}
+                        </Text>
+                      </div>
+                      <Button
+                        size="middle"
+                        onClick={() => router.push(`/creators/${creator.id}`)}
+                        style={{ backgroundColor: anGray }}
+                      >
+                        詳細
+                      </Button>
                     </div>
-                    <Button
-                      size="middle"
-                      onClick={() => router.push(`/creators/${creator.id}`)}
-                      style={{ backgroundColor: anGray }}
-                    >
-                      詳細
+                  </Card>
+                ))}
+                {/* {creators && creators.length > 5 && (
+                  <Button type="link" style={{ width: "100%" }}>
+                    すべて表示 ({creators.length}件)
+                  </Button>
+                )} */}
+              </Space>
+            )}
+          </Card>
+          <Card title="参加依頼一覧" size="default">
+            {requestsLoading ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <Spin />
+              </div>
+            ) : requests?.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <TeamOutlined style={{ fontSize: "48px", color: "#ccc" }} />
+                <div style={{ marginTop: "16px" }}>
+                  <Text type="secondary">参加依頼が見つかりません</Text>
+                </div>
+              </div>
+            ) : (
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: "100%" }}
+              >
+                {requests
+                  ?.filter(
+                    (request: CreatorEvent) =>
+                      request.acceptStatus === AcceptStatus.PENDING
+                  )
+                  .map((request: CreatorEvent) => (
+                    <Card key={request.id} size="small" hoverable>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            cursor: "pointer",
+                            width: "100%",
+                          }}
+                          onClick={() =>
+                            router.push(`/events/${request.event.id}`)
+                          }
+                        >
+                          <div style={{ marginBottom: "4px" }}>
+                            <Text strong>{request.event.title}</Text>
+                          </div>
+                          <Tag icon={<TeamOutlined />} color="green">
+                            {request.creator.name}
+                          </Tag>
+                        </div>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <Button
+                            shape="circle"
+                            color="default"
+                            size="small"
+                            icon={
+                              <CheckOutlined style={{ color: "#52c41a" }} />
+                            }
+                            style={{
+                              borderColor: "#52c41a",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#52c41a";
+                              const icon =
+                                e.currentTarget.querySelector(".anticon");
+                              if (icon)
+                                (icon as HTMLElement).style.color = "#fff";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "";
+                              const icon =
+                                e.currentTarget.querySelector(".anticon");
+                              if (icon)
+                                (icon as HTMLElement).style.color = "#52c41a";
+                            }}
+                            onClick={() => {
+                              mutateAcceptCreatorEvent({
+                                creatorEventId: request.id,
+                                acceptStatus: AcceptStatus.ACCEPTED,
+                              });
+                            }}
+                          />
+                          <Button
+                            color="danger"
+                            shape="circle"
+                            size="small"
+                            icon={
+                              <CloseOutlined style={{ color: "#eb2f96" }} />
+                            }
+                            style={{
+                              borderColor: "#eb2f96",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#eb2f96";
+                              const icon =
+                                e.currentTarget.querySelector(".anticon");
+                              if (icon)
+                                (icon as HTMLElement).style.color = "#fff";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "";
+                              const icon =
+                                e.currentTarget.querySelector(".anticon");
+                              if (icon)
+                                (icon as HTMLElement).style.color = "#eb2f96";
+                            }}
+                            onClick={(e) => {
+                              mutateAcceptCreatorEvent({
+                                creatorEventId: request.id,
+                                acceptStatus: AcceptStatus.REJECTED,
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                {/* {requests &&
+                  requests.filter(
+                    (request: CreatorEvent) =>
+                      request.acceptStatus === AcceptStatus.PENDING
+                  ).length > 5 && (
+                    <Button type="link" style={{ width: "100%" }}>
+                      すべて表示 (
+                      {
+                        requests.filter(
+                          (request: CreatorEvent) =>
+                            request.acceptStatus === AcceptStatus.PENDING
+                        ).length
+                      }
+                      件)
                     </Button>
-                  </div>
-                </Card>
-              ))}
-              {/* {creators && creators.length > 5 && (
-                <Button type="link" style={{ width: "100%" }}>
-                  すべて表示 ({creators.length}件)
-                </Button>
-              )} */}
-            </Space>
-          )}
-        </Card>
+                  )} */}
+              </Space>
+            )}
+          </Card>
+        </Space>
       </Col>
     </Row>
   );

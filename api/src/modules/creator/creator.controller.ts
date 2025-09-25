@@ -8,13 +8,13 @@ import {
   UseGuards,
   Req,
   Patch,
-} from '@nestjs/common';
-import { CreatorService, CreateCreatorRequest } from './creator.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RequestWithUser } from '../user/user.controller';
-import { UpdateCreatorRequest } from './creator.service';
+} from "@nestjs/common";
+import { CreatorService, CreateCreatorRequest } from "./creator.service";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequestWithUser } from "../user/user.controller";
+import { UpdateCreatorRequest } from "./creator.service";
 
-@Controller('creator')
+@Controller("creator")
 export class CreatorController {
   constructor(private readonly creatorService: CreatorService) {}
 
@@ -22,17 +22,17 @@ export class CreatorController {
   @UseGuards(JwtAuthGuard)
   async createCreator(
     @Body() body: CreateCreatorRequest,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUser
   ) {
     const creatorData = { ...body, userId: req.user.id };
     return await this.creatorService.createCreator(creatorData);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @UseGuards(JwtAuthGuard)
   async updateCreator(
     @Param() params: { id: number },
-    @Body() body: UpdateCreatorRequest,
+    @Body() body: UpdateCreatorRequest
   ) {
     return await this.creatorService.updateCreator(params.id, body);
   }
@@ -42,22 +42,19 @@ export class CreatorController {
     return await this.creatorService.getCreators();
   }
 
-  @Get('user/:userId')
+  @Get("user/:userId")
   async getCreatorsByUserId(@Param() params: { userId: number }) {
     return await this.creatorService.getCreatorsByUserId(params.userId);
-    }
-  async getCreators(@Query() query: { userId?: number }) {
-    return await this.creatorService.getCreators(query.userId);
   }
 
-  @Get(':id')
+  @Get(":id")
   async getCreatorById(@Param() params: { id: number }) {
     return await this.creatorService.getCreatorById(params.id);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   async deleteCreator(@Param() params: { id: number }) {
     await this.creatorService.deleteCreator(params.id);
-    return { message: 'Creator deleted successfully' };
+    return { message: "Creator deleted successfully" };
   }
 }

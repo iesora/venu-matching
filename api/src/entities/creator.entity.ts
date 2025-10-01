@@ -53,9 +53,6 @@ export class Creator {
   @JoinColumn({ name: "user_id" })
   user: User;
 
-  @OneToMany(() => Matching, (matching) => matching.creator)
-  matchings?: Matching[];
-
   @OneToMany(() => Opus, (opus) => opus.creator)
   opuses?: Opus[];
 

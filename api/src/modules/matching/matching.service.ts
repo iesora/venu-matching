@@ -1,15 +1,16 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Matching, MatchingFrom } from '../../entities/matching.entity';
-import { User } from '../../entities/user.entity';
-import { Creator } from '../../entities/creator.entity';
-import { Venue } from '../../entities/venue.entity';
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Matching, MatchingStatus } from "../../entities/matching.entity";
+import { User } from "../../entities/user.entity";
+import { Creator } from "../../entities/creator.entity";
+import { Venue } from "../../entities/venue.entity";
 import {
   CreateMatchingFromCreatorRequest,
   CreateMatchingFromVenueRequest,
-} from './matching.controller';
-import { Event } from '../../entities/event.entity';
+  CreateMatchingRequest,
+} from "./matching.controller";
+import { Event } from "../../entities/event.entity";
 
 @Injectable()
 export class MatchingService {
@@ -22,114 +23,149 @@ export class MatchingService {
     private readonly venueRepository: Repository<Venue>,
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
   ) {}
 
   async createMatchingFromCreator(
     matching: CreateMatchingFromCreatorRequest,
-    reqUser: User,
+    reqUser: User
   ): Promise<Matching> {
-    const existCreator = await this.creatorRepository.findOne({
-      where: { id: matching.creatorId },
-      relations: ['user'],
-    });
-
     const existVenue = await this.venueRepository.findOne({
       where: { id: matching.venueId },
-      relations: ['user'],
+      relations: ["user"],
     });
 
-    const existMatching = await this.matchingRepository.findOne({
-      where: {
-        creator: { id: matching.creatorId },
-        venue: { id: matching.venueId },
-      },
-    });
-    if (!existCreator) {
-      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
-    }
     if (!existVenue) {
-      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
     }
-    if (existCreator.user.id !== reqUser.id) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+
+    // 重複チェック（双方向）
+    const existMatching = await this.matchingRepository
+      .createQueryBuilder("matching")
+      .leftJoin("matching.fromUser", "fromUser")
+      .leftJoin("matching.toUser", "toUser")
+      .where(
+        "(fromUser.id = :fromId AND toUser.id = :toId) OR (fromUser.id = :toId AND toUser.id = :fromId)",
+        { fromId: reqUser.id, toId: existVenue.user.id }
+      )
+      .getOne();
     if (existMatching) {
       throw new HttpException(
-        'Matching already exists',
-        HttpStatus.BAD_REQUEST,
+        "Matching already exists",
+        HttpStatus.BAD_REQUEST
       );
     }
+
     const newMatching = new Matching();
-    newMatching.from = MatchingFrom.CREATOR;
-    newMatching.creator = existCreator;
-    newMatching.venue = existVenue;
-    newMatching.fromUser = existCreator.user;
+    newMatching.fromUser = reqUser;
     newMatching.toUser = existVenue.user;
     newMatching.requestAt = new Date();
     newMatching.matchingFlag = false;
+    newMatching.status = MatchingStatus.PENDING;
     newMatching.matchingAt = null;
     return await this.matchingRepository.save(newMatching);
   }
 
   async createMatchingFromVenue(
     matching: CreateMatchingFromVenueRequest,
-    reqUser: User,
-  ) {
+    reqUser: User
+  ): Promise<Matching> {
     const existVenue = await this.venueRepository.findOne({
       where: { id: matching.venueId },
-      relations: ['user'],
+      relations: ["user"],
     });
     const existCreator = await this.creatorRepository.findOne({
       where: { id: matching.creatorId },
-      relations: ['user'],
+      relations: ["user"],
     });
 
-    const existMatching = await this.matchingRepository
-      .createQueryBuilder('matching')
-      .where('matching.venue.id = :venueId', { venueId: matching.venueId })
-      .andWhere('matching.creator.id = :creatorId', {
-        creatorId: matching.creatorId,
-      })
-      .getOne();
-    console.log(existMatching);
-    if (existMatching) {
-      throw new HttpException(
-        'Matching already exists',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     if (!existVenue) {
-      throw new HttpException('Venue not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
     }
     if (!existCreator) {
-      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
     }
     if (existVenue.user.id !== reqUser.id) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
+
+    // 重複チェック（双方向）
+    const existMatching = await this.matchingRepository
+      .createQueryBuilder("matching")
+      .leftJoin("matching.fromUser", "fromUser")
+      .leftJoin("matching.toUser", "toUser")
+      .where(
+        "(fromUser.id = :fromId AND toUser.id = :toId) OR (fromUser.id = :toId AND toUser.id = :fromId)",
+        { fromId: existVenue.user.id, toId: existCreator.user.id }
+      )
+      .getOne();
     if (existMatching) {
       throw new HttpException(
-        'Matching already exists',
-        HttpStatus.BAD_REQUEST,
+        "Matching already exists",
+        HttpStatus.BAD_REQUEST
       );
     }
+
     const newMatching = new Matching();
-    newMatching.from = MatchingFrom.VENUE;
-    newMatching.venue = existVenue;
-    newMatching.creator = existCreator;
     newMatching.fromUser = existVenue.user;
     newMatching.toUser = existCreator.user;
     newMatching.requestAt = new Date();
     newMatching.matchingFlag = false;
+    newMatching.status = MatchingStatus.PENDING;
+    newMatching.matchingAt = null;
+    return await this.matchingRepository.save(newMatching);
+  }
+
+  async createMatching(
+    matching: CreateMatchingRequest,
+    reqUser: User
+  ): Promise<Matching> {
+    const toUser = await this.userRepository.findOne({
+      where: { id: matching.toUserId },
+    });
+    if (!toUser) {
+      throw new HttpException("To user not found", HttpStatus.NOT_FOUND);
+    }
+    if (toUser.id === reqUser.id) {
+      throw new HttpException("Cannot request to self", HttpStatus.BAD_REQUEST);
+    }
+
+    const existMatching = await this.matchingRepository
+      .createQueryBuilder("matching")
+      .leftJoin("matching.fromUser", "fromUser")
+      .leftJoin("matching.toUser", "toUser")
+      .where(
+        "(fromUser.id = :fromId AND toUser.id = :toId) OR (fromUser.id = :toId AND toUser.id = :fromId)",
+        { fromId: reqUser.id, toId: toUser.id }
+      )
+      .getOne();
+    if (existMatching) {
+      throw new HttpException(
+        "Matching already exists",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const newMatching = new Matching();
+    newMatching.fromUser = reqUser;
+    newMatching.toUser = toUser;
+    newMatching.requestAt = new Date();
+    newMatching.matchingFlag = false;
+    newMatching.status = MatchingStatus.PENDING;
     newMatching.matchingAt = null;
     return await this.matchingRepository.save(newMatching);
   }
 
   async getRequestMatchings(reqUser: User) {
     const matchings = await this.matchingRepository.find({
-      where: { toUser: { id: reqUser.id }, matchingFlag: false },
-      relations: ['creator', 'venue'],
-      order: { requestAt: 'DESC' },
+      where: {
+        toUser: { id: reqUser.id },
+        matchingFlag: false,
+        status: MatchingStatus.PENDING,
+      },
+      relations: ["fromUser", "toUser"],
+      order: { requestAt: "DESC" },
     });
     return matchings;
   }
@@ -141,27 +177,53 @@ export class MatchingService {
         toUser: { id: reqUser.id },
         matchingFlag: false,
       },
-      relations: ['creator', 'venue'],
+      relations: ["fromUser", "toUser"],
     });
 
     if (!matching) {
       throw new HttpException(
-        'Matching request not found',
-        HttpStatus.NOT_FOUND,
+        "Matching request not found",
+        HttpStatus.NOT_FOUND
       );
     }
 
     matching.matchingFlag = true;
+    matching.status = MatchingStatus.MATCHING;
     matching.matchingAt = new Date();
 
+    return await this.matchingRepository.save(matching);
+  }
+
+  async rejectMatchingRequest(
+    matchingId: number,
+    reqUser: User
+  ): Promise<Matching> {
+    const matching = await this.matchingRepository.findOne({
+      where: {
+        id: matchingId,
+        toUser: { id: reqUser.id },
+        matchingFlag: false,
+      },
+      relations: ["fromUser", "toUser"],
+    });
+
+    if (!matching) {
+      throw new HttpException(
+        "Matching request not found",
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    matching.status = MatchingStatus.REJECTED;
+    // 保持するか削除するかは要件次第。今回は保持して一覧からは除外（PENDINGのみ取得）
     return await this.matchingRepository.save(matching);
   }
 
   async getCompletedMatchings(reqUser: User) {
     const completedMatchings = await this.matchingRepository.find({
       where: { toUser: { id: reqUser.id }, matchingFlag: true },
-      relations: ['creator', 'venue', 'fromUser', 'toUser'],
-      order: { matchingAt: 'DESC' },
+      relations: ["fromUser", "toUser"],
+      order: { matchingAt: "DESC" },
     });
     return completedMatchings;
   }

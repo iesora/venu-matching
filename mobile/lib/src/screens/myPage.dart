@@ -5,15 +5,18 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
 import 'package:mobile/src/widgets/custom_dialog.dart';
-import 'package:mobile/src/screens/blockList.dart';
-import 'package:mobile/src/screens/venu/myVenu.dart'; // myVenu画面のインポート
+// import 'package:mobile/src/screens/blockList.dart';
+// import 'package:mobile/src/screens/venu/myVenu.dart'; // myVenu画面のインポート
 import 'package:mobile/src/screens/auth/sign_in_screen.dart'; // sign_in_screenのインポート
 
 class MyPageScreen extends HookWidget {
-  const MyPageScreen({Key? key}) : super(key: key);
+  final VoidCallback? onToggleTabLayout;
+  final bool? isUsingSearchMatchingTabs;
+  const MyPageScreen(
+      {Key? key, this.onToggleTabLayout, this.isUsingSearchMatchingTabs})
+      : super(key: key);
 
   void _handleLogout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -145,6 +148,18 @@ class MyPageScreen extends HookWidget {
       ),
       body: ListView(
         children: [
+          ListTile(
+            leading: Icon(Icons.swap_horiz, color: Colors.grey[800]),
+            title: Text(
+              (isUsingSearchMatchingTabs ?? false)
+                  ? 'タブをランキング/QRに戻す'
+                  : 'タブを検索/マッチングに切り替える',
+              style: const TextStyle(color: Colors.black),
+            ),
+            onTap: () {
+              onToggleTabLayout?.call();
+            },
+          ),
           ListTile(
             leading: Icon(Icons.logout, color: Colors.grey[800]),
             title: const Text('ログアウト', style: TextStyle(color: Colors.black)),

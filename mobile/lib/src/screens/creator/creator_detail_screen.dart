@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mobile/src/screens/request/requestFromVenu.dart';
+// import 'package:mobile/src/screens/request/requestFromVenu.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreatorDetailScreen extends StatefulWidget {
   final int creatorId;
 
-  const CreatorDetailScreen({Key? key, required this.creatorId}) : super(key: key);
+  const CreatorDetailScreen({Key? key, required this.creatorId})
+      : super(key: key);
 
   @override
   State<CreatorDetailScreen> createState() => _CreatorDetailScreenState();
@@ -98,7 +100,8 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
         _hero(),
         Card(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -107,12 +110,14 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 if (description.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(description, style: const TextStyle(fontSize: 14)),
+                    child:
+                        Text(description, style: const TextStyle(fontSize: 14)),
                   ),
               ],
             ),
@@ -120,14 +125,17 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('連絡先', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('連絡先',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 _infoRow(Icons.mail, email),
                 _infoRow(Icons.call, phone),
                 _infoRow(Icons.language, website),
@@ -161,15 +169,43 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RequestFromVenuScreen(
-                            createrId: widget.creatorId,
-                          ),
-                        ),
-                      );
+                    onPressed: () async {
+                      final toUserId = _creator?['user'] != null
+                          ? _creator!['user']['id'] as int?
+                          : null;
+                      if (toUserId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('送信先ユーザーが見つかりません')));
+                        return;
+                      }
+                      try {
+                        final prefs = await SharedPreferences.getInstance();
+                        final token = prefs.getString('userToken');
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('ログインが必要です')));
+                          return;
+                        }
+                        final res = await http.post(
+                          Uri.parse(
+                              '${dotenv.get('API_URL')}/matching/request'),
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer $token',
+                          },
+                          body: jsonEncode({'toUserId': toUserId}),
+                        );
+                        if (res.statusCode == 201 || res.statusCode == 200) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('リクエストを送信しました')));
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('送信に失敗しました (${res.statusCode})')));
+                        }
+                      } catch (_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ネットワークエラー')));
+                      }
                     },
                     child: const Text('リクエスト'),
                   ),
@@ -179,5 +215,3 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
     );
   }
 }
-
-

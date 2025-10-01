@@ -1,8 +1,8 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Creator } from '../../entities/creator.entity';
-import { User } from '../../entities/user.entity';
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Creator } from "../../entities/creator.entity";
+import { User } from "../../entities/user.entity";
 
 export type CreateCreatorRequest = {
   name: string;
@@ -31,7 +31,7 @@ export class CreatorService {
     @InjectRepository(Creator)
     private readonly creatorRepository: Repository<Creator>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async createCreator(creatorData: CreateCreatorRequest): Promise<Creator> {
@@ -39,7 +39,7 @@ export class CreatorService {
       where: { id: creatorData.userId },
     });
     if (!existUser) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
     const newCreator = new Creator();
     newCreator.name = creatorData.name;
@@ -55,13 +55,13 @@ export class CreatorService {
 
   async updateCreator(
     id: number,
-    creatorData: UpdateCreatorRequest,
+    creatorData: UpdateCreatorRequest
   ): Promise<Creator> {
     const existCreator = await this.creatorRepository.findOne({
       where: { id },
     });
     if (!existCreator) {
-      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
     }
     existCreator.name = creatorData.name;
     existCreator.description = creatorData.description;
@@ -73,13 +73,21 @@ export class CreatorService {
     return await this.creatorRepository.save(existCreator);
   }
 
-  async getCreators(): Promise<Creator[]> {
-    return await this.creatorRepository.find();
+  async getCreators(userId?: number): Promise<Creator[]> {
+    console.log("userId", userId);
+    const existCreators = await this.creatorRepository
+      .createQueryBuilder("creator")
+      .leftJoinAndSelect("creator.user", "user")
+      .leftJoinAndSelect("creator.opuses", "opuses")
+      .where("user.id != :userId", { userId })
+      .getMany();
+    console.log("creators", existCreators);
+    return existCreators;
   }
 
   async getCreatorsByUserId(userId?: number): Promise<Creator[]> {
     const creators = await this.creatorRepository.find({
-      relations: ['user', 'opuses'],
+      relations: ["user", "opuses"],
       where: userId ? { user: { id: userId } } : {},
     });
     return creators;
@@ -88,11 +96,11 @@ export class CreatorService {
   async getCreatorById(id: number): Promise<Creator> {
     const creator = await this.creatorRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!creator) {
-      throw new HttpException('Creator not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
     }
 
     return creator;

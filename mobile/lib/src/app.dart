@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'screens/home.dart';
 import 'screens/ranking.dart';
 import 'screens/search.dart';
-import 'screens/request/requestList.dart';
 import 'screens/myPage.dart';
 import 'screens/match/matchingList.dart'; // 追加
 import 'screens/qr_scan_screen.dart';
@@ -65,6 +64,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Map<String, dynamic>? _userData;
   late int _selectedIndex;
   DateTime now = DateTime.now();
+  bool _useSearchMatchingTabs = false;
 
   @override
   void initState() {
@@ -149,23 +149,40 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 
   void _setupScreens() {
-    if (_userData != null && _userData!['mode'] == 'normal') {
+    final bool isNormalMode =
+        _userData != null && _userData!['mode'] == 'normal';
+    final bool useAltLayout = _useSearchMatchingTabs || !isNormalMode;
+    if (!useAltLayout) {
       _screens = [
         HomeScreen(),
         RankingScreen(),
         QrScanScreen(),
         EventListScreen(),
-        MyPageScreen(),
+        MyPageScreen(
+            onToggleTabLayout: _toggleTabLayout,
+            isUsingSearchMatchingTabs: _useSearchMatchingTabs),
       ];
     } else {
       _screens = [
-        SearchScreen(), // ダミー（検索タブ用）
-        RequestListScreen(),
-        MatchingListScreen(), // 追加
+        HomeScreen(),
+        SearchScreen(),
+        MatchingListScreen(),
         EventListScreen(),
-        MyPageScreen(),
+        MyPageScreen(
+            onToggleTabLayout: _toggleTabLayout,
+            isUsingSearchMatchingTabs: _useSearchMatchingTabs),
       ];
     }
+  }
+
+  void _toggleTabLayout() {
+    setState(() {
+      _useSearchMatchingTabs = !_useSearchMatchingTabs;
+      _setupScreens();
+      if (_useSearchMatchingTabs) {
+        _selectedIndex = 1; // 検索タブへ
+      }
+    });
   }
 
   Future<void> _loginBonus() async {
@@ -220,51 +237,58 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 child: BottomNavigationBar(
                   currentIndex: _selectedIndex,
                   onTap: _onItemTapped,
-                  items: _userData != null && _userData!['mode'] == 'normal'
-                      ? const <BottomNavigationBarItem>[
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.home_outlined),
-                              label: 'ホーム',
-                              backgroundColor: Colors.black87),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.emoji_events),
-                              label: 'ランキング',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.qr_code_scanner),
-                              label: 'QR',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.event),
-                              label: 'イベント',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.person_outline),
-                              label: 'マイページ',
-                              backgroundColor: Colors.white),
-                        ]
-                      : const <BottomNavigationBarItem>[
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.search),
-                              label: '検索',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.list),
-                              label: 'リクエスト',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.list_alt),
-                              label: 'マッチング',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.event),
-                              label: 'イベント',
-                              backgroundColor: Colors.white),
-                          BottomNavigationBarItem(
-                              icon: Icon(Icons.person_outline),
-                              label: 'マイページ',
-                              backgroundColor: Colors.white),
-                        ],
+                  items: (() {
+                    final bool isNormalMode =
+                        _userData != null && _userData!['mode'] == 'normal';
+                    final bool useAltLayout =
+                        _useSearchMatchingTabs || !isNormalMode;
+                    if (!useAltLayout) {
+                      return const <BottomNavigationBarItem>[
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.home_outlined),
+                            label: 'ホーム',
+                            backgroundColor: Colors.black87),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.emoji_events),
+                            label: 'ランキング',
+                            backgroundColor: Colors.white),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.qr_code_scanner),
+                            label: 'QR',
+                            backgroundColor: Colors.white),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.event),
+                            label: 'イベント',
+                            backgroundColor: Colors.white),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.person_outline),
+                            label: 'マイページ',
+                            backgroundColor: Colors.white),
+                      ];
+                    }
+                    return const <BottomNavigationBarItem>[
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.home_outlined),
+                          label: 'ホーム',
+                          backgroundColor: Colors.black87),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.search),
+                          label: '検索',
+                          backgroundColor: Colors.white),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.list_alt),
+                          label: 'マッチング',
+                          backgroundColor: Colors.white),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.event),
+                          label: 'イベント',
+                          backgroundColor: Colors.white),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.person_outline),
+                          label: 'マイページ',
+                          backgroundColor: Colors.white),
+                    ];
+                  })(),
                   type: Theme.of(context).bottomNavigationBarTheme.type ??
                       BottomNavigationBarType.fixed,
                   backgroundColor: Theme.of(context)

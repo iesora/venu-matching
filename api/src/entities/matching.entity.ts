@@ -6,62 +6,54 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from 'typeorm';
-import { Creator } from './creator.entity';
-import { Venue } from './venue.entity';
-import { User } from './user.entity';
+  OneToMany,
+} from "typeorm";
+import { User } from "./user.entity";
+import { ChatGroup } from "./chatGroup.entity";
 
-export enum MatchingFrom {
-  CREATOR = 'creator',
-  VENUE = 'venue',
+export enum MatchingStatus {
+  PENDING = "pending",
+  MATCHING = "matching",
+  REJECTED = "rejected",
 }
 
-@Entity({ name: 'matching' })
+@Entity({ name: "matching" })
 export class Matching {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    type: 'enum',
-    enum: MatchingFrom,
-    name: 'from',
-  })
-  from: MatchingFrom;
-
-  @Column({ type: 'boolean', name: 'matching_flag', default: false })
+  @Column({ type: "boolean", name: "matching_flag", default: false })
   matchingFlag: boolean;
 
-  @ManyToOne(() => Creator, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'creator_id' })
-  creator: Creator;
-
-  @ManyToOne(() => Venue, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'venue_id' })
-  venue: Venue;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'from_user_id' })
+  @ManyToOne(() => User, { onDelete: "CASCADE", nullable: true })
+  @JoinColumn({ name: "from_user_id" })
   fromUser: User;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'to_user_id' })
+  @ManyToOne(() => User, { onDelete: "CASCADE", nullable: true })
+  @JoinColumn({ name: "to_user_id" })
   toUser: User;
 
-  @Column({ type: 'datetime', name: 'request_at', nullable: true })
+  @OneToMany(() => ChatGroup, (chatGroup) => chatGroup.matching)
+  chatGroups: ChatGroup[];
+
+  @Column({ type: "enum", name: "status", enum: MatchingStatus })
+  status: MatchingStatus;
+
+  @Column({ type: "datetime", name: "request_at", nullable: true })
   requestAt: Date;
 
-  @Column({ type: 'datetime', name: 'matching_at', nullable: true })
+  @Column({ type: "datetime", name: "matching_at", nullable: true })
   matchingAt: Date;
 
   @CreateDateColumn({
-    type: 'datetime',
-    name: 'created_at',
+    type: "datetime",
+    name: "created_at",
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: 'timestamp',
-    name: 'updated_at',
+    type: "timestamp",
+    name: "updated_at",
   })
   updatedAt: Date;
 }

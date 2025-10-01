@@ -5,28 +5,31 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-} from 'typeorm';
-import { Exclude } from 'class-transformer';
-import { compareSync, hashSync } from 'bcryptjs';
-import { Creator } from './creator.entity';
-import { Venue } from './venue.entity';
-import { Matching } from './matching.entity';
+} from "typeorm";
+import { Exclude } from "class-transformer";
+import { compareSync, hashSync } from "bcryptjs";
+import { Creator } from "./creator.entity";
+import { Venue } from "./venue.entity";
+import { Matching } from "./matching.entity";
+import { ChatMessage } from "./message.entity";
+import { ChatGroup } from "./chatGroup.entity";
+import { ChatGroupUser } from "./chatGroupUser.entity";
 
 export enum UserRole {
-  ADMIN = 'admin',
-  MEMBER = 'member',
+  ADMIN = "admin",
+  MEMBER = "member",
 }
 
 export enum UserMode {
-  NORMAL = 'normal',
-  BUSINESS = 'business',
+  NORMAL = "normal",
+  BUSINESS = "business",
 }
 
 export type RequestWithUser = {
   user: User;
 };
 
-@Entity({ name: 'user' })
+@Entity({ name: "user" })
 export class User {
   static async comparePassword(pass0, pass1) {
     return compareSync(pass0, pass1);
@@ -40,14 +43,14 @@ export class User {
   id: number;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserRole,
-    name: 'role',
+    name: "role",
     nullable: true,
   })
   role: UserRole;
 
-  @Column({ type: 'varchar', length: 500, name: 'email', default: '' })
+  @Column({ type: "varchar", length: 500, name: "email", default: "" })
   email: string;
 
   @Exclude({ toPlainOnly: true })
@@ -55,22 +58,22 @@ export class User {
   password: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserMode,
-    name: 'mode',
+    name: "mode",
     default: UserMode.NORMAL,
   })
   mode: UserMode;
 
   @CreateDateColumn({
-    type: 'datetime',
-    name: 'created_at',
+    type: "datetime",
+    name: "created_at",
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: 'timestamp',
-    name: 'updated_at',
+    type: "timestamp",
+    name: "updated_at",
   })
   updatedAt: Date;
 
@@ -85,4 +88,13 @@ export class User {
 
   @OneToMany(() => Matching, (matching) => matching.toUser)
   toMatchings?: Matching[];
+
+  @OneToMany(() => ChatMessage, (chatMessage) => chatMessage.author)
+  messages?: ChatMessage[];
+
+  @OneToMany(() => ChatGroupUser, (chatGroupUser) => chatGroupUser.user)
+  chatGroupUsers?: ChatGroupUser[];
+
+  @OneToMany(() => ChatGroup, (chatGroup) => chatGroup.chatGroupUsers)
+  chatGroups?: ChatGroup[];
 }

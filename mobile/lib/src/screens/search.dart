@@ -6,10 +6,11 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/src/widgets/venu/venu_card.dart';
 import 'package:mobile/src/widgets/creater/creater_card.dart';
-import 'package:mobile/src/screens/request/requestFromCreater.dart'; // 追加
-import 'package:mobile/src/screens/request/requestFromVenu.dart'; // 追加
+// import 'package:mobile/src/screens/request/requestFromCreater.dart'; // 旧導線
+// import 'package:mobile/src/screens/request/requestFromVenu.dart'; // 旧導線
 import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
 import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends HookWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -25,8 +26,16 @@ class SearchScreen extends HookWidget {
       isLoading.value = true;
       final url = Uri.parse("${dotenv.get('API_URL')}/venue");
       try {
-        final response =
-            await http.get(url, headers: {'Content-Type': 'application/json'});
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('userToken');
+        if (token == null) {
+          print('トークンが取得できませんでした');
+          return;
+        }
+        final response = await http.get(url, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        });
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           venuList.value = data;
@@ -43,10 +52,18 @@ class SearchScreen extends HookWidget {
     // クリエーター一覧を取得する関数
     Future<void> fetchCreators() async {
       isLoading.value = true;
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      if (token == null) {
+        print('トークンが取得できませんでした');
+        return;
+      }
       final url = Uri.parse("${dotenv.get('API_URL')}/creator");
       try {
-        final response =
-            await http.get(url, headers: {'Content-Type': 'application/json'});
+        final response = await http.get(url, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        });
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           creatorList.value = data;
@@ -66,6 +83,34 @@ class SearchScreen extends HookWidget {
       fetchCreators();
       return null;
     }, []);
+
+    // クリエーターにマッチングリクエストを送信（JWTユーザー→toUserId）
+    Future<void> requestMatchingToUser(int toUserId) async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      if (token == null) {
+        print('トークンが取得できませんでした');
+        return;
+      }
+      final url = Uri.parse("${dotenv.get('API_URL')}/matching/request");
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({'toUserId': toUserId}),
+        );
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          print('リクエストが成功しました');
+        } else {
+          print('リクエストエラー: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('リクエスト中に例外が発生しました: $e');
+      }
+    }
 
     return DefaultTabController(
       length: 2,
@@ -92,14 +137,10 @@ class SearchScreen extends HookWidget {
                           return VenuCard(
                             venu: venu,
                             onRequest: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => RequestFromCreater(
-                                    venuId: venu['id'],
-                                  ),
-                                ),
-                              );
+                              final toUserId = venu['user']?['id'];
+                              if (toUserId is int) {
+                                requestMatchingToUser(toUserId);
+                              }
                             },
                             onTap: () {
                               if (venu['id'] == null) return;
@@ -126,14 +167,10 @@ class SearchScreen extends HookWidget {
                           return CreatorCard(
                             creator: creator,
                             onRequest: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => RequestFromVenuScreen(
-                                    createrId: creator['id'],
-                                  ),
-                                ),
-                              );
+                              final toUserId = creator['user']?['id'];
+                              if (toUserId is int) {
+                                requestMatchingToUser(toUserId);
+                              }
                             },
                             onTap: () {
                               if (creator['id'] == null) return;

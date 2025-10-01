@@ -28,7 +28,7 @@ class RequestFromVenuScreen extends HookWidget {
       }
       isLoading.value = true;
       final url = Uri.parse(
-          "${dotenv.get('API_URL')}/venu?userId=${userId.toString()}");
+          "${dotenv.get('API_URL')}/venue?userId=${userId.toString()}");
       try {
         final response = await http.get(
           url,
@@ -63,7 +63,7 @@ class RequestFromVenuScreen extends HookWidget {
         print('トークンが取得できませんでした');
         return;
       }
-      final url = Uri.parse("${dotenv.get('API_URL')}/matching/request/venu");
+      final url = Uri.parse("${dotenv.get('API_URL')}/matching/request/venue");
       try {
         final response = await http.post(
           url,
@@ -71,7 +71,8 @@ class RequestFromVenuScreen extends HookWidget {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
           },
-          body: jsonEncode({'venuId': selectedVenue.value!['id']}),
+          body: jsonEncode(
+              {'venueId': selectedVenue.value!['id'], 'creatorId': createrId}),
         );
         if (response.statusCode == 200) {
           print('リクエストが成功しました');

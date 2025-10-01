@@ -77,6 +77,30 @@ class _RequestListScreenState extends State<RequestListScreen> {
     }
   }
 
+  Future<void> _rejectRequest(int matchingId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      final response = await http.patch(
+        Uri.parse(
+            '${dotenv.get('API_URL')}/matching/request/$matchingId/reject'),
+        headers: <String, String>{
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('リクエストの拒否に成功しました');
+        _fetchRequests();
+      } else {
+        print('リクエストの拒否に失敗しました: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('リクエストの拒否に失敗しました: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,40 +124,34 @@ class _RequestListScreenState extends State<RequestListScreen> {
       itemCount: _requests.length,
       itemBuilder: (context, index) {
         final request = _requests[index];
-        return ListTile(
-          title: Text(request['content'] ?? 'No Content'),
-          subtitle: Text(request['createdAt'] ?? 'No Date'),
-          onTap: () {
-            _showConfirmationDialog(request['id']);
-          },
+        final fromUser = request['fromUser'];
+        final createdAt = request['requestAt'] ?? request['createdAt'];
+        final title =
+            fromUser != null ? 'リクエスト元: ユーザー #${fromUser['id']}' : 'リクエスト';
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: ListTile(
+            title: Text(title),
+            subtitle: Text(createdAt?.toString() ?? ''),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  onPressed: () => _rejectRequest(request['id']),
+                  child: const Text('拒否'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => _acceptRequest(request['id']),
+                  child: const Text('承諾'),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  void _showConfirmationDialog(int matchingId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('リクエストを承諾しますか？'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('いいえ'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _acceptRequest(matchingId);
-              },
-              child: const Text('はい'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // 旧ダイアログ関数は不要になったため削除
 }

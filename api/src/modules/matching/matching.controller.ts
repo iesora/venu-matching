@@ -7,10 +7,10 @@ import {
   Get,
   Patch,
   Param,
-} from '@nestjs/common';
-import { MatchingService } from './matching.service';
-import { RequestWithUser } from '../user/user.controller';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+} from "@nestjs/common";
+import { MatchingService } from "./matching.service";
+import { RequestWithUser } from "../user/user.controller";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
 export interface CreateMatchingFromCreatorRequest {
   creatorId: number;
@@ -29,44 +29,66 @@ export interface CreateMatchingEventRequest {
   endDate: Date;
 }
 
-@Controller('matching')
+export interface CreateMatchingRequest {
+  toUserId: number;
+}
+
+@Controller("matching")
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
-  @Post('request/creator')
+  @Post("request/creator")
   @UseGuards(JwtAuthGuard)
   async createMatchingFromCreator(
     @Body() matching: CreateMatchingFromCreatorRequest,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUser
   ) {
     return this.matchingService.createMatchingFromCreator(matching, req.user);
   }
 
-  @Post('request/venue')
+  @Post("request")
+  @UseGuards(JwtAuthGuard)
+  async createMatching(
+    @Body() matching: CreateMatchingRequest,
+    @Req() req: RequestWithUser
+  ) {
+    return this.matchingService.createMatching(matching, req.user);
+  }
+
+  @Post("request/venue")
   @UseGuards(JwtAuthGuard)
   async createMatchingFromVenue(
     @Body() matching: CreateMatchingFromVenueRequest,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUser
   ) {
     return this.matchingService.createMatchingFromVenue(matching, req.user);
   }
 
-  @Get('request')
+  @Get("request")
   @UseGuards(JwtAuthGuard)
   async getRequestMatchings(@Req() req: RequestWithUser) {
     return this.matchingService.getRequestMatchings(req.user);
   }
 
-  @Patch('request/:matchingId')
+  @Patch("request/:matchingId")
   @UseGuards(JwtAuthGuard)
   async acceptMatchingRequest(
-    @Param('matchingId') matchingId: number,
-    @Req() req: RequestWithUser,
+    @Param("matchingId") matchingId: number,
+    @Req() req: RequestWithUser
   ) {
     return this.matchingService.acceptMatchingRequest(matchingId, req.user);
   }
 
-  @Get('completed')
+  @Patch("request/:matchingId/reject")
+  @UseGuards(JwtAuthGuard)
+  async rejectMatchingRequest(
+    @Param("matchingId") matchingId: number,
+    @Req() req: RequestWithUser
+  ) {
+    return this.matchingService.rejectMatchingRequest(matchingId, req.user);
+  }
+
+  @Get("completed")
   @UseGuards(JwtAuthGuard)
   async getCompletedMatchings(@Req() req: RequestWithUser) {
     return this.matchingService.getCompletedMatchings(req.user);

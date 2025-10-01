@@ -38,8 +38,11 @@ export class CreatorController {
   }
 
   @Get()
-  async getCreators() {
-    return await this.creatorService.getCreators();
+  @UseGuards(JwtAuthGuard)
+  async getCreators(@Req() req: RequestWithUser) {
+    console.log("req.user.id", req.user.id);
+
+    return await this.creatorService.getCreators(req.user.id);
   }
 
   @Get("user/:userId")

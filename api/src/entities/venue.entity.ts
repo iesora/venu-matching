@@ -74,9 +74,6 @@ export class Venue {
   @JoinColumn({ name: "user_id" })
   user: User;
 
-  @OneToMany(() => Matching, (matching) => matching.venue)
-  matchings?: Matching[];
-
   @OneToMany(() => Event, (event) => event.venue)
   events?: Event[];
 

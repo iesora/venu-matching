@@ -27,7 +27,7 @@ class RequestFromCreater extends HookWidget {
       }
       isLoading.value = true;
       final url = Uri.parse(
-          "${dotenv.get('API_URL')}/creator?userId=${userId.toString()}");
+          "${dotenv.get('API_URL')}/creator/user/${userId.toString()}");
       try {
         final response = await http.get(
           url,
@@ -72,7 +72,7 @@ class RequestFromCreater extends HookWidget {
             'Authorization': 'Bearer $token',
           },
           body: jsonEncode(
-              {'creatorId': selectedCreator.value!['id'], 'venuId': venuId}),
+              {'creatorId': selectedCreator.value!['id'], 'venueId': venuId}),
         );
         if (response.statusCode == 200) {
           print('リクエストが成功しました');

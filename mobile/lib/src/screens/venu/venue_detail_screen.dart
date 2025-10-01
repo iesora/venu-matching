@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mobile/src/screens/request/requestFromCreater.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VenueDetailScreen extends StatefulWidget {
   final int venueId;
@@ -99,7 +99,8 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
         _hero(),
         Card(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -108,12 +109,14 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 if (description.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(description, style: const TextStyle(fontSize: 14)),
+                    child:
+                        Text(description, style: const TextStyle(fontSize: 14)),
                   ),
               ],
             ),
@@ -121,19 +124,25 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('会場情報', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('会場情報',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 _infoRow(Icons.location_on, address),
                 _infoRow(Icons.call, tel),
-                _infoRow(Icons.groups, capacity.isNotEmpty ? '収容人数: $capacity' : ''),
-                _infoRow(Icons.access_time, availableTime.isNotEmpty ? '利用時間: $availableTime' : ''),
-                _infoRow(Icons.handyman, facilities.isNotEmpty ? '設備: $facilities' : ''),
+                _infoRow(
+                    Icons.groups, capacity.isNotEmpty ? '収容人数: $capacity' : ''),
+                _infoRow(Icons.access_time,
+                    availableTime.isNotEmpty ? '利用時間: $availableTime' : ''),
+                _infoRow(Icons.handyman,
+                    facilities.isNotEmpty ? '設備: $facilities' : ''),
               ],
             ),
           ),
@@ -163,15 +172,43 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RequestFromCreater(
-                            venuId: widget.venueId,
-                          ),
-                        ),
-                      );
+                    onPressed: () async {
+                      final toUserId = _venue?['user'] != null
+                          ? _venue!['user']['id'] as int?
+                          : null;
+                      if (toUserId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('送信先ユーザーが見つかりません')));
+                        return;
+                      }
+                      try {
+                        final prefs = await SharedPreferences.getInstance();
+                        final token = prefs.getString('userToken');
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('ログインが必要です')));
+                          return;
+                        }
+                        final res = await http.post(
+                          Uri.parse(
+                              '${dotenv.get('API_URL')}/matching/request'),
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer $token',
+                          },
+                          body: jsonEncode({'toUserId': toUserId}),
+                        );
+                        if (res.statusCode == 201 || res.statusCode == 200) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('リクエストを送信しました')));
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('送信に失敗しました (${res.statusCode})')));
+                        }
+                      } catch (_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ネットワークエラー')));
+                      }
                     },
                     child: const Text('リクエスト'),
                   ),
@@ -181,5 +218,3 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
     );
   }
 }
-
-

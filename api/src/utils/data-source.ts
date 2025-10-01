@@ -6,6 +6,9 @@ import { Matching } from "../entities/matching.entity";
 import { Opus } from "../entities/opus.entity";
 import { Event } from "../entities/event.entity";
 import { CreatorEvent } from "../entities/createrEvent.entity";
+import { ChatGroup } from "../entities/chatGroup.entity";
+import { ChatGroupUser } from "../entities/chatGroupUser.entity";
+import { ChatMessage } from "../entities/message.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -26,5 +29,16 @@ export const AppDataSource = new DataSource({
       : ["dist/migrations/*.js"],
   synchronize: false,
   logging: true,
-  entities: [User, Creator, Venue, Matching, Opus, Event, CreatorEvent],
+  entities: [
+    User,
+    Creator,
+    Venue,
+    Matching,
+    Opus,
+    Event,
+    CreatorEvent,
+    ChatGroup,
+    ChatGroupUser,
+    ChatMessage,
+  ],
 });

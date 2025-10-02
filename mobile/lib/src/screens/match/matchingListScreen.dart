@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'matchingEventList.dart'; // イベント一覧画面のインポート
+import '../chat.dart';
 
 class MatchingListScreen extends HookWidget {
   const MatchingListScreen({Key? key}) : super(key: key);
@@ -55,20 +56,38 @@ class MatchingListScreen extends HookWidget {
               itemCount: completedMatchings.value.length,
               itemBuilder: (context, index) {
                 final matching = completedMatchings.value[index];
+                final groupId = (matching['chatGroups'] != null &&
+                        matching['chatGroups'] is Map<String, dynamic>)
+                    ? matching['chatGroups']['id']
+                    : (matching['chatGroups'] != null &&
+                            matching['chatGroups'] is List &&
+                            matching['chatGroups'].isNotEmpty)
+                        ? matching['chatGroups'][0]['id']
+                        : null;
+
                 return ListTile(
-                  title: Text('会場: ${matching['venu']['name']}'),
-                  subtitle: Text('クリエーター: ${matching['creator']['name']}'),
+                  title: Text('送信者: ${matching['fromUser']['name']}'),
+                  subtitle: Text('受信者: ${matching['toUser']['name']}'),
                   trailing: Text('マッチング日: ${matching['matchingAt']}'),
                   onTap: () {
-                    // カードをクリックした時にイベント一覧画面に遷移
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MatchingEventListScreen(
-                          matchingId: matching['id'],
+                    if (groupId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                              groupId: int.parse(groupId.toString())),
                         ),
-                      ),
-                    );
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MatchingEventListScreen(
+                            matchingId: matching['id'],
+                          ),
+                        ),
+                      );
+                    }
                   },
                 );
               },

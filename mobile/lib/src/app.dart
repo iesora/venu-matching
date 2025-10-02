@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/home.dart';
+// import 'screens/home.dart';
+import 'screens/businessHome.dart';
 import 'screens/ranking.dart';
 import 'screens/search.dart';
 import 'screens/myPage.dart';
-import 'screens/match/matchingList.dart'; // 追加
 import 'screens/qr_scan_screen.dart';
 import 'screens/event/event_list_screen.dart';
 import 'theme/app_theme.dart';
@@ -18,6 +18,8 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'widgets/custom_dialog.dart';
 import 'widgets/custom_snackbar.dart';
+import 'screens/home.dart';
+import 'screens/match/matchingListScreen.dart';
 
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -164,7 +166,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ];
     } else {
       _screens = [
-        HomeScreen(),
+        BusinessHomeScreen(),
         SearchScreen(),
         MatchingListScreen(),
         EventListScreen(),

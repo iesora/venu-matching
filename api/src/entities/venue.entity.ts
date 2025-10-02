@@ -77,6 +77,9 @@ export class Venue {
   @OneToMany(() => Event, (event) => event.venue)
   events?: Event[];
 
+  @OneToMany(() => Matching, (matching) => matching.venue)
+  matchings?: Matching[];
+
   @CreateDateColumn({
     type: "datetime",
     name: "created_at",

@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from "typeorm";
 import { User } from "./user.entity";
-import { Matching } from "./matching.entity";
 import { Opus } from "./opus.entity";
 import { CreatorEvent } from "./createrEvent.entity";
+import { Matching } from "./matching.entity";
 
 @Entity({ name: "creator" })
 export class Creator {
@@ -58,6 +58,9 @@ export class Creator {
 
   @OneToMany(() => CreatorEvent, (creatorEvent) => creatorEvent.creator)
   creatorEvents?: CreatorEvent[];
+
+  @OneToMany(() => Matching, (matching) => matching.creator)
+  matchings?: Matching[];
 
   @CreateDateColumn({
     type: "datetime",

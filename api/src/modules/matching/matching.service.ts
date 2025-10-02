@@ -11,6 +11,8 @@ import {
   CreateMatchingRequest,
 } from "./matching.controller";
 import { Event } from "../../entities/event.entity";
+import { ChatGroup } from "../../entities/chatGroup.entity"; // グループエンティティをインポート
+import { ChatGroupUser } from "../../entities/chatGroupUser.entity";
 
 @Injectable()
 export class MatchingService {
@@ -24,7 +26,11 @@ export class MatchingService {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(ChatGroup)
+    private readonly groupRepository: Repository<ChatGroup>, // グループリポジトリを追加
+    @InjectRepository(ChatGroupUser)
+    private readonly chatGroupUserRepository: Repository<ChatGroupUser>
   ) {}
 
   async createMatchingFromCreator(
@@ -36,11 +42,15 @@ export class MatchingService {
       relations: ["user"],
     });
 
+    const existCreator = await this.creatorRepository.findOne({
+      where: { id: matching.creatorId },
+      relations: ["user"],
+    });
+
     if (!existVenue) {
       throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
     }
 
-    // 重複チェック（双方向）
     const existMatching = await this.matchingRepository
       .createQueryBuilder("matching")
       .leftJoin("matching.fromUser", "fromUser")
@@ -60,6 +70,8 @@ export class MatchingService {
     const newMatching = new Matching();
     newMatching.fromUser = reqUser;
     newMatching.toUser = existVenue.user;
+    newMatching.creator = existCreator;
+    newMatching.venue = existVenue;
     newMatching.requestAt = new Date();
     newMatching.matchingFlag = false;
     newMatching.status = MatchingStatus.PENDING;
@@ -71,14 +83,17 @@ export class MatchingService {
     matching: CreateMatchingFromVenueRequest,
     reqUser: User
   ): Promise<Matching> {
+    console.log(matching);
     const existVenue = await this.venueRepository.findOne({
       where: { id: matching.venueId },
       relations: ["user"],
     });
+    console.log(existVenue);
     const existCreator = await this.creatorRepository.findOne({
       where: { id: matching.creatorId },
       relations: ["user"],
     });
+    console.log(existCreator);
 
     if (!existVenue) {
       throw new HttpException("Venue not found", HttpStatus.NOT_FOUND);
@@ -90,7 +105,6 @@ export class MatchingService {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // 重複チェック（双方向）
     const existMatching = await this.matchingRepository
       .createQueryBuilder("matching")
       .leftJoin("matching.fromUser", "fromUser")
@@ -110,6 +124,8 @@ export class MatchingService {
     const newMatching = new Matching();
     newMatching.fromUser = existVenue.user;
     newMatching.toUser = existCreator.user;
+    newMatching.creator = existCreator;
+    newMatching.venue = existVenue;
     newMatching.requestAt = new Date();
     newMatching.matchingFlag = false;
     newMatching.status = MatchingStatus.PENDING;
@@ -124,6 +140,7 @@ export class MatchingService {
     const toUser = await this.userRepository.findOne({
       where: { id: matching.toUserId },
     });
+
     if (!toUser) {
       throw new HttpException("To user not found", HttpStatus.NOT_FOUND);
     }
@@ -140,6 +157,7 @@ export class MatchingService {
         { fromId: reqUser.id, toId: toUser.id }
       )
       .getOne();
+    console.log(existMatching);
     if (existMatching) {
       throw new HttpException(
         "Matching already exists",
@@ -148,6 +166,20 @@ export class MatchingService {
     }
 
     const newMatching = new Matching();
+    if (matching.creatorId) {
+      const existCreator = await this.creatorRepository.findOne({
+        where: { id: matching.creatorId },
+        relations: ["user"],
+      });
+      newMatching.creator = existCreator;
+    }
+    if (matching.venueId) {
+      const existVenue = await this.venueRepository.findOne({
+        where: { id: matching.venueId },
+        relations: ["user"],
+      });
+      newMatching.venue = existVenue;
+    }
     newMatching.fromUser = reqUser;
     newMatching.toUser = toUser;
     newMatching.requestAt = new Date();
@@ -191,7 +223,29 @@ export class MatchingService {
     matching.status = MatchingStatus.MATCHING;
     matching.matchingAt = new Date();
 
-    return await this.matchingRepository.save(matching);
+    const savedMatching = await this.matchingRepository.save(matching);
+
+    // マッチングが承諾された際にグループを作成
+    const newGroup = new ChatGroup();
+    newGroup.name = `Group_${savedMatching.id}`;
+    newGroup.matching = savedMatching;
+    newGroup.unreadMessageCount = 0;
+    newGroup.latestMessage = "";
+    newGroup.createdAt = new Date();
+    newGroup.updatedAt = new Date();
+    const savedGroup = await this.groupRepository.save(newGroup);
+    const newChatGroupUsers: ChatGroupUser[] = [];
+
+    const newChatGroupUser1 = new ChatGroupUser();
+    newChatGroupUser1.user = savedMatching.fromUser;
+    newChatGroupUser1.chatGroup = savedGroup;
+    newChatGroupUsers.push(newChatGroupUser1);
+    const newChatGroupUser2 = new ChatGroupUser();
+    newChatGroupUser2.user = savedMatching.toUser;
+    newChatGroupUser2.chatGroup = savedGroup;
+    newChatGroupUsers.push(newChatGroupUser2);
+    await this.chatGroupUserRepository.save(newChatGroupUsers);
+    return savedMatching;
   }
 
   async rejectMatchingRequest(
@@ -215,76 +269,19 @@ export class MatchingService {
     }
 
     matching.status = MatchingStatus.REJECTED;
-    // 保持するか削除するかは要件次第。今回は保持して一覧からは除外（PENDINGのみ取得）
     return await this.matchingRepository.save(matching);
   }
 
   async getCompletedMatchings(reqUser: User) {
-    const completedMatchings = await this.matchingRepository.find({
-      where: { toUser: { id: reqUser.id }, matchingFlag: true },
-      relations: ["fromUser", "toUser"],
-      order: { matchingAt: "DESC" },
-    });
+    const completedMatchings = await this.matchingRepository
+      .createQueryBuilder("matching")
+      .leftJoinAndSelect("matching.fromUser", "fromUser")
+      .leftJoinAndSelect("matching.toUser", "toUser")
+      .leftJoinAndSelect("matching.chatGroups", "chatGroups")
+      .where("toUser.id = :userId", { userId: reqUser.id })
+      .andWhere("matching.matchingFlag = :flag", { flag: true })
+      .orderBy("matching.matchingAt", "DESC")
+      .getMany();
     return completedMatchings;
   }
-
-  //fromUser,toUser,matchingは仕様変更につき削除
-  //   async getMatchingEvents(matchingId: number) {
-  //     const matchingEvents = await this.eventRepository.find({
-  //       relations: ['fromUser', 'toUser'],
-  //       where: {
-  //         matching: { id: matchingId },
-  //       },
-  //       order: { matchingAt: 'DESC' },
-  //     });
-  //     console.log(matchingEvents);
-  //     return matchingEvents;
-  //   }
-
-  //   async createMatchingEvent(
-  //     matchingId: number,
-  //     event: CreateMatchingEventRequest,
-  //   ) {
-  //     const matching = await this.matchingRepository.findOne({
-  //       where: { id: matchingId },
-  //     });
-  //     if (!matching) {
-  //       throw new HttpException('Matching not found', HttpStatus.NOT_FOUND);
-  //     }
-  //     const newEvent = new Event();
-  //     newEvent.matching = matching;
-  //     newEvent.title = event.title;
-  //     newEvent.description = event.description;
-  //     newEvent.startDate = new Date(event.startDate);
-  //     newEvent.endDate = new Date(event.endDate);
-  //     newEvent.fromUser = matching.fromUser;
-  //     newEvent.toUser = matching.toUser;
-  //     newEvent.requestAt = new Date();
-  //     newEvent.matchingStatus = MatchingStatus.PENDING;
-  //     newEvent.matchingAt = null;
-  //     return await this.eventRepository.save(newEvent);
-  //   }
-
-  //   async acceptMatchingEvent(eventId: number, reqUser: User) {
-  //     const event = await this.eventRepository.findOne({
-  //       where: { id: eventId, toUser: { id: reqUser.id } },
-  //     });
-  //     if (!event) {
-  //       throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-  //     }
-  //     event.matchingStatus = MatchingStatus.MATCHING;
-  //     event.matchingAt = new Date();
-  //     return await this.eventRepository.save(event);
-  //   }
-
-  //   async rejectMatchingEvent(eventId: number, reqUser: User) {
-  //     const event = await this.eventRepository.findOne({
-  //       where: { id: eventId, toUser: { id: reqUser.id } },
-  //     });
-  //     if (!event) {
-  //       throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-  //     }
-  //     event.matchingStatus = MatchingStatus.REJECTED;
-  //     return await this.eventRepository.save(event);
-  //   }
 }

@@ -31,6 +31,8 @@ export interface CreateMatchingEventRequest {
 
 export interface CreateMatchingRequest {
   toUserId: number;
+  creatorId?: number;
+  venueId?: number;
 }
 
 @Controller("matching")

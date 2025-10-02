@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany,
+  OneToOne,
 } from "typeorm";
 import { User } from "./user.entity";
 import { ChatGroup } from "./chatGroup.entity";
+import { Creator } from "./creator.entity";
+import { Venue } from "./venue.entity";
 
 export enum MatchingStatus {
   PENDING = "pending",
@@ -33,7 +35,7 @@ export class Matching {
   @JoinColumn({ name: "to_user_id" })
   toUser: User;
 
-  @OneToMany(() => ChatGroup, (chatGroup) => chatGroup.matching)
+  @OneToOne(() => ChatGroup, (chatGroup) => chatGroup.matching)
   chatGroups: ChatGroup[];
 
   @Column({ type: "enum", name: "status", enum: MatchingStatus })
@@ -44,6 +46,20 @@ export class Matching {
 
   @Column({ type: "datetime", name: "matching_at", nullable: true })
   matchingAt: Date;
+
+  @ManyToOne(() => Creator, (creator) => creator.matchings, {
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  @JoinColumn({ name: "creator_id" })
+  creator: Creator;
+
+  @ManyToOne(() => Venue, (venue) => venue.matchings, {
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  @JoinColumn({ name: "venue_id" })
+  venue: Venue;
 
   @CreateDateColumn({
     type: "datetime",

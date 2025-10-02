@@ -85,7 +85,8 @@ class SearchScreen extends HookWidget {
     }, []);
 
     // クリエーターにマッチングリクエストを送信（JWTユーザー→toUserId）
-    Future<void> requestMatchingToUser(int toUserId) async {
+    Future<void> requestMatchingToUser(int toUserId,
+        {int? venueId, int? creatorId}) async {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('userToken');
       if (token == null) {
@@ -94,13 +95,18 @@ class SearchScreen extends HookWidget {
       }
       final url = Uri.parse("${dotenv.get('API_URL')}/matching/request");
       try {
+        final body = {
+          'toUserId': toUserId,
+          if (venueId != null) 'venueId': venueId,
+          if (creatorId != null) 'creatorId': creatorId,
+        };
         final response = await http.post(
           url,
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
           },
-          body: jsonEncode({'toUserId': toUserId}),
+          body: jsonEncode(body),
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
           print('リクエストが成功しました');
@@ -138,8 +144,10 @@ class SearchScreen extends HookWidget {
                             venu: venu,
                             onRequest: () {
                               final toUserId = venu['user']?['id'];
-                              if (toUserId is int) {
-                                requestMatchingToUser(toUserId);
+                              final venueId = venu['id'];
+                              if (toUserId is int && venueId is int) {
+                                requestMatchingToUser(toUserId,
+                                    venueId: venueId);
                               }
                             },
                             onTap: () {
@@ -168,8 +176,10 @@ class SearchScreen extends HookWidget {
                             creator: creator,
                             onRequest: () {
                               final toUserId = creator['user']?['id'];
-                              if (toUserId is int) {
-                                requestMatchingToUser(toUserId);
+                              final creatorId = creator['id'];
+                              if (toUserId is int && creatorId is int) {
+                                requestMatchingToUser(toUserId,
+                                    creatorId: creatorId);
                               }
                             },
                             onTap: () {

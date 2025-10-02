@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   Index,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from "typeorm";
 import { ChatMessage } from "./message.entity";
@@ -34,7 +34,7 @@ export class ChatGroup {
   @OneToMany(() => ChatGroupUser, (chatGroupUser) => chatGroupUser.chatGroup)
   chatGroupUsers: ChatGroupUser[];
 
-  @ManyToOne(() => Matching, (matching) => matching.chatGroups)
+  @OneToOne(() => Matching, (matching) => matching.chatGroups)
   @JoinColumn({ name: "matching_id" })
   matching: Matching;
 

@@ -110,11 +110,19 @@ class SearchScreen extends HookWidget {
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
           print('リクエストが成功しました');
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('リクエストを送信しました')));
         } else {
           print('リクエストエラー: ${response.statusCode}');
+          // toaster.showToast('リクエストエラー: ${response.statusCode}');
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('リクエスト中にエラーが発生しました')));
         }
       } catch (e) {
         print('リクエスト中に例外が発生しました: $e');
+        // toaster.showToast('リクエスト中に例外が発生しました: $e');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('リクエスト中にエラーが発生しました')));
       }
     }
 

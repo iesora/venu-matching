@@ -16,53 +16,94 @@ class CreatorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: Colors.white,
-      margin: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: onTap,
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (creator['opuses'] != null && creator['opuses'].isNotEmpty)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: creator['opuses'].map<Widget>((opus) {
-                  return Image.network(
-                    opus['imageUrl'],
-                    width: 80.0,
-                    height: 80.0,
-                    fit: BoxFit.cover,
-                  );
-                }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (creator['opuses'] != null && creator['opuses'].isNotEmpty)
+              SizedBox(
+                height: 180,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: creator['opuses'].map<Widget>((opus) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 4.0),
+                        child: Image.network(
+                          opus['imageUrl'],
+                          width: 180,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 180,
+                              height: 180,
+                              alignment: Alignment.center,
+                              color: Colors.grey,
+                              child: const Icon(
+                                Icons.person,
+                                size: 48,
+                                color: Colors.white70,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                height: 180,
+                alignment: Alignment.center,
+                color: Colors.grey,
+                child: const Icon(
+                  Icons.person,
+                  size: 48,
+                  color: Colors.white70,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    creator['name'] ?? '名前未設定',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    creator['description'] ?? '説明なし',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  if (creator['specialties'] != null)
+                    Text(
+                      '専門: ${creator['specialties']}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  if (creator['location'] != null)
+                    Text(
+                      '場所: ${creator['location']}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: onRequest,
+                    child: const Text('リクエスト'),
+                  ),
+                ],
               ),
             ),
-          const SizedBox(height: 8.0),
-          Text(
-            creator['name'],
-            style: const TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8.0),
-          Text(
-            creator['description'],
-            style: const TextStyle(
-              fontSize: 16.0,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 8.0),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onRequest,
-              child: const Text('リクエスト'),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }

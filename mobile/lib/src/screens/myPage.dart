@@ -10,6 +10,7 @@ import 'package:mobile/src/widgets/custom_dialog.dart';
 // import 'package:mobile/src/screens/blockList.dart';
 // import 'package:mobile/src/screens/venu/myVenu.dart'; // myVenu画面のインポート
 import 'package:mobile/src/screens/auth/sign_in_screen.dart'; // sign_in_screenのインポート
+import 'package:mobile/src/screens/profile_screen.dart'; // profile_screenのインポート
 
 class MyPageScreen extends HookWidget {
   final VoidCallback? onToggleTabLayout;
@@ -158,6 +159,16 @@ class MyPageScreen extends HookWidget {
             ),
             onTap: () {
               onToggleTabLayout?.call();
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.person, color: Colors.grey[800]),
+            title: const Text('プロフィール', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
           ListTile(

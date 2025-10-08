@@ -4,9 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mobile/utils/userInfo.dart';
-import 'package:mobile/src/widgets/custom_snackbar.dart';
-import 'package:mobile/src/screens/editProfile.dart';
+import 'package:mobile/src/screens/editOpus.dart';
 
 class ProfileScreen extends HookWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -30,6 +28,7 @@ class ProfileScreen extends HookWidget {
     useEffect(() {
       print('selectedCreator: ${selectedCreator.value}');
       print('selectedVenue: ${selectedVenue.value}');
+      return null;
     }, [selectedCreator.value, selectedVenue.value]);
 
     // 展開するリストのウィジェット
@@ -61,29 +60,26 @@ class ProfileScreen extends HookWidget {
           children: List.generate(items.length, (index) {
             final item = items[index];
             return ElevatedButton(
-              onPressed: () {
-                // ここで各ボタン押下時の処理を追加できる
-                if (selectedType.value == 'venue') {
-                  selectedVenue.value = item;
-                  selectedCreator.value = null;
-                } else {
-                  selectedCreator.value = item;
-                  selectedVenue.value = null;
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                onPressed: () {
+                  if (selectedType.value == 'venue') {
+                    selectedVenue.value = item;
+                    selectedCreator.value = null;
+                  } else {
+                    selectedCreator.value = item;
+                    selectedVenue.value = null;
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
-                elevation: 0,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: Text(item['name'] ?? ''),
-            );
+                child: Text(item['name'] ?? ''));
           }),
         ),
       );
@@ -96,105 +92,116 @@ class ProfileScreen extends HookWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         elevation: 2,
-        margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (creator['imageUrl'] != null &&
                   creator['imageUrl'].toString().isNotEmpty)
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.network(
-                      creator['imageUrl'],
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stack) => Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.person, size: 40),
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(200),
+                          child: Image.network(
+                            creator['imageUrl'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stack) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.person, size: 50),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              if (creator['imageUrl'] != null &&
-                  creator['imageUrl'].toString().isNotEmpty)
-                const SizedBox(height: 16),
-              Text(
-                creator['name'] ?? '名前未設定',
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              if (creator['description'] != null &&
-                  creator['description'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    creator['description'],
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              if (creator['email'] != null &&
-                  creator['email'].toString().isNotEmpty)
-                Row(
-                  children: [
-                    const Icon(Icons.email, size: 18, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text(creator['email'],
-                        style: const TextStyle(fontSize: 15)),
-                  ],
-                ),
-              if (creator['website'] != null &&
-                  creator['website'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.link, size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          creator['website'],
-                          style:
-                              const TextStyle(fontSize: 15, color: Colors.blue),
-                          overflow: TextOverflow.ellipsis,
+              Expanded(
+                flex: 7,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          creator['name'] ?? '名前未設定',
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
-                  ),
+                        if (creator['description'] != null &&
+                            creator['description'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: 400,
+                              ),
+                              child: Text(
+                                creator['description'] ?? '',
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.black87),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                            ),
+                          ),
+                        if (creator['website'] != null &&
+                            creator['website'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.link,
+                                    size: 18, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    creator['website'],
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.blue),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (creator['phoneNumber'] != null &&
+                            creator['phoneNumber'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.phone,
+                                    size: 18, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Text(creator['phoneNumber'],
+                                    style: const TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          ),
+                        if (creator['socialMediaHandle'] != null &&
+                            creator['socialMediaHandle'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.alternate_email,
+                                    size: 18, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Text(creator['socialMediaHandle'],
+                                    style: const TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          ),
+                      ]),
                 ),
-              if (creator['phoneNumber'] != null &&
-                  creator['phoneNumber'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.phone, size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(creator['phoneNumber'],
-                          style: const TextStyle(fontSize: 15)),
-                    ],
-                  ),
-                ),
-              if (creator['socialMediaHandle'] != null &&
-                  creator['socialMediaHandle'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.alternate_email,
-                          size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(creator['socialMediaHandle'],
-                          style: const TextStyle(fontSize: 15)),
-                    ],
-                  ),
-                ),
+              )
             ],
           ),
         ),
@@ -214,18 +221,21 @@ class ProfileScreen extends HookWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
         elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(0.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '作品ギャラリー',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 0, 0),
+                child: const Text(
+                  '作品ギャラリー',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -235,8 +245,8 @@ class ProfileScreen extends HookWidget {
                 itemCount: opuses.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 1,
-                  mainAxisSpacing: 1,
+                  crossAxisSpacing: 0,
+                  mainAxisSpacing: 0,
                   childAspectRatio: 1 / 2, // 縦長
                 ),
                 itemBuilder: (context, index) {
@@ -333,13 +343,39 @@ class ProfileScreen extends HookWidget {
                           top: 4,
                           right: 4,
                           child: IconButton(
-                            icon: const Icon(Icons.edit, size: 20),
-                            color: Colors.grey[700],
-                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                                Icons.drive_file_rename_outline_rounded,
+                                size: 20),
+                            color: Colors.white,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black54,
+                            ),
+                            padding: EdgeInsets.all(6),
                             constraints: const BoxConstraints(),
                             onPressed: () {
-                              // 編集ボタン押下時の処理をここに追加
-                              // 例: Navigator.pushで編集画面へ遷移など
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (BuildContext context) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom,
+                                    ),
+                                    child: EditOpusBottomSheet(
+                                      opus: opus,
+                                      creatorId: selectedCreator.value!['id'],
+                                      onSuccess: () {
+                                        // 作品更新後にデータを再取得
+                                        _fetchUserCreators(context, creatorData,
+                                            isLoadingCreator);
+                                      },
+                                    ),
+                                  );
+                                },
+                              );
                             },
                             tooltip: '編集',
                           ),
@@ -362,7 +398,7 @@ class ProfileScreen extends HookWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         elevation: 2,
-        margin: const EdgeInsets.only(top: 20),
+        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -478,6 +514,7 @@ class ProfileScreen extends HookWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         elevation: 2,
+        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           child: Column(

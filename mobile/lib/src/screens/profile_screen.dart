@@ -5,31 +5,46 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/src/screens/editOpus.dart';
+import 'package:mobile/src/screens/auth/sign_in_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:mobile/src/loginState.dart';
+import 'package:mobile/src/widgets/custom_dialog.dart';
+import 'package:mobile/src/widgets/custom_snackbar.dart';
 
 class ProfileScreen extends HookWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  final Function(bool)? onToggleTabLayout;
+  final bool? isUsingSearchMatchingTabs;
+  const ProfileScreen(
+      {Key? key, this.onToggleTabLayout, this.isUsingSearchMatchingTabs})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final creatorData = useState<List<dynamic>>([]);
     final venueData = useState<List<dynamic>>([]);
+    final fromMeMatchingData = useState<List<dynamic>>([]);
+    final toMeMatchingData = useState<List<dynamic>>([]);
+    final completedMatchingData = useState<List<dynamic>>([]);
     final isLoadingCreator = useState<bool>(true);
     final isLoadingVenue = useState<bool>(true);
-    final selectedType = useState<String>('venue'); // 'venue' or 'creator'
+    final isLoadingOffer = useState<bool>(true);
+    final selectedType = useState<String>('venue');
     final selectedCreator = useState<Map<String, dynamic>?>(null);
     final selectedVenue = useState<Map<String, dynamic>?>(null);
+    final loginType = useState<String?>(null);
+    final loginRelationId = useState<int?>(null);
+
+    // 追加: オファータブの選択状態
+    final offerTabIndex = useState<int>(0); // 0: 受信, 1: 送信, 2: マッチング
+
+    // アカウント設定用の展開状態
+    final accountExpanded = useState<bool>(false);
 
     useEffect(() {
       _fetchUserCreators(context, creatorData, isLoadingCreator);
       _fetchUserVenues(context, venueData, isLoadingVenue);
       return null;
     }, []);
-
-    useEffect(() {
-      print('selectedCreator: ${selectedCreator.value}');
-      print('selectedVenue: ${selectedVenue.value}');
-      return null;
-    }, [selectedCreator.value, selectedVenue.value]);
 
     // 展開するリストのウィジェット
     Widget _buildNameButtons() {
@@ -41,7 +56,7 @@ class ProfileScreen extends HookWidget {
       }
       final items =
           selectedType.value == 'venue' ? venueData.value : creatorData.value;
-      if (items.isEmpty) {
+      if (items.isEmpty && selectedType.value != 'supporter') {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Center(
@@ -245,9 +260,7 @@ class ProfileScreen extends HookWidget {
                 itemCount: opuses.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 0,
-                  mainAxisSpacing: 0,
-                  childAspectRatio: 1 / 2, // 縦長
+                  childAspectRatio: 3 / 5, // 縦長
                 ),
                 itemBuilder: (context, index) {
                   final opus = opuses[index];
@@ -256,131 +269,225 @@ class ProfileScreen extends HookWidget {
                       (opus['imageUrl'] ?? '').toString().isNotEmpty
                           ? opus['imageUrl'] as String
                           : null;
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 2,
-                    child: Stack(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 画像部分（カード幅いっぱい、正方形）
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                topRight: Radius.circular(8),
-                              ),
-                              child: Column(children: [
-                                AspectRatio(
-                                  aspectRatio: 1, // 正方形
-                                  child: imageUrl != null
-                                      ? Image.network(
-                                          imageUrl,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stack) =>
-                                                  Container(
-                                            color: Colors.grey[300],
-                                            child: const Center(
-                                              child: Icon(Icons.broken_image,
-                                                  size: 40),
-                                            ),
-                                          ),
-                                        )
-                                      : Container(
-                                          color: Colors.grey[300],
-                                          child: const Center(
-                                            child: Icon(Icons.image,
-                                                size: 40,
-                                                color: Colors.white70),
-                                          ),
-                                        ),
+
+                  // 共通で使う編集処理
+                  void _openEditBottomSheet() {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (BuildContext context) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: EditOpusBottomSheet(
+                            opus: opus,
+                            creatorId: selectedCreator.value!['id'],
+                            onSuccess: () {
+                              // 作品更新後にデータを再取得
+                              _fetchUserCreators(
+                                  context, creatorData, isLoadingCreator);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  // 共通で使う削除処理
+                  void _showDeleteBottomSheet() {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (BuildContext context) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: EditOpusBottomSheet(
+                            opus: opus,
+                            creatorId: selectedCreator.value!['id'],
+                            onSuccess: () {
+                              _fetchUserCreators(
+                                  context, creatorData, isLoadingCreator);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext alertContext) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            contentPadding:
+                                const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                            title: Text(
+                              title,
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  opus['description'] != null &&
+                                          (opus['description'] as String)
+                                              .isNotEmpty
+                                      ? opus['description']
+                                      : '説明がありません',
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 15),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: double.infinity,
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                        CrossAxisAlignment.stretch,
                                     children: [
-                                      Text(
-                                        title,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(alertContext);
+                                          _openEditBottomSheet();
+                                        },
+                                        child: const Text('編集'),
                                       ),
-                                      if ((opus['description'] ?? '')
-                                          .toString()
-                                          .isNotEmpty)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 6.0),
-                                          child: Text(
-                                            opus['description'],
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black87,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(alertContext);
+                                          _showDeleteBottomSheet();
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
                                         ),
+                                        child: const Text('削除'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(alertContext);
+                                        },
+                                        child: const Text('キャンセル'),
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ]),
+                              ],
                             ),
-                          ],
-                        ),
-                        // 編集ボタン（右上）
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: IconButton(
-                            icon: const Icon(
-                                Icons.drive_file_rename_outline_rounded,
-                                size: 20),
-                            color: Colors.white,
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.black54,
-                            ),
-                            padding: EdgeInsets.all(6),
-                            constraints: const BoxConstraints(),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (BuildContext context) {
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: MediaQuery.of(context)
-                                          .viewInsets
-                                          .bottom,
+                          );
+                        },
+                      );
+                    },
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 2,
+                      child: Stack(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 画像部分（カード幅いっぱい、正方形）
+                              ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  topRight: Radius.circular(8),
+                                ),
+                                child: Column(children: [
+                                  AspectRatio(
+                                    aspectRatio: 1, // 正方形
+                                    child: imageUrl != null
+                                        ? Image.network(
+                                            imageUrl,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stack) =>
+                                                    Container(
+                                              color: Colors.grey[300],
+                                              child: const Center(
+                                                child: Icon(Icons.broken_image,
+                                                    size: 40),
+                                              ),
+                                            ),
+                                          )
+                                        : Container(
+                                            color: Colors.grey[300],
+                                            child: const Center(
+                                              child: Icon(Icons.image,
+                                                  size: 40,
+                                                  color: Colors.white70),
+                                            ),
+                                          ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if ((opus['description'] ?? '')
+                                            .toString()
+                                            .isNotEmpty)
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 6.0),
+                                            child: Text(
+                                              opus['description'],
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black87,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    child: EditOpusBottomSheet(
-                                      opus: opus,
-                                      creatorId: selectedCreator.value!['id'],
-                                      onSuccess: () {
-                                        // 作品更新後にデータを再取得
-                                        _fetchUserCreators(context, creatorData,
-                                            isLoadingCreator);
-                                      },
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            tooltip: '編集',
+                                  ),
+                                ]),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          // 編集ボタン（右上） ※既存の編集ボタンは残す
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: IconButton(
+                              icon: const Icon(
+                                  Icons.drive_file_rename_outline_rounded,
+                                  size: 20),
+                              color: Colors.white,
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.black54,
+                              ),
+                              padding: EdgeInsets.all(6),
+                              constraints: const BoxConstraints(),
+                              onPressed: _openEditBottomSheet,
+                              tooltip: '編集',
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -529,6 +636,7 @@ class ProfileScreen extends HookWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         selectedType.value = 'venue';
+                        selectedCreator.value = null;
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedType.value == 'venue'
@@ -543,7 +651,7 @@ class ProfileScreen extends HookWidget {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Venue'),
+                      child: const Text('会場'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -565,13 +673,34 @@ class ProfileScreen extends HookWidget {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Creator'),
+                      child: const Text('クリエイター'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        selectedType.value = 'supporter';
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedType.value == 'supporter'
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey[300],
+                        foregroundColor: selectedType.value == 'supporter'
+                            ? Colors.white
+                            : Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('サポーター'),
                     ),
                   ),
                 ],
               ),
-              // 名前リストを下部に展開
-              _buildNameButtons(),
+              if (selectedType.value != 'supporter') _buildNameButtons(),
             ],
           ),
         ),
@@ -587,6 +716,710 @@ class ProfileScreen extends HookWidget {
       );
     }
 
+    // --- ここからオファータブUI ---
+    Future<void> _fetchOfferData(
+        BuildContext context,
+        ValueNotifier<List<dynamic>> fromMeMatchingData,
+        ValueNotifier<List<dynamic>> toMeMatchingData,
+        ValueNotifier<List<dynamic>> completedMatchingData,
+        ValueNotifier<bool> isLoadingOffer) async {
+      print('fetchOfferData-is-running');
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('userToken');
+        String? relationType;
+        int? relationId;
+        if (selectedType.value == 'creator' && selectedCreator.value != null) {
+          relationType = 'creator';
+          relationId = selectedCreator.value!['id'];
+        } else if (selectedType.value == 'venue' &&
+            selectedVenue.value != null) {
+          relationType = 'venue';
+          relationId = selectedVenue.value!['id'];
+        }
+        if (relationType == null || relationId == null) {
+          throw Exception('クリエイターまたは会場が取得できませんでした');
+        }
+
+        final uri = Uri.parse(
+                '${dotenv.get('API_URL')}/matching/request/$relationType/$relationId')
+            .replace(queryParameters: {
+          'relationType': relationType,
+          'relationId': relationId.toString(),
+        });
+
+        final response = await http.get(
+          uri,
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          print('オファーデータ: $data');
+          fromMeMatchingData.value = data
+              .where((matching) =>
+                  matching['requestorType'] != relationType &&
+                  matching['status'] != 'matching')
+              .toList();
+          toMeMatchingData.value = data
+              .where((matching) =>
+                  matching['requestorType'] == relationType &&
+                  matching['status'] != 'matching')
+              .toList();
+          completedMatchingData.value = data
+              .where((matching) => matching['status'] == 'matching')
+              .toList();
+        } else {
+          throw Exception('オファーデータの取得に失敗しました');
+        }
+      } catch (e) {
+        print('エラーが発生しました: $e');
+      } finally {
+        isLoadingOffer.value = false;
+      }
+    }
+
+    // 承認（Accept Matching Request）API通信
+    Future<void> _acceptMatchingRequest(int matchingId) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('userToken');
+        final response = await http.patch(
+          Uri.parse('${dotenv.get('API_URL')}/matching/request/$matchingId'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('オファーを承認しました。')),
+          );
+          // 承認後にデータ再取得
+          isLoadingOffer.value = true;
+          await _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
+              completedMatchingData, isLoadingOffer);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('承認に失敗しました: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラーが発生しました: $e')),
+        );
+      }
+    }
+
+    // 拒否（Reject Matching Request）API通信
+    Future<void> _rejectMatchingRequest(int matchingId) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('userToken');
+        final response = await http.patch(
+          Uri.parse(
+              '${dotenv.get('API_URL')}/matching/request/$matchingId/reject'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('オファーを拒否しました。')),
+          );
+          // 拒否後にデータ再取得
+          isLoadingOffer.value = true;
+          await _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
+              completedMatchingData, isLoadingOffer);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('拒否に失敗しました: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラーが発生しました: $e')),
+        );
+      }
+    }
+
+    useEffect(() {
+      _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
+          completedMatchingData, isLoadingOffer);
+      return null;
+    }, [selectedVenue.value, selectedCreator.value]);
+
+    Widget _buildOfferTabButton(String label, int index) {
+      final bool selected = offerTabIndex.value == index;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () {
+            offerTabIndex.value = index;
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: selected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget _buildOfferTabContent() {
+      List<dynamic> data;
+      String emptyText;
+      String partnerType =
+          selectedType.value == 'creator' ? 'venue' : 'creator';
+
+      if (offerTabIndex.value == 0) {
+        data = fromMeMatchingData.value;
+        emptyText = '受信したオファーはありません';
+      } else if (offerTabIndex.value == 1) {
+        data = toMeMatchingData.value;
+        emptyText = '送信したオファーはありません';
+      } else {
+        data = completedMatchingData.value;
+        emptyText = 'マッチングしたオファーはありません';
+      }
+
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 2,
+        margin: const EdgeInsets.only(top: 0, bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(0),
+          child: data.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 36),
+                  child: Center(
+                    child: Text(
+                      emptyText,
+                      style: const TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  ),
+                )
+              : Column(
+                  children: List.generate(data.length, (index) {
+                    final item = data[index];
+
+                    // 受信タブだけ承認/拒否ボタン追加
+                    if (offerTabIndex.value == 0) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: index < data.length - 1
+                              ? const Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                    width: 1,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title:
+                                  Text(item[partnerType]['name'] ?? 'タイトル未設定'),
+                              trailing: Text(
+                                item['requestAt'] ?? '',
+                                style: const TextStyle(
+                                    fontSize: 13, color: Colors.grey),
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              onTap: () {
+                                // 詳細画面などに遷移する場合はここで
+                              },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: 8, left: 16, right: 16),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: TextButton.icon(
+                                      onPressed: () async {
+                                        await _rejectMatchingRequest(
+                                            item['id']);
+                                      },
+                                      icon: Icon(Icons.close,
+                                          color: Colors.blueGrey[500]!),
+                                      label: Text(
+                                        '拒否',
+                                        style: TextStyle(
+                                            color: Colors.blueGrey[500]!),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.grey,
+                                        backgroundColor: Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          side: BorderSide(
+                                            color: Colors.blueGrey[100]!,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    flex: 7,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await _acceptMatchingRequest(
+                                            item['id']);
+                                      },
+                                      icon: const Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                      ),
+                                      label: const Text('承認',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          side: BorderSide(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: index < data.length - 1
+                              ? const Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                    width: 1,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        child: ListTile(
+                          title: Text(item[partnerType]['name'] ?? 'タイトル未設定'),
+                          trailing: Text(
+                            item['requestAt'] ?? '',
+                            style: const TextStyle(
+                                fontSize: 13, color: Colors.grey),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
+                          onTap: () {
+                            // 詳細画面などに遷移する場合はここで
+                          },
+                        ),
+                      );
+                    }
+                  }),
+                ),
+        ),
+      );
+    }
+
+    Widget _buildOfferTabs() {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[200]!, width: 1),
+        ),
+        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(
+            children: [
+              Row(
+                children: const [
+                  Text(
+                    'オファー管理',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // タブバー
+                  Container(
+                    margin: const EdgeInsets.only(top: 16, bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildOfferTabButton('受信', 0),
+                        _buildOfferTabButton('送信', 1),
+                        _buildOfferTabButton('マッチング', 2),
+                      ],
+                    ),
+                  ),
+                  // タブ内容
+                  _buildOfferTabContent(),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // -------------- アカウント設定用のExpandableList --------------
+    // ログアウト処理
+    Future<void> _handleLogout() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('userId');
+      await prefs.remove('userToken');
+      await prefs.remove('relationId');
+      await prefs.remove('relationType');
+      // 必要に応じて他のストレージ情報も削除
+      Provider.of<LoginState>(context, listen: false).logout();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+      );
+    }
+
+    // 退会処理（仮: 確認ダイアログ後に実行、ほんとうはAPIにリクエスト必要）
+    // Future<void> _withdraw() async {
+    //   final confirmed = await showDialog<bool>(
+    //     context: context,
+    //     builder: (context) => AlertDialog(
+    //       title: const Text('本当に退会しますか？'),
+    //       content: const Text('この操作は取り消せません。続行しますか？'),
+    //       actions: [
+    //         TextButton(
+    //             child: const Text('キャンセル'),
+    //             onPressed: () => Navigator.of(context).pop(false)),
+    //         TextButton(
+    //             child: const Text('退会'),
+    //             onPressed: () => Navigator.of(context).pop(true)),
+    //       ],
+    //     ),
+    //   );
+    //   if (confirmed == true) {
+    //     // ここでAPIリクエストによる退会処理を行う（未実装）
+    //     // 便宜上ストレージクリア＋ログイン画面遷移
+    //     final prefs = await SharedPreferences.getInstance();
+    //     await prefs.clear();
+    //     Navigator.of(context)
+    //         .pushNamedAndRemoveUntil('/login', (route) => false);
+    //   }
+    // }
+
+    Future<void> _handleDeleteAccount(BuildContext context) async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      final response = await http.delete(
+        Uri.parse('${dotenv.get('API_URL')}/user'),
+        headers: <String, String>{
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        showAnimatedSnackBar(
+          context,
+          message: '退会しました',
+          type: SnackBarType.success,
+        );
+        _handleLogout();
+      } else {
+        showAnimatedSnackBar(
+          context,
+          message: '退会に失敗しました',
+          type: SnackBarType.error,
+        );
+        Navigator.pop(context);
+      }
+    }
+
+    Future<void> _showDeleteAccountConfirmDialog(BuildContext context) async {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomDialog(
+            icon: const Icon(Icons.delete, size: 40, color: Colors.red),
+            title: '退会する',
+            message: "本当に退会しますか？",
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _handleDeleteAccount(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  "退会する",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('キャンセル'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void _showDeleteAccountDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomDialog(
+            icon: const Icon(Icons.delete, size: 40, color: Colors.red),
+            title: '退会する',
+            message: "一度退会するとこのアカウントを復元することはできません。\n退会しますか？",
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showDeleteAccountConfirmDialog(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  "退会する",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('キャンセル'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Widget _buildAccountExpandable() {
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 2,
+        margin: const EdgeInsets.fromLTRB(6, 8, 6, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => accountExpanded.value = !accountExpanded.value,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                child: Row(
+                  children: [
+                    const Icon(Icons.settings, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'アカウント設定',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      duration: const Duration(milliseconds: 200),
+                      turns: accountExpanded.value ? 0.5 : 0.0,
+                      child: const Icon(Icons.expand_more),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Column(
+                children: [
+                  const Divider(height: 2, thickness: 1),
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.redAccent),
+                    title: const Text('ログアウト',
+                        style: TextStyle(color: Colors.redAccent)),
+                    onTap: () async {
+                      await _handleLogout();
+                    },
+                  ),
+                  ListTile(
+                    leading:
+                        const Icon(Icons.delete_forever, color: Colors.red),
+                    title:
+                        const Text('退会', style: TextStyle(color: Colors.red)),
+                    onTap: () async {
+                      // await _handleDeleteAccount(context);
+                      _showDeleteAccountDialog(context);
+                    },
+                  ),
+                ],
+              ),
+              crossFadeState: accountExpanded.value
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            ),
+          ],
+        ),
+      );
+    }
+    // --------- アカウント設定用ExpandableList ここまで ---------
+
+    //サポーターとしてのログイン処理
+    void supporterLogin() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('relationId');
+      await prefs.setString('relationType', 'supporter');
+
+      if (onToggleTabLayout != null) {
+        onToggleTabLayout!(false);
+      }
+    }
+
+    //クリエイター / 会場の各名義としてのログイン処理
+    void relationLogin(String relationType, int relationId) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('relationType', relationType);
+      await prefs.setInt('relationId', relationId);
+
+      if (onToggleTabLayout != null) {
+        onToggleTabLayout!(true);
+      }
+    }
+
+    // 画面下部に常に表示する「このクリエイターでログインする」ボタン
+    Widget buildSubLoginButton() {
+      final bool showButton = (selectedType.value == 'venue' &&
+              selectedVenue.value != null) ||
+          selectedType.value == 'creator' && selectedCreator.value != null ||
+          selectedType.value == 'supporter';
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: AnimatedOpacity(
+            opacity: showButton ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer(
+              ignoring: !showButton,
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: showButton
+                      ? () {
+                          if (selectedType.value == 'supporter') {
+                            supporterLogin();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('サポーターとしてログインしました'),
+                              ),
+                            );
+                          } else {
+                            final typeName = selectedType.value == 'creator'
+                                ? 'クリエイター'
+                                : '会場';
+                            final name = selectedType.value == 'creator'
+                                ? selectedCreator.value!['name']
+                                : selectedVenue.value!['name'];
+                            relationLogin(
+                                selectedType.value,
+                                selectedType.value == 'creator'
+                                    ? selectedCreator.value!['id']
+                                    : selectedVenue.value!['id']);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('$typeName: $name でログインしました'),
+                              ),
+                            );
+                          }
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 2,
+                  ),
+                  child: Text(
+                    selectedType.value == 'supporter'
+                        ? 'サポーターとしてログインする'
+                        : 'この名義でログインする',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -596,25 +1429,28 @@ class ProfileScreen extends HookWidget {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 16, right: 16),
+        padding: const EdgeInsets.only(left: 8, right: 8),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 丸角のカードに切り替えボタンと展開リストを入れる
+              _buildAccountExpandable(),
               _buildSwitchProfile(),
-              // selectedCreatorがセットされている場合、基本情報カードを表示
               if (selectedType.value == 'creator' &&
                   selectedCreator.value != null)
                 _buildCreatorProfile(),
-              // selectedVenueがセットされている場合、基本情報カードを表示
               if (selectedType.value == 'venue' && selectedVenue.value != null)
                 _buildVenueInfoCard(selectedVenue.value!),
-              // もし他に追加したい内容があればここに
+              if ((selectedType.value == 'venue' &&
+                      selectedVenue.value != null) ||
+                  (selectedType.value == 'creator' &&
+                      selectedCreator.value != null))
+                _buildOfferTabs(),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: buildSubLoginButton(),
     );
   }
 
@@ -638,15 +1474,11 @@ class ProfileScreen extends HookWidget {
         final data = jsonDecode(response.body);
         creatorData.value = data;
       } else {
-        throw Exception('ユーザー情報の取得に失敗しました');
+        throw Exception('クリエイター情報の取得に失敗しました');
       }
     } catch (e) {
       print('エラーが発生しました: $e');
-      //   showAnimatedSnackBar(
-      //     context,
-      //     message: 'ユーザー情報の取得に失敗しました',
-      //     type: SnackBarType.error,
-      //   );
+      throw Exception('クリエイター情報の取得に失敗しました');
     } finally {
       print('creator-finally-is-running');
       isLoading.value = false;
@@ -676,11 +1508,7 @@ class ProfileScreen extends HookWidget {
       }
     } catch (e) {
       print('エラーが発生しました: $e');
-      //   showAnimatedSnackBar(
-      //     context,
-      //     message: '会場情報の取得に失敗しました',
-      //     type: SnackBarType.error,
-      //   );
+      throw Exception('会場情報の取得に失敗しました');
     } finally {
       print('venue-finally-is-running');
       isLoading.value = false;

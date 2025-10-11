@@ -525,7 +525,7 @@ class _EditOpusBottomSheetState extends State<EditOpusBottomSheet> {
                     onPressed:
                         (_isFormValid && !_isLoading) ? _updateOpus : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).primaryColor,
                       disabledBackgroundColor: Colors.grey[300],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

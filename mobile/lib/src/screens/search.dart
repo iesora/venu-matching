@@ -20,6 +20,16 @@ class SearchScreen extends HookWidget {
     final venuList = useState<List<dynamic>>([]);
     final creatorList = useState<List<dynamic>>([]);
     final isLoading = useState<bool>(false);
+    final loginType = useState<String?>(null);
+    final loginRelationId = useState<int?>(null);
+
+    Future<void> fetchLoginInfo() async {
+      final pref = await SharedPreferences.getInstance();
+      final type = pref.getString('relationType');
+      final relationId = pref.getInt('relationId');
+      loginType.value = type;
+      loginRelationId.value = relationId;
+    }
 
     // 会場一覧を取得する関数
     Future<void> fetchVenues() async {
@@ -79,26 +89,47 @@ class SearchScreen extends HookWidget {
 
     // 初回マウント時に会場一覧とクリエーター一覧を取得
     useEffect(() {
+      fetchLoginInfo();
       fetchVenues();
       fetchCreators();
       return null;
     }, []);
 
     // クリエーターにマッチングリクエストを送信（JWTユーザー→toUserId）
-    Future<void> requestMatchingToUser(int toUserId,
+    Future<void> requestMatching(String requestorType,
         {int? venueId, int? creatorId}) async {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('userToken');
+      final relationId = prefs.getInt('relationId');
       if (token == null) {
         print('トークンが取得できませんでした');
         return;
       }
+      if (relationId == null) {
+        print('relationTypeまたはrelationIdが取得できませんでした');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('リクエストに失敗しました')));
+        return;
+      }
+      if (requestorType == 'creator') {
+        if (venueId == null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('会場を取得できませんでした')));
+          return;
+        }
+      } else {
+        if (creatorId == null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('クリエイターを取得できませんでした')));
+          return;
+        }
+      }
       final url = Uri.parse("${dotenv.get('API_URL')}/matching/request");
       try {
         final body = {
-          'toUserId': toUserId,
-          if (venueId != null) 'venueId': venueId,
-          if (creatorId != null) 'creatorId': creatorId,
+          'requestorType': requestorType,
+          'creatorId': requestorType == 'creator' ? relationId : creatorId,
+          'venueId': requestorType == 'venue' ? relationId : venueId,
         };
         final response = await http.post(
           url,
@@ -150,12 +181,26 @@ class SearchScreen extends HookWidget {
                           final venu = venuList.value[index];
                           return VenuCard(
                             venu: venu,
-                            onRequest: () {
-                              final toUserId = venu['user']?['id'];
+                            isRequestButtonVisible:
+                                loginType.value == 'creator',
+                            onRequest: () async {
                               final venueId = venu['id'];
-                              if (toUserId is int && venueId is int) {
-                                requestMatchingToUser(toUserId,
-                                    venueId: venueId);
+                              final relationType =
+                                  await SharedPreferences.getInstance().then(
+                                      (prefs) =>
+                                          prefs.getString('relationType'));
+                              if (relationType == 'venue') {
+                                print('会場にはリクエストを送信できません');
+                                return;
+                              } else if (relationType == 'creator') {
+                                if (venueId is int) {
+                                  requestMatching(relationType!,
+                                      venueId: venueId);
+                                } else {
+                                  print('会場IDが取得できませんでした');
+                                }
+                              } else {
+                                print('ユーザー情報が取得できませんでした');
                               }
                             },
                             onTap: () {
@@ -182,12 +227,24 @@ class SearchScreen extends HookWidget {
                           final creator = creatorList.value[index];
                           return CreatorCard(
                             creator: creator,
-                            onRequest: () {
-                              final toUserId = creator['user']?['id'];
+                            isRequestButtonVisible: loginType.value == 'venue',
+                            onRequest: () async {
+                              final relationType =
+                                  await SharedPreferences.getInstance().then(
+                                      (prefs) =>
+                                          prefs.getString('relationType'));
                               final creatorId = creator['id'];
-                              if (toUserId is int && creatorId is int) {
-                                requestMatchingToUser(toUserId,
-                                    creatorId: creatorId);
+                              if (relationType == 'creator') {
+                                print('クリエイターにはリクエストを送信できません');
+                              } else if (relationType == 'venue') {
+                                if (creatorId is int) {
+                                  requestMatching(relationType!,
+                                      creatorId: creatorId);
+                                } else {
+                                  print('クリエイターIDが取得できませんでした');
+                                }
+                              } else {
+                                print('ユーザー情報が取得できませんでした');
                               }
                             },
                             onTap: () {

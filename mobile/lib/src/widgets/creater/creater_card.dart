@@ -4,12 +4,14 @@ class CreatorCard extends StatelessWidget {
   final Map<String, dynamic> creator;
   final VoidCallback onRequest;
   final VoidCallback? onTap;
+  final bool? isRequestButtonVisible;
 
   const CreatorCard({
     Key? key,
     required this.creator,
     required this.onRequest,
     this.onTap,
+    this.isRequestButtonVisible,
   }) : super(key: key);
 
   @override
@@ -94,10 +96,13 @@ class CreatorCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 14),
                     ),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: onRequest,
-                    child: const Text('リクエスト'),
-                  ),
+                  Visibility(
+                    visible: isRequestButtonVisible ?? true,
+                    child: ElevatedButton(
+                      onPressed: onRequest,
+                      child: const Text('リクエスト'),
+                    ),
+                  )
                 ],
               ),
             ),

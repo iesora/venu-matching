@@ -4,12 +4,14 @@ class VenuCard extends StatelessWidget {
   final Map<String, dynamic> venu;
   final VoidCallback onRequest;
   final VoidCallback? onTap;
+  final bool? isRequestButtonVisible;
 
   const VenuCard({
     Key? key,
     required this.venu,
     required this.onRequest,
     this.onTap,
+    this.isRequestButtonVisible,
   }) : super(key: key);
 
   @override
@@ -67,9 +69,12 @@ class VenuCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 14),
                     ),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: onRequest,
-                    child: const Text('リクエスト'),
+                  Visibility(
+                    visible: isRequestButtonVisible ?? true,
+                    child: ElevatedButton(
+                      onPressed: onRequest,
+                      child: const Text('リクエスト'),
+                    ),
                   ),
                 ],
               ),

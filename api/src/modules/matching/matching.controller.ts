@@ -7,14 +7,16 @@ import {
   Get,
   Patch,
   Param,
-} from "@nestjs/common";
-import { MatchingService } from "./matching.service";
-import { RequestWithUser } from "../user/user.controller";
-import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+} from '@nestjs/common';
+import { MatchingService } from './matching.service';
+import { RequestWithUser } from '../user/user.controller';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RequestorType } from 'src/entities/matching.entity';
 
 export interface CreateMatchingFromCreatorRequest {
   creatorId: number;
   venueId: number;
+  requestorType: RequestorType;
 }
 
 export interface CreateMatchingFromVenueRequest {
@@ -30,67 +32,63 @@ export interface CreateMatchingEventRequest {
 }
 
 export interface CreateMatchingRequest {
-  toUserId: number;
   creatorId?: number;
   venueId?: number;
+  requestorType: RequestorType;
 }
 
-@Controller("matching")
+export interface GetRequestMatchingsQuery {
+  relationType: 'creator' | 'venue';
+  relationId: number;
+}
+
+@Controller('matching')
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
-  @Post("request/creator")
+  @Post('request')
   @UseGuards(JwtAuthGuard)
-  async createMatchingFromCreator(
-    @Body() matching: CreateMatchingFromCreatorRequest,
-    @Req() req: RequestWithUser
-  ) {
-    return this.matchingService.createMatchingFromCreator(matching, req.user);
+  async createMatching(@Body() matching: CreateMatchingRequest) {
+    return this.matchingService.createMatching(matching);
   }
 
-  @Post("request")
+  //   @Post('request/creator')
+  //   @UseGuards(JwtAuthGuard)
+  //   async createMatchingFromCreator(
+  //     @Body() matching: CreateMatchingFromCreatorRequest,
+  //     @Req() req: RequestWithUser,
+  //   ) {
+  //     return this.matchingService.createMatchingFromCreator(matching, req.user);
+  //   }
+
+  //   @Post('request/venue')
+  //   @UseGuards(JwtAuthGuard)
+  //   async createMatchingFromVenue(
+  //     @Body() matching: CreateMatchingFromVenueRequest,
+  //     @Req() req: RequestWithUser,
+  //   ) {
+  //     return this.matchingService.createMatchingFromVenue(matching, req.user);
+  //   }
+
+  @Get('request/:relationType/:relationId')
   @UseGuards(JwtAuthGuard)
-  async createMatching(
-    @Body() matching: CreateMatchingRequest,
-    @Req() req: RequestWithUser
-  ) {
-    return this.matchingService.createMatching(matching, req.user);
+  async getRequestMatchings(@Param() query: GetRequestMatchingsQuery) {
+    return this.matchingService.getRequestMatchings(query);
   }
 
-  @Post("request/venue")
+  @Patch('request/:matchingId')
   @UseGuards(JwtAuthGuard)
-  async createMatchingFromVenue(
-    @Body() matching: CreateMatchingFromVenueRequest,
-    @Req() req: RequestWithUser
-  ) {
-    return this.matchingService.createMatchingFromVenue(matching, req.user);
+  async acceptMatchingRequest(@Param('matchingId') matchingId: number) {
+    return this.matchingService.acceptMatchingRequest(matchingId);
   }
 
-  @Get("request")
+  @Patch('request/:matchingId/reject')
   @UseGuards(JwtAuthGuard)
-  async getRequestMatchings(@Req() req: RequestWithUser) {
-    return this.matchingService.getRequestMatchings(req.user);
+  async rejectMatchingRequest(@Param('matchingId') matchingId: number) {
+    return this.matchingService.rejectMatchingRequest(matchingId);
   }
 
-  @Patch("request/:matchingId")
-  @UseGuards(JwtAuthGuard)
-  async acceptMatchingRequest(
-    @Param("matchingId") matchingId: number,
-    @Req() req: RequestWithUser
-  ) {
-    return this.matchingService.acceptMatchingRequest(matchingId, req.user);
-  }
-
-  @Patch("request/:matchingId/reject")
-  @UseGuards(JwtAuthGuard)
-  async rejectMatchingRequest(
-    @Param("matchingId") matchingId: number,
-    @Req() req: RequestWithUser
-  ) {
-    return this.matchingService.rejectMatchingRequest(matchingId, req.user);
-  }
-
-  @Get("completed")
+  @Get('completed')
   @UseGuards(JwtAuthGuard)
   async getCompletedMatchings(@Req() req: RequestWithUser) {
     return this.matchingService.getCompletedMatchings(req.user);

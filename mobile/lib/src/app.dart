@@ -178,9 +178,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     }
   }
 
-  void _toggleTabLayout(bool useAltLayout) {
+  void _toggleTabLayout(bool isUseAltLayout) {
     setState(() {
-      _useSearchMatchingTabs = useAltLayout;
+      _useSearchMatchingTabs = isUseAltLayout;
       _setupScreens();
       if (_useSearchMatchingTabs) {
         _selectedIndex = 1; // 検索タブへ

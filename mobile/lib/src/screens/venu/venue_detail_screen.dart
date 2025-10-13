@@ -16,11 +16,20 @@ class VenueDetailScreen extends StatefulWidget {
 class _VenueDetailScreenState extends State<VenueDetailScreen> {
   Map<String, dynamic>? _venue;
   bool _isLoading = true;
+  String _loginType = '';
+  int? _loginRelationId;
 
   @override
   void initState() {
     super.initState();
     _fetchVenue();
+    _fetchLoginMode();
+  }
+
+  Future<void> _fetchLoginMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    _loginType = prefs.getString('relationType') ?? '';
+    _loginRelationId = prefs.getInt('relationId');
   }
 
   Future<void> _fetchVenue() async {
@@ -171,46 +180,70 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final toUserId = _venue?['user'] != null
-                          ? _venue!['user']['id'] as int?
-                          : null;
-                      if (toUserId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('送信先ユーザーが見つかりません')));
-                        return;
-                      }
-                      try {
-                        final prefs = await SharedPreferences.getInstance();
-                        final token = prefs.getString('userToken');
-                        if (token == null) {
+                  child: Visibility(
+                    visible:
+                        _loginType == 'creator' && _loginRelationId != null,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final toUserId = _venue?['user'] != null
+                            ? _venue!['user']['id'] as int?
+                            : null;
+                        if (toUserId == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('ログインが必要です')));
+                              const SnackBar(content: Text('送信先ユーザーが見つかりません')));
                           return;
                         }
-                        final res = await http.post(
-                          Uri.parse(
-                              '${dotenv.get('API_URL')}/matching/request'),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer $token',
-                          },
-                          body: jsonEncode({'toUserId': toUserId}),
-                        );
-                        if (res.statusCode == 201 || res.statusCode == 200) {
+                        try {
+                          final prefs = await SharedPreferences.getInstance();
+                          final token = prefs.getString('userToken');
+                          if (token == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('ログインが必要です')));
+                            return;
+                          }
+                          final loginRelationId = prefs.getInt('relationId');
+                          final loginType = prefs.getString('relationType');
+                          if (loginType != 'creator' ||
+                              loginRelationId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('クリエイターでログインしてください')));
+                            return;
+                          }
+                          final url = Uri.parse(
+                              "${dotenv.get('API_URL')}/matching/request");
+                          final body = {
+                            'requestorType': loginType,
+                            'creatorId': loginRelationId,
+                            'venueId': _venue?['id'],
+                          };
+                          final response = await http.post(
+                            url,
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer $token',
+                            },
+                            body: jsonEncode(body),
+                          );
+                          if (response.statusCode == 200 ||
+                              response.statusCode == 201) {
+                            print('リクエストが成功しました');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('リクエストを送信しました')));
+                          } else {
+                            print('リクエストエラー: ${response.statusCode}');
+                            // toaster.showToast('リクエストエラー: ${response.statusCode}');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('リクエスト中にエラーが発生しました')));
+                          }
+                        } catch (_) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('リクエストを送信しました')));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('送信に失敗しました (${res.statusCode})')));
+                              const SnackBar(content: Text('ネットワークエラー')));
                         }
-                      } catch (_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('ネットワークエラー')));
-                      }
-                    },
-                    child: const Text('リクエスト'),
+                      },
+                      child: const Text('リクエスト'),
+                    ),
                   ),
                 ),
               ),

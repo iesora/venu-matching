@@ -31,6 +31,19 @@ class VenuCard extends StatelessWidget {
                     width: double.infinity,
                     height: 180,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: double.infinity,
+                        height: 180,
+                        alignment: Alignment.center,
+                        color: Colors.grey,
+                        child: const Icon(
+                          Icons.location_on,
+                          size: 48,
+                          color: Colors.white70,
+                        ),
+                      );
+                    },
                   )
                 : Container(
                     width: double.infinity,

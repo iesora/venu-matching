@@ -40,9 +40,20 @@ class ProfileScreen extends HookWidget {
     // アカウント設定用の展開状態
     final accountExpanded = useState<bool>(false);
 
+    Future<void> _fetchLoginMode() async {
+      final prefs = await SharedPreferences.getInstance();
+      loginType.value = prefs.getString('relationType');
+      if (loginType.value != 'supporter') {
+        loginRelationId.value = prefs.getInt('relationId');
+      } else {
+        loginRelationId.value = null;
+      }
+    }
+
     useEffect(() {
       _fetchUserCreators(context, creatorData, isLoadingCreator);
       _fetchUserVenues(context, venueData, isLoadingVenue);
+      _fetchLoginMode();
       return null;
     }, []);
 
@@ -67,36 +78,55 @@ class ProfileScreen extends HookWidget {
           ),
         );
       }
-      return Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: List.generate(items.length, (index) {
-            final item = items[index];
-            return ElevatedButton(
-                onPressed: () {
-                  if (selectedType.value == 'venue') {
-                    selectedVenue.value = item;
-                    selectedCreator.value = null;
-                  } else {
-                    selectedCreator.value = item;
-                    selectedVenue.value = null;
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[300],
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-                child: Text(item['name'] ?? ''));
-          }),
-        ),
+      return Column(
+        children: [
+          const SizedBox(height: 12),
+          const Divider(
+            thickness: 1,
+            height: 1,
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                final isActive = (selectedType.value == 'venue' &&
+                        selectedVenue.value?['id'] == item['id']) ||
+                    (selectedType.value == 'creator' &&
+                        selectedCreator.value?['id'] == item['id']);
+                return ElevatedButton(
+                    onPressed: () {
+                      if (selectedType.value == 'venue') {
+                        selectedVenue.value = item;
+                        selectedCreator.value = null;
+                      } else {
+                        selectedCreator.value = item;
+                        selectedVenue.value = null;
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isActive ? const Color(0xFF223a70) : Colors.white,
+                      foregroundColor:
+                          isActive ? Colors.white : const Color(0xFF223a70),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: const Color(0xFF223a70),
+                        ),
+                      ),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                    ),
+                    child: Text(item['name'] ?? ''));
+              }),
+            ),
+          ),
+        ],
       );
     }
 
@@ -500,115 +530,120 @@ class ProfileScreen extends HookWidget {
 
     // 会場の基本情報カード
     Widget _buildVenueInfoCard(Map<String, dynamic> venue) {
-      return Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 2,
-        margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (venue['imageUrl'] != null &&
-                  venue['imageUrl'].toString().isNotEmpty)
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.network(
-                      venue['imageUrl'],
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stack) => Container(
+      return SizedBox(
+        width: double.infinity,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 2,
+          margin: const EdgeInsets.fromLTRB(6, 16, 6, 8),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (venue['imageUrl'] != null &&
+                    venue['imageUrl'].toString().isNotEmpty)
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.network(
+                        venue['imageUrl'],
                         width: 80,
                         height: 80,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.location_on, size: 40),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) => Container(
+                          width: 80,
+                          height: 80,
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.location_on, size: 40),
+                        ),
                       ),
                     ),
                   ),
+                if (venue['imageUrl'] != null &&
+                    venue['imageUrl'].toString().isNotEmpty)
+                  const SizedBox(height: 16),
+                Text(
+                  venue['name'] ?? '会場名未設定',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-              if (venue['imageUrl'] != null &&
-                  venue['imageUrl'].toString().isNotEmpty)
-                const SizedBox(height: 16),
-              Text(
-                venue['name'] ?? '会場名未設定',
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              if (venue['description'] != null &&
-                  venue['description'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    venue['description'],
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                if (venue['description'] != null &&
+                    venue['description'].toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      venue['description'],
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
                   ),
-                ),
-              const SizedBox(height: 12),
-              if (venue['email'] != null &&
-                  venue['email'].toString().isNotEmpty)
-                Row(
-                  children: [
-                    const Icon(Icons.email, size: 18, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text(venue['email'], style: const TextStyle(fontSize: 15)),
-                  ],
-                ),
-              if (venue['website'] != null &&
-                  venue['website'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
+                const SizedBox(height: 12),
+                if (venue['email'] != null &&
+                    venue['email'].toString().isNotEmpty)
+                  Row(
                     children: [
-                      const Icon(Icons.link, size: 18, color: Colors.grey),
+                      const Icon(Icons.email, size: 18, color: Colors.grey),
                       const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          venue['website'],
-                          style:
-                              const TextStyle(fontSize: 15, color: Colors.blue),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              if (venue['phoneNumber'] != null &&
-                  venue['phoneNumber'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.phone, size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(venue['phoneNumber'],
+                      Text(venue['email'],
                           style: const TextStyle(fontSize: 15)),
                     ],
                   ),
-                ),
-              if (venue['address'] != null &&
-                  venue['address'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on,
-                          size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          venue['address'],
-                          style: const TextStyle(fontSize: 15),
-                          overflow: TextOverflow.ellipsis,
+                if (venue['website'] != null &&
+                    venue['website'].toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.link, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            venue['website'],
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.blue),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-            ],
+                if (venue['phoneNumber'] != null &&
+                    venue['phoneNumber'].toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.phone, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Text(venue['phoneNumber'],
+                            style: const TextStyle(fontSize: 15)),
+                      ],
+                    ),
+                  ),
+                if (venue['address'] != null &&
+                    venue['address'].toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on,
+                            size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            venue['address'],
+                            style: const TextStyle(fontSize: 15),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       );
@@ -641,6 +676,8 @@ class ProfileScreen extends HookWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedType.value == 'venue'
                             ? Theme.of(context).colorScheme.primary
+                            //赤色使うならこんな色？
+                            // ? const Color(0xFF881337)
                             : Colors.grey[300],
                         foregroundColor: selectedType.value == 'venue'
                             ? Colors.white
@@ -846,11 +883,11 @@ class ProfileScreen extends HookWidget {
       }
     }
 
-    useEffect(() {
-      _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
-          completedMatchingData, isLoadingOffer);
-      return null;
-    }, [selectedVenue.value, selectedCreator.value]);
+    // useEffect(() {
+    //   _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
+    //       completedMatchingData, isLoadingOffer);
+    //   return null;
+    // }, [selectedVenue.value, selectedCreator.value]);
 
     Widget _buildOfferTabButton(String label, int index) {
       final bool selected = offerTabIndex.value == index;
@@ -1331,23 +1368,66 @@ class ProfileScreen extends HookWidget {
 
     //サポーターとしてのログイン処理
     void supporterLogin() async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('relationId');
-      await prefs.setString('relationType', 'supporter');
+      try {
+        final prefs = await SharedPreferences.getInstance();
 
-      if (onToggleTabLayout != null) {
-        onToggleTabLayout!(false);
+        final token = prefs.getString('userToken');
+        final response = await http.patch(
+          Uri.parse('${dotenv.get('API_URL')}/user/mode-switch/normal'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+        if (response.statusCode == 200) {
+          await prefs.remove('relationId');
+          await prefs.setString('relationType', 'supporter');
+          await _fetchLoginMode();
+          if (onToggleTabLayout != null) {
+            print('onToggleTabLayout-is-running');
+            onToggleTabLayout!(false);
+          }
+        } else {
+          throw Exception('サポーターとしてのログイン処理に失敗しました');
+        }
+      } catch (e) {
+        print('サポーターとしてのログイン処理に失敗しました: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('サポーターとしてのログインに失敗しました'),
+          ),
+        );
       }
     }
 
     //クリエイター / 会場の各名義としてのログイン処理
     void relationLogin(String relationType, int relationId) async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('relationType', relationType);
-      await prefs.setInt('relationId', relationId);
+      try {
+        final prefs = await SharedPreferences.getInstance();
 
-      if (onToggleTabLayout != null) {
-        onToggleTabLayout!(true);
+        final token = prefs.getString('userToken');
+        final response = await http.patch(
+          Uri.parse('${dotenv.get('API_URL')}/user/mode-switch/business'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+        if (response.statusCode == 200) {
+          await prefs.setString('relationType', relationType);
+          await prefs.setInt('relationId', relationId);
+          await _fetchLoginMode();
+          if (onToggleTabLayout != null) {
+            onToggleTabLayout!(true);
+          }
+        }
+      } catch (e) {
+        print('ログイン処理に失敗しました: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ログインに失敗しました'),
+          ),
+        );
       }
     }
 
@@ -1357,6 +1437,16 @@ class ProfileScreen extends HookWidget {
               selectedVenue.value != null) ||
           selectedType.value == 'creator' && selectedCreator.value != null ||
           selectedType.value == 'supporter';
+      bool isCurrentMode = false;
+      if (selectedType.value == 'venue') {
+        isCurrentMode = loginType.value == 'venue' &&
+            selectedVenue.value?['id'] == loginRelationId.value;
+      } else if (selectedType.value == 'creator') {
+        isCurrentMode = loginType.value == 'creator' &&
+            selectedCreator.value?['id'] == loginRelationId.value;
+      } else {
+        isCurrentMode = loginType.value == 'supporter';
+      }
       return SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -1368,7 +1458,7 @@ class ProfileScreen extends HookWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: showButton
+                  onPressed: showButton && !isCurrentMode
                       ? () {
                           if (selectedType.value == 'supporter') {
                             supporterLogin();
@@ -1407,9 +1497,11 @@ class ProfileScreen extends HookWidget {
                     elevation: 2,
                   ),
                   child: Text(
-                    selectedType.value == 'supporter'
-                        ? 'サポーターとしてログインする'
-                        : 'この名義でログインする',
+                    isCurrentMode
+                        ? 'ログイン中'
+                        : selectedType.value == 'supporter'
+                            ? 'サポーターとしてログインする'
+                            : 'この名義でログインする',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

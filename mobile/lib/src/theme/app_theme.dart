@@ -8,7 +8,9 @@ class AppColors {
   static const Color background = Color(0xFFFCFAF7); // 温かみのあるオフホワイト
   static const Color surface = Colors.white; // カードなど
   static const Color textPrimary = Color(0xFF27241D); // ダークブラウン寄りのテキスト
-  static const Color textSecondary = Color(0xFF6F6B63);
+  static const Color textSecondary = Color(0xFFF6F6B6); // サブテキスト色（例として調整）
+  static const Color error = Color(0xFFFF3B30); // エラー用の赤色
+  static const Color success = Color(0xFF4CAF50); // 成功用の緑色
 }
 
 class AppTheme {

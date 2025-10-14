@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // import 'package:mobile/src/screens/request/requestFromVenu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class CreatorDetailScreen extends StatefulWidget {
   final int creatorId;
@@ -188,23 +189,31 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
                             ? _creator!['user']['id'] as int?
                             : null;
                         if (toUserId == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('送信先ユーザーが見つかりません')));
+                          showAnimatedSnackBar(
+                            context,
+                            message: '送信先ユーザーが見つかりません',
+                            type: SnackBarType.error,
+                          );
                           return;
                         }
                         try {
                           final prefs = await SharedPreferences.getInstance();
                           final token = prefs.getString('userToken');
                           if (token == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('ログインが必要です')));
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'ログイン情報の取得に失敗しました',
+                              type: SnackBarType.error,
+                            );
                             return;
                           }
                           if (_loginType != 'venue' ||
                               _loginRelationId == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('会場名義でログインしてください')));
+                            showAnimatedSnackBar(
+                              context,
+                              message: '会場名義でログインしてください',
+                              type: SnackBarType.error,
+                            );
                             return;
                           }
                           final url = Uri.parse(
@@ -223,20 +232,31 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
                             body: jsonEncode(body),
                           );
                           if (res.statusCode == 201 || res.statusCode == 200) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('リクエストを送信しました')));
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'リクエストを送信しました',
+                              type: SnackBarType.success,
+                            );
                           } else if (res.statusCode == 510) {
                             print('リクエストエラー: ${res.statusCode}');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('すでにオファーが存在します')));
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'すでにオファーが存在します',
+                              type: SnackBarType.error,
+                            );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content:
-                                    Text('送信に失敗しました (${res.statusCode})')));
+                            showAnimatedSnackBar(
+                              context,
+                              message: '送信に失敗しました (${res.statusCode})',
+                              type: SnackBarType.error,
+                            );
                           }
                         } catch (_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('ネットワークエラー')));
+                          showAnimatedSnackBar(
+                            context,
+                            message: 'ネットワークエラー',
+                            type: SnackBarType.error,
+                          );
                         }
                       },
                       child: const Text('リクエスト'),

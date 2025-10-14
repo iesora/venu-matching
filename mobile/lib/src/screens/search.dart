@@ -11,6 +11,7 @@ import 'package:mobile/src/widgets/creater/creater_card.dart';
 import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
 import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/src/widgets/custom_snackbar.dart';
 
 class SearchScreen extends HookWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -103,24 +104,38 @@ class SearchScreen extends HookWidget {
       final relationId = prefs.getInt('relationId');
       if (token == null) {
         print('トークンが取得できませんでした');
+        showAnimatedSnackBar(
+          context,
+          message: 'ログイン情報の取得に失敗しました',
+          type: SnackBarType.error,
+        );
         return;
       }
       if (relationId == null) {
         print('relationTypeまたはrelationIdが取得できませんでした');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('リクエストに失敗しました')));
+        showAnimatedSnackBar(
+          context,
+          message: 'リクエストに失敗しました',
+          type: SnackBarType.error,
+        );
         return;
       }
       if (requestorType == 'creator') {
         if (venueId == null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('会場を取得できませんでした')));
+          showAnimatedSnackBar(
+            context,
+            message: '会場を取得できませんでした',
+            type: SnackBarType.error,
+          );
           return;
         }
       } else {
         if (creatorId == null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('クリエイターを取得できませんでした')));
+          showAnimatedSnackBar(
+            context,
+            message: 'クリエイターを取得できませんでした',
+            type: SnackBarType.error,
+          );
           return;
         }
       }
@@ -141,23 +156,35 @@ class SearchScreen extends HookWidget {
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
           print('リクエストが成功しました');
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('リクエストを送信しました')));
+          showAnimatedSnackBar(
+            context,
+            message: 'リクエストを送信しました',
+            type: SnackBarType.success,
+          );
         } else if (response.statusCode == 510) {
           print('リクエストエラー: ${response}');
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('すでにオファーが存在します')));
+          showAnimatedSnackBar(
+            context,
+            message: 'すでにオファーが存在します',
+            type: SnackBarType.error,
+          );
         } else {
           print('リクエストエラー: ${response.statusCode}');
           // toaster.showToast('リクエストエラー: ${response.statusCode}');
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('リクエスト中にエラーが発生しました')));
+          showAnimatedSnackBar(
+            context,
+            message: 'リクエスト中にエラーが発生しました',
+            type: SnackBarType.error,
+          );
         }
       } catch (e) {
         print('リクエスト中に例外が発生しました: $e');
         // toaster.showToast('リクエスト中に例外が発生しました: $e');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('リクエスト中にエラーが発生しました')));
+        showAnimatedSnackBar(
+          context,
+          message: 'リクエスト中にエラーが発生しました',
+          type: SnackBarType.error,
+        );
       }
     }
 

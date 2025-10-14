@@ -5,18 +5,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'matchingEventList.dart'; // イベント一覧画面のインポート
-import '../chat.dart';
 import '../profile_screen.dart';
 import '../venu/venue_detail_screen.dart';
 import '../creator/creator_detail_screen.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class MatchingListScreen extends HookWidget {
   const MatchingListScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final completedMatchings = useState<List<dynamic>>([]);
     final isLoading = useState<bool>(false);
     final loginType = useState<String?>(null);
     final loginRelationId = useState<int?>(null);
@@ -32,8 +30,10 @@ class MatchingListScreen extends HookWidget {
       if (loginType.value == 'creator' || loginType.value == 'venue') {
         loginRelationId.value = prefs.getInt('relationId');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ビジネスアカウントでログインしてください')),
+        showAnimatedSnackBar(
+          context,
+          message: 'ビジネスアカウントでログインしてください',
+          type: SnackBarType.error,
         );
         Navigator.push(
           context,
@@ -109,21 +109,27 @@ class MatchingListScreen extends HookWidget {
           },
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('オファーを承認しました。')),
+          showAnimatedSnackBar(
+            context,
+            message: 'オファーを承認しました。',
+            type: SnackBarType.success,
           );
           // 承認後にデータ再取得
           isLoadingOffer.value = true;
           await _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
               completedMatchingData, isLoadingOffer);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('承認に失敗しました: ${response.statusCode}')),
+          showAnimatedSnackBar(
+            context,
+            message: '承認に失敗しました: ${response.statusCode}',
+            type: SnackBarType.error,
           );
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+        showAnimatedSnackBar(
+          context,
+          message: 'エラーが発生しました: $e',
+          type: SnackBarType.error,
         );
       }
     }
@@ -142,21 +148,27 @@ class MatchingListScreen extends HookWidget {
           },
         );
         if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('オファーを拒否しました。')),
+          showAnimatedSnackBar(
+            context,
+            message: 'オファーを拒否しました。',
+            type: SnackBarType.deleteSuccess,
           );
           // 拒否後にデータ再取得
           isLoadingOffer.value = true;
           await _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
               completedMatchingData, isLoadingOffer);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('拒否に失敗しました: ${response.statusCode}')),
+          showAnimatedSnackBar(
+            context,
+            message: '拒否に失敗しました: ${response.statusCode}',
+            type: SnackBarType.error,
           );
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+        showAnimatedSnackBar(
+          context,
+          message: 'エラーが発生しました: $e',
+          type: SnackBarType.error,
         );
       }
     }

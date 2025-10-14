@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
-enum SnackBarType { success, error, warning, info }
+enum SnackBarType { success, deleteSuccess, error, warning, info }
 
 SnackBar customSnackBar({
   required String message,
@@ -15,11 +16,15 @@ SnackBar customSnackBar({
   // タイプごとのデフォルトの色とアイコンを設定
   switch (type) {
     case SnackBarType.success:
-      bgColor = backgroundColor ?? Colors.green;
+      bgColor = backgroundColor ?? AppColors.success;
+      displayIcon = icon ?? Icons.check_circle;
+      break;
+    case SnackBarType.deleteSuccess:
+      bgColor = backgroundColor ?? Colors.orange;
       displayIcon = icon ?? Icons.check_circle;
       break;
     case SnackBarType.error:
-      bgColor = backgroundColor ?? Colors.red;
+      bgColor = backgroundColor ?? AppColors.error;
       displayIcon = icon ?? Icons.error;
       break;
     case SnackBarType.warning:
@@ -123,11 +128,15 @@ class _AnimatedSnackBarWidgetState extends State<AnimatedSnackBarWidget>
     IconData displayIcon;
     switch (widget.type) {
       case SnackBarType.success:
-        bgColor = Colors.green;
+        bgColor = AppColors.success;
+        displayIcon = Icons.check_circle;
+        break;
+      case SnackBarType.deleteSuccess:
+        bgColor = Colors.orange;
         displayIcon = Icons.check_circle;
         break;
       case SnackBarType.error:
-        bgColor = Colors.red;
+        bgColor = AppColors.error;
         displayIcon = Icons.error;
         break;
       case SnackBarType.warning:

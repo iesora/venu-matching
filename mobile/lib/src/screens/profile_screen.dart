@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:mobile/src/loginState.dart';
 import 'package:mobile/src/widgets/custom_dialog.dart';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
+import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
+import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
 
 class ProfileScreen extends HookWidget {
   final Function(bool)? onToggleTabLayout;
@@ -1036,6 +1038,23 @@ class ProfileScreen extends HookWidget {
                               contentPadding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 0),
                               onTap: () {
+                                if (partnerType == 'venue') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VenueDetailScreen(
+                                          venueId: item['venue']['id']),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreatorDetailScreen(
+                                          creatorId: item['creator']['id']),
+                                    ),
+                                  );
+                                }
                                 // 詳細画面などに遷移する場合はここで
                               },
                             ),
@@ -1136,6 +1155,23 @@ class ProfileScreen extends HookWidget {
                               vertical: 8, horizontal: 16),
                           onTap: () {
                             // 詳細画面などに遷移する場合はここで
+                            if (partnerType == 'creator') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreatorDetailScreen(
+                                      creatorId: item['creator']['id']),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VenueDetailScreen(
+                                      venueId: item['venue']['id']),
+                                ),
+                              );
+                            }
                           },
                         ),
                       );

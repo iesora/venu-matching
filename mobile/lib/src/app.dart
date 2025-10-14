@@ -181,7 +181,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   void _toggleTabLayout(bool isUseAltLayout) {
     setState(() {
       _useSearchMatchingTabs = isUseAltLayout;
-      _setupScreens();
+      _initializeApp();
       if (_useSearchMatchingTabs) {
         _selectedIndex = 1; // 検索タブへ
       }

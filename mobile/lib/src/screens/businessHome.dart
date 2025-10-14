@@ -254,7 +254,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('会場一覧',
+                      const Text('会場',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
                       TextButton(
@@ -295,7 +295,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('クリエイター一覧',
+                      const Text('クリエイター',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
                       TextButton(

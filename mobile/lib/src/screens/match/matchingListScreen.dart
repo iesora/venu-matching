@@ -453,7 +453,7 @@ class MatchingListScreen extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('マッチング済み一覧'),
+        title: const Text('マッチング'),
       ),
       body: _buildOfferTabs(),
     );

@@ -54,7 +54,7 @@ class _EventListScreenState extends State<EventListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('イベント一覧'),
+        title: const Text('イベント'),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchEvents,

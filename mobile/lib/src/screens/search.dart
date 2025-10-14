@@ -164,8 +164,8 @@ class SearchScreen extends HookWidget {
           title: const Text('検索'),
           bottom: const TabBar(
             tabs: [
-              Tab(text: '会場一覧'),
-              Tab(text: 'クリエーター一覧'),
+              Tab(text: '会場'),
+              Tab(text: 'クリエーター'),
             ],
           ),
         ),

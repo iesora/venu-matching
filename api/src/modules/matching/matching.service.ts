@@ -144,10 +144,8 @@ export class MatchingService {
       })
       .getOne();
     if (existMatching) {
-      throw new HttpException(
-        'Matching already exists',
-        HttpStatus.BAD_REQUEST,
-      );
+      //フロントでエラーメッセージハンドルするためstatuscode510
+      throw new HttpException('Matching already exists', 510);
     }
 
     const newMatching = new Matching();

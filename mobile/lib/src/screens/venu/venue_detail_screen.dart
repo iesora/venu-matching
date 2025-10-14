@@ -233,6 +233,10 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                             print('リクエストが成功しました');
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('リクエストを送信しました')));
+                          } else if (response.statusCode == 510) {
+                            print('リクエストエラー: ${response.statusCode}');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('すでにオファーが存在します')));
                           } else {
                             print('リクエストエラー: ${response.statusCode}');
                             // toaster.showToast('リクエストエラー: ${response.statusCode}');

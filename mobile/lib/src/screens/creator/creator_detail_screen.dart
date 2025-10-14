@@ -225,6 +225,10 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
                           if (res.statusCode == 201 || res.statusCode == 200) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('リクエストを送信しました')));
+                          } else if (res.statusCode == 510) {
+                            print('リクエストエラー: ${res.statusCode}');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('すでにオファーが存在します')));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content:

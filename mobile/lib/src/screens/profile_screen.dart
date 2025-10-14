@@ -253,6 +253,78 @@ class ProfileScreen extends HookWidget {
       );
     }
 
+    Future<void> deleteOpus(int opusId) async {
+      // 確認ダイアログを表示
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('作品を削除'),
+            content: const Text('本当にこの作品を削除しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('キャンセル'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
+                child: const Text('削除'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true) return;
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('userToken');
+
+        isLoadingCreator.value = true;
+        final response = await http.delete(
+          Uri.parse(
+              '${dotenv.get('API_URL')}/creator/${selectedCreator.value!['id']}/opus/${opusId}'),
+          headers: <String, String>{
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          await _fetchUserCreators(context, creatorData, isLoadingCreator);
+          selectedCreator.value = creatorData.value.firstWhere(
+              (creator) => creator['id'] == selectedCreator.value!['id']);
+          // Navigator.pop(context);
+
+          showAnimatedSnackBar(
+            context,
+            message: '作品を削除しました',
+            type: SnackBarType.deleteSuccess,
+          );
+        } else {
+          showAnimatedSnackBar(
+            context,
+            message: '作品の削除に失敗しました',
+            type: SnackBarType.error,
+          );
+          throw Exception('作品の削除に失敗しました');
+        }
+      } catch (e) {
+        print('エラー: $e');
+        showAnimatedSnackBar(
+          context,
+          message: '作品の削除に失敗しました',
+          type: SnackBarType.error,
+        );
+      } finally {
+        isLoadingCreator.value = false;
+      }
+    }
+
     Widget _buildCreatorOpusesList(Map<String, dynamic> creator) {
       final List<dynamic> opuses = creator['opuses'] ?? [];
       if (opuses.isEmpty) {
@@ -314,34 +386,14 @@ class ProfileScreen extends HookWidget {
                           child: EditOpusBottomSheet(
                             opus: opus,
                             creatorId: selectedCreator.value!['id'],
-                            onSuccess: () {
+                            onSuccess: () async {
                               // 作品更新後にデータを再取得
-                              _fetchUserCreators(
+                              await _fetchUserCreators(
                                   context, creatorData, isLoadingCreator);
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  }
-
-                  // 共通で使う削除処理
-                  void _showDeleteBottomSheet() {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (BuildContext context) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom,
-                          ),
-                          child: EditOpusBottomSheet(
-                            opus: opus,
-                            creatorId: selectedCreator.value!['id'],
-                            onSuccess: () {
-                              _fetchUserCreators(
-                                  context, creatorData, isLoadingCreator);
+                              selectedCreator.value = creatorData.value
+                                  .firstWhere((creator) =>
+                                      creator['id'] ==
+                                      selectedCreator.value!['id']);
                             },
                           ),
                         );
@@ -394,7 +446,7 @@ class ProfileScreen extends HookWidget {
                                       TextButton(
                                         onPressed: () {
                                           Navigator.pop(alertContext);
-                                          _showDeleteBottomSheet();
+                                          deleteOpus(opus['id']);
                                         },
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.red,

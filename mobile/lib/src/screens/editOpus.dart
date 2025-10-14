@@ -200,6 +200,11 @@ class _EditOpusBottomSheetState extends State<EditOpusBottomSheet> {
           type: SnackBarType.success,
         );
       } else {
+        showAnimatedSnackBar(
+          context,
+          message: '作品の更新に失敗しました',
+          type: SnackBarType.error,
+        );
         throw Exception('作品の更新に失敗しました');
       }
     } catch (e) {
@@ -266,9 +271,14 @@ class _EditOpusBottomSheetState extends State<EditOpusBottomSheet> {
         showAnimatedSnackBar(
           context,
           message: '作品を削除しました',
-          type: SnackBarType.success,
+          type: SnackBarType.deleteSuccess,
         );
       } else {
+        showAnimatedSnackBar(
+          context,
+          message: '作品の削除に失敗しました',
+          type: SnackBarType.error,
+        );
         throw Exception('作品の削除に失敗しました');
       }
     } catch (e) {

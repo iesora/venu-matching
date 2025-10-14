@@ -184,10 +184,12 @@ export class CreatorService {
     });
 
     if (!opus) {
+      console.log('opus not found');
       throw new HttpException('Opus not found', HttpStatus.NOT_FOUND);
     }
 
-    if (opus.creator.id !== creatorId) {
+    if (opus.creator.id !== Number(creatorId)) {
+      console.log('opus does not belong to this creator');
       throw new HttpException(
         'This opus does not belong to this creator',
         HttpStatus.FORBIDDEN,

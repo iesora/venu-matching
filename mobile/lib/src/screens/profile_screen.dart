@@ -830,7 +830,7 @@ class ProfileScreen extends HookWidget {
             'Content-Type': 'application/json',
           },
         );
-        if (response.statusCode == 200) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('オファーを承認しました。')),
           );
@@ -883,11 +883,11 @@ class ProfileScreen extends HookWidget {
       }
     }
 
-    // useEffect(() {
-    //   _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
-    //       completedMatchingData, isLoadingOffer);
-    //   return null;
-    // }, [selectedVenue.value, selectedCreator.value]);
+    useEffect(() {
+      _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
+          completedMatchingData, isLoadingOffer);
+      return null;
+    }, [selectedVenue.value, selectedCreator.value]);
 
     Widget _buildOfferTabButton(String label, int index) {
       final bool selected = offerTabIndex.value == index;

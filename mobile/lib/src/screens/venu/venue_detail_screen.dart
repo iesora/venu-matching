@@ -106,28 +106,31 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _hero(),
-        Card(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                if (description.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child:
-                        Text(description, style: const TextStyle(fontSize: 14)),
+        SizedBox(
+          width: double.infinity,
+          child: Card(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-              ],
+                  if (description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(description,
+                          style: const TextStyle(fontSize: 14)),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

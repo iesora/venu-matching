@@ -1194,13 +1194,25 @@ class ProfileScreen extends HookWidget {
           child: Column(
             children: [
               Row(
-                children: const [
-                  Text(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
                     'オファー管理',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      await _fetchOfferData(
+                          context,
+                          fromMeMatchingData,
+                          toMeMatchingData,
+                          completedMatchingData,
+                          isLoadingOffer);
+                    },
+                    child: const Text('再読み込み'),
                   ),
                 ],
               ),

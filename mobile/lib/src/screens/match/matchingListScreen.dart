@@ -51,7 +51,6 @@ class MatchingListScreen extends HookWidget {
         ValueNotifier<List<dynamic>> toMeMatchingData,
         ValueNotifier<List<dynamic>> completedMatchingData,
         ValueNotifier<bool> isLoadingOffer) async {
-      print('fetchOfferData-is-running');
       try {
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('userToken');
@@ -72,7 +71,6 @@ class MatchingListScreen extends HookWidget {
         );
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          print('オファーデータ: $data');
           fromMeMatchingData.value = data
               .where((matching) =>
                   matching['requestorType'] != loginType.value &&
@@ -468,6 +466,11 @@ class MatchingListScreen extends HookWidget {
         title: const Text('マッチング'),
       ),
       body: _buildOfferTabs(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _fetchOfferData(context, fromMeMatchingData,
+            toMeMatchingData, completedMatchingData, isLoadingOffer),
+        child: const Icon(Icons.refresh),
+      ),
     );
   }
 }

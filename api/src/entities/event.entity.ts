@@ -12,6 +12,12 @@ import { CreatorEvent } from './createrEvent.entity';
 import { Venue } from './venue.entity';
 import { Matching } from './matching.entity';
 
+export enum EventStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}
+
 @Entity({ name: 'event' })
 export class Event {
   @PrimaryGeneratedColumn()
@@ -31,6 +37,14 @@ export class Event {
 
   @Column({ type: 'datetime', name: 'end_date' })
   endDate: Date;
+
+  @Column({
+    type: 'enum',
+    name: 'status',
+    enum: EventStatus,
+    default: EventStatus.PENDING,
+  })
+  status: EventStatus;
 
   //matchingに紐付けないイベントもあるかもらしい
   @ManyToOne(() => Matching, (matching) => matching.events, {

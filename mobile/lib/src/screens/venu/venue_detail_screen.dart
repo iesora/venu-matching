@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class VenueDetailScreen extends StatefulWidget {
   final int venueId;
@@ -16,11 +17,20 @@ class VenueDetailScreen extends StatefulWidget {
 class _VenueDetailScreenState extends State<VenueDetailScreen> {
   Map<String, dynamic>? _venue;
   bool _isLoading = true;
+  String _loginType = '';
+  int? _loginRelationId;
 
   @override
   void initState() {
     super.initState();
     _fetchVenue();
+    _fetchLoginMode();
+  }
+
+  Future<void> _fetchLoginMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    _loginType = prefs.getString('relationType') ?? '';
+    _loginRelationId = prefs.getInt('relationId');
   }
 
   Future<void> _fetchVenue() async {
@@ -97,28 +107,31 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _hero(),
-        Card(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                if (description.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child:
-                        Text(description, style: const TextStyle(fontSize: 14)),
+        SizedBox(
+          width: double.infinity,
+          child: Card(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-              ],
+                  if (description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(description,
+                          style: const TextStyle(fontSize: 14)),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -171,46 +184,93 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final toUserId = _venue?['user'] != null
-                          ? _venue!['user']['id'] as int?
-                          : null;
-                      if (toUserId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('送信先ユーザーが見つかりません')));
-                        return;
-                      }
-                      try {
-                        final prefs = await SharedPreferences.getInstance();
-                        final token = prefs.getString('userToken');
-                        if (token == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('ログインが必要です')));
+                  child: Visibility(
+                    visible:
+                        _loginType == 'creator' && _loginRelationId != null,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final toUserId = _venue?['user'] != null
+                            ? _venue!['user']['id'] as int?
+                            : null;
+                        if (toUserId == null) {
+                          showAnimatedSnackBar(
+                            context,
+                            message: '送信先ユーザーが見つかりません',
+                            type: SnackBarType.error,
+                          );
                           return;
                         }
-                        final res = await http.post(
-                          Uri.parse(
-                              '${dotenv.get('API_URL')}/matching/request'),
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer $token',
-                          },
-                          body: jsonEncode({'toUserId': toUserId}),
-                        );
-                        if (res.statusCode == 201 || res.statusCode == 200) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('リクエストを送信しました')));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('送信に失敗しました (${res.statusCode})')));
+                        try {
+                          final prefs = await SharedPreferences.getInstance();
+                          final token = prefs.getString('userToken');
+                          if (token == null) {
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'ログイン情報の取得に失敗しました',
+                              type: SnackBarType.error,
+                            );
+                            return;
+                          }
+                          final loginRelationId = prefs.getInt('relationId');
+                          final loginType = prefs.getString('relationType');
+                          if (loginType != 'creator' ||
+                              loginRelationId == null) {
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'クリエイターでログインしてください',
+                              type: SnackBarType.error,
+                            );
+                            return;
+                          }
+                          final url = Uri.parse(
+                              "${dotenv.get('API_URL')}/matching/request");
+                          final body = {
+                            'requestorType': loginType,
+                            'creatorId': loginRelationId,
+                            'venueId': _venue?['id'],
+                          };
+                          final response = await http.post(
+                            url,
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer $token',
+                            },
+                            body: jsonEncode(body),
+                          );
+                          if (response.statusCode == 200 ||
+                              response.statusCode == 201) {
+                            print('リクエストが成功しました');
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'リクエストを送信しました',
+                              type: SnackBarType.success,
+                            );
+                          } else if (response.statusCode == 510) {
+                            print('リクエストエラー: ${response.statusCode}');
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'すでにオファーが存在します',
+                              type: SnackBarType.error,
+                            );
+                          } else {
+                            print('リクエストエラー: ${response.statusCode}');
+                            // toaster.showToast('リクエストエラー: ${response.statusCode}');
+                            showAnimatedSnackBar(
+                              context,
+                              message: 'リクエスト中にエラーが発生しました',
+                              type: SnackBarType.error,
+                            );
+                          }
+                        } catch (_) {
+                          showAnimatedSnackBar(
+                            context,
+                            message: 'ネットワークエラー',
+                            type: SnackBarType.error,
+                          );
                         }
-                      } catch (_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('ネットワークエラー')));
-                      }
-                    },
-                    child: const Text('リクエスト'),
+                      },
+                      child: const Text('リクエスト'),
+                    ),
                   ),
                 ),
               ),

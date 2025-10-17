@@ -57,6 +57,7 @@ class SignInScreenState extends State<SignInScreen> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('userToken', token);
           await prefs.setInt('userId', userId);
+          await prefs.setString('relationType', 'supporter');
           Provider.of<AuthState>(context, listen: false).login(responseData);
 
           // ナビゲーションを修正

@@ -20,6 +20,7 @@ import 'widgets/custom_dialog.dart';
 import 'widgets/custom_snackbar.dart';
 import 'screens/home.dart';
 import 'screens/match/matchingListScreen.dart';
+import 'screens/profile_screen.dart';
 
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -160,7 +161,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         RankingScreen(),
         QrScanScreen(),
         EventListScreen(),
-        MyPageScreen(
+        ProfileScreen(
             onToggleTabLayout: _toggleTabLayout,
             isUsingSearchMatchingTabs: _useSearchMatchingTabs),
       ];
@@ -170,17 +171,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         SearchScreen(),
         MatchingListScreen(),
         EventListScreen(),
-        MyPageScreen(
+        ProfileScreen(
             onToggleTabLayout: _toggleTabLayout,
             isUsingSearchMatchingTabs: _useSearchMatchingTabs),
       ];
     }
   }
 
-  void _toggleTabLayout() {
+  void _toggleTabLayout(bool isUseAltLayout) {
     setState(() {
-      _useSearchMatchingTabs = !_useSearchMatchingTabs;
-      _setupScreens();
+      _useSearchMatchingTabs = isUseAltLayout;
+      _initializeApp();
       if (_useSearchMatchingTabs) {
         _selectedIndex = 1; // 検索タブへ
       }

@@ -258,6 +258,19 @@ class HomeScreen extends HookWidget {
                                 event['imageUrl'],
                                 fit: BoxFit.cover,
                                 height: 120,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: double.infinity,
+                                    height: 120,
+                                    alignment: Alignment.center,
+                                    color: Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.image,
+                                      size: 40,
+                                      // color: Colors.white70,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),

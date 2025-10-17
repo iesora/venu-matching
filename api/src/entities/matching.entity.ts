@@ -7,10 +7,12 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { ChatGroup } from './chatGroup.entity';
 import { Creator } from './creator.entity';
 import { Venue } from './venue.entity';
+import { Event } from './event.entity';
 
 export enum MatchingStatus {
   PENDING = 'pending',
@@ -33,6 +35,9 @@ export class Matching {
 
   @OneToOne(() => ChatGroup, (chatGroup) => chatGroup.matching)
   chatGroups: ChatGroup[];
+
+  @OneToMany(() => Event, (event) => event.matching)
+  events: Event[];
 
   @Column({ type: 'enum', name: 'status', enum: MatchingStatus })
   status: MatchingStatus;

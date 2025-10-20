@@ -18,6 +18,11 @@ export enum EventStatus {
   REJECTED = 'rejected',
 }
 
+export enum RequestorType {
+  CREATOR = 'creator',
+  VENUE = 'venue',
+}
+
 @Entity({ name: 'event' })
 export class Event {
   @PrimaryGeneratedColumn()
@@ -37,6 +42,14 @@ export class Event {
 
   @Column({ type: 'datetime', name: 'end_date' })
   endDate: Date;
+
+  @Column({
+    type: 'enum',
+    name: 'requestor_type',
+    enum: RequestorType,
+    nullable: true,
+  })
+  requestorType: RequestorType;
 
   @Column({
     type: 'enum',

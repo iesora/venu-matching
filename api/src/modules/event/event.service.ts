@@ -1,16 +1,20 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Event } from 'src/entities/event.entity';
+import { Event, EventStatus } from 'src/entities/event.entity';
 import {
   CreateEventDto,
   UpdateCreatorEventDto,
   UpdateEventOverviewDto,
   ResponseCreatorEventDto,
+  UpdateAcceptStatusDto,
+  CreateMatchingEventDto,
+  UpdateMatchingEventDto,
 } from './event.controller';
 import { AcceptStatus, CreatorEvent } from 'src/entities/createrEvent.entity';
 import { Venue } from 'src/entities/venue.entity';
 import { Creator } from 'src/entities/creator.entity';
+import { Matching } from 'src/entities/matching.entity';
 
 @Injectable()
 export class EventService {
@@ -23,6 +27,8 @@ export class EventService {
     private venueRepository: Repository<Venue>,
     @InjectRepository(Creator)
     private creatorRepository: Repository<Creator>,
+    @InjectRepository(Matching)
+    private matchingRepository: Repository<Matching>,
   ) {}
 
   async getEventlist(): Promise<Event[]> {
@@ -38,6 +44,16 @@ export class EventService {
         },
       )
       .leftJoinAndSelect('creatorEvents.creator', 'creator')
+      .getMany();
+    return existEvents;
+  }
+
+  async getEventlistByMatchingId(matchingId: number): Promise<Event[]> {
+    const existEvents = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.matching', 'matching')
+      .where('matching.id = :matchingId', { matchingId })
+      .andWhere('event.status != :status', { status: EventStatus.REJECTED })
       .getMany();
     return existEvents;
   }
@@ -95,8 +111,6 @@ export class EventService {
 
   //venueを紐づけてevent作成、さらにそのeventをcreatorごとに紐づけてcreatorEvent作成
   async createEvent(event: CreateEventDto): Promise<CreatorEvent[]> {
-    console.log('event: ', event);
-    console.log('event.creatorIds: ', event.creatorIds);
     //venueを取得
     const existVenue = await this.venueRepository.findOne({
       where: { id: event.venueId },
@@ -183,7 +197,6 @@ export class EventService {
       })
       .getMany();
     existCreatorEvents.map((creatorEvent) => {
-      console.log('creatorEvent', creatorEvent);
       creatorEvent.deleteFlag = true;
     });
     await this.creatorEventRepository.save(existCreatorEvents);
@@ -248,5 +261,57 @@ export class EventService {
     } else if (body.acceptStatus === AcceptStatus.REJECTED) {
       return { message: '参加依頼を拒否しました' };
     }
+  }
+
+  async createMatchingEvent(body: CreateMatchingEventDto): Promise<Event> {
+    const existMatching = await this.matchingRepository.findOne({
+      where: { id: body.matchingId },
+      relations: ['venue'],
+    });
+    if (!existMatching) {
+      throw new HttpException('Matching not found', HttpStatus.NOT_FOUND);
+    }
+    const newEvent = new Event();
+    newEvent.title = body.title;
+    newEvent.description = body.description;
+    newEvent.startDate = new Date(body.startDate);
+    newEvent.endDate = new Date(body.endDate);
+    newEvent.requestorType = body.requestorType;
+    newEvent.status = EventStatus.PENDING;
+    newEvent.matching = existMatching;
+    //画像は仮おき
+    newEvent.imageUrl =
+      'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0';
+    newEvent.venue = existMatching.venue;
+    return await this.eventRepository.save(newEvent);
+  }
+
+  async updateMatchingEvent(body: UpdateMatchingEventDto): Promise<Event> {
+    const existEvent = await this.eventRepository.findOne({
+      where: { id: body.eventId },
+    });
+    if (!existEvent) {
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    }
+    existEvent.title = body.title;
+    existEvent.description = body.description;
+    existEvent.startDate = body.startDate
+      ? new Date(body.startDate)
+      : existEvent.startDate;
+    existEvent.endDate = body.endDate
+      ? new Date(body.endDate)
+      : existEvent.endDate;
+    return await this.eventRepository.save(existEvent);
+  }
+
+  async updateAcceptStatus(body: UpdateAcceptStatusDto): Promise<void> {
+    const event = await this.eventRepository.findOne({
+      where: { id: body.eventId },
+    });
+    if (!event) {
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    }
+    event.status = body.acceptStatus;
+    await this.eventRepository.save(event);
   }
 }

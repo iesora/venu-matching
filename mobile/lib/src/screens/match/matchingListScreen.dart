@@ -9,6 +9,7 @@ import '../profile_screen.dart';
 import '../venu/venue_detail_screen.dart';
 import '../creator/creator_detail_screen.dart';
 import '../../widgets/custom_snackbar.dart';
+import '../chat.dart';
 
 class MatchingListScreen extends HookWidget {
   const MatchingListScreen({Key? key}) : super(key: key);
@@ -116,6 +117,14 @@ class MatchingListScreen extends HookWidget {
           isLoadingOffer.value = true;
           await _fetchOfferData(context, fromMeMatchingData, toMeMatchingData,
               completedMatchingData, isLoadingOffer);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ChatScreen(
+                matchingId: matchingId,
+              ),
+            ),
+          );
         } else {
           showAnimatedSnackBar(
             context,
@@ -388,22 +397,33 @@ class MatchingListScreen extends HookWidget {
                               vertical: 8, horizontal: 16),
                           onTap: () {
                             // 詳細画面などに遷移する場合はここで
-                            if (partnerType == 'venue') {
+                            if (offerTabIndex.value == 2) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => VenueDetailScreen(
-                                      venueId: item['venue']['id']),
+                                  builder: (_) => ChatScreen(
+                                    matchingId: item['id'],
+                                  ),
                                 ),
                               );
                             } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CreatorDetailScreen(
-                                      creatorId: item['creator']['id']),
-                                ),
-                              );
+                              if (partnerType == 'venue') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => VenueDetailScreen(
+                                        venueId: item['venue']['id']),
+                                  ),
+                                );
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreatorDetailScreen(
+                                        creatorId: item['creator']['id']),
+                                  ),
+                                );
+                              }
                             }
                           },
                         ),

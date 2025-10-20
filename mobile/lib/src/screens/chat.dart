@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mime/mime.dart';
@@ -21,10 +20,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/src/screens/userDetail.dart';
 import 'package:mobile/src/widgets/custom_dialog.dart';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
+import 'event/matching_event_list_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  final int groupId;
-  const ChatScreen({Key? key, required this.groupId}) : super(key: key);
+  final int matchingId;
+  const ChatScreen({required this.matchingId, Key? key}) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -35,266 +35,73 @@ class _ChatScreenState extends State<ChatScreen> {
   late types.User _user;
   Map<String, dynamic>? _groupInfo;
   bool _isMessageSendable = true;
-  int _currentPoint = 0;
-  bool _isLoading = true;
-  Timer? _refreshTimer;
+  int _currentPoint = 1000; // デフォルトポイント
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
     _initialize();
-    _startPeriodicRefresh();
-  }
-
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-
-  void _startPeriodicRefresh() {
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (mounted) {
-        _refreshMessages();
-      }
-    });
-  }
-
-  Future<void> _refreshMessages() async {
-    print("refreshMessages");
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-
-      final response = await http.get(
-        Uri.parse(
-            '${dotenv.get('API_URL')}/messages?groupId=${widget.groupId}'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final messages = (jsonDecode(response.body) as List).map((e) {
-          final data = e as Map<String, dynamic>;
-          final authorImage = data['author']?['avatar'] ?? "";
-
-          if (data['type'] == 'image') {
-            return types.ImageMessage(
-              author: types.User(
-                id: (data['author']?['id'] ?? '').toString(),
-                imageUrl: authorImage.isNotEmpty ? authorImage : null,
-              ),
-              createdAt:
-                  DateTime.parse(data['createdAt']).millisecondsSinceEpoch,
-              id: data['id'].toString(),
-              name: data['name'] ?? '',
-              uri: data['url'] ?? '',
-              size: 200 * 200,
-              width: 200,
-            );
-          }
-
-          return types.TextMessage(
-            author: types.User(
-              id: (data['author']?['id'] ?? '').toString(),
-              imageUrl: authorImage.isNotEmpty ? authorImage : null,
-            ),
-            id: data['id'].toString(),
-            text: data['text'] ?? '',
-            createdAt: DateTime.parse(data['createdAt']).millisecondsSinceEpoch,
-          );
-        }).toList();
-
-        if (messages.length != _messages.length ||
-            (messages.isNotEmpty &&
-                _messages.isNotEmpty &&
-                messages.first.id != _messages.first.id)) {
-          setState(() {
-            _messages = messages;
-          });
-        }
-      }
-    } catch (e) {
-      print('メッセージの更新に失敗しました: $e');
-    }
   }
 
   Future<void> _initialize() async {
-    await _getGroupDetail();
-    if (_groupInfo != null) {
-      if (_groupInfo!["me"]!["sex"] == Sex.MALE.value ||
-          (_groupInfo!["me"]!["sex"] == Sex.FEMALE.value &&
-              _groupInfo!["otherUser"]!["sex"] == Sex.FEMALE.value)) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showChatDialog();
-        });
-      }
-    }
-  }
-
-  Future<void> _getGroupDetail() async {
+    // ダミーのグループ情報を設定
     setState(() {
-      _isLoading = true;
+      _groupInfo = {
+        "otherUser": {
+          "id": "other_user_id",
+          "nickname": "チャット相手",
+          "avatar": null,
+          "sex": Sex.FEMALE.value,
+        },
+        "me": {
+          "id": "current_user_id",
+          "sex": Sex.MALE.value,
+          "point": _currentPoint,
+        },
+        "response": true,
+      };
+      _isMessageSendable = true;
     });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.get(
-        Uri.parse('${dotenv.get('API_URL')}/group?groupId=${widget.groupId}'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          _groupInfo = jsonDecode(response.body);
-          _isMessageSendable = _groupInfo!["response"];
-          _currentPoint = _groupInfo!["me"]!["point"];
-        });
-      } else {
-        throw Exception('グループユーザー情報の取得に失敗しました');
-      }
-    } catch (e) {
-      print('エラーが発生しました: $e');
-      if (mounted) {
-        showAnimatedSnackBar(
-          context,
-          message: 'グループユーザー情報の取得に失敗しました',
-          type: SnackBarType.error,
-        );
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+
+    // 初期メッセージを追加（デモ用）
+    _addInitialMessages();
   }
 
-  Future<void> _createLike() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.patch(
-        Uri.parse('${dotenv.get('API_URL')}/matching/response'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'fromUserId': _groupInfo?["otherUser"]?["id"],
-          'isMatching': true,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('マッチングに成功しました');
-      } else {
-        print('マッチングに失敗しました: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('マッチングに失敗しました: $e');
-    }
-  }
-
-  Future<void> _createNotification() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.post(
-        Uri.parse('${dotenv.get('API_URL')}/notification'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'userId': _groupInfo?["otherUser"]?["id"],
-          'chatGroupId': widget.groupId,
-          'notificationType': NotificationType.CHAT.value,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        print('通知の送信に成功しました');
-      } else {
-        print('通知の送信に失敗しました: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('通知の送信に失敗しました: $e');
-    }
-  }
-
-  void _showChatDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomDialog(
-          icon: const Icon(Icons.info_outline, size: 40, color: Colors.blue),
-          title: 'チャットに関して',
-          message: 'チャットでは、1回のメッセージ送信につき50ptが必要です。',
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 14, color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
+  void _addInitialMessages() {
+    final otherUser = types.User(
+      id: _groupInfo!["otherUser"]["id"],
+      imageUrl: _groupInfo!["otherUser"]["avatar"],
     );
-  }
 
-  void _showInsufficientPointDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomDialog(
-          icon: const Icon(Icons.warning, size: 40, color: Colors.red),
-          title: 'ポイント不足',
-          message: 'ポイントが不足しています。アカウント画面からポイントを追加してください。',
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 14, color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    final initialMessages = [
+      types.TextMessage(
+        author: otherUser,
+        createdAt: DateTime.now()
+            .subtract(const Duration(minutes: 5))
+            .millisecondsSinceEpoch,
+        id: const Uuid().v4(),
+        text: 'こんにちは！よろしくお願いします。',
+      ),
+      types.TextMessage(
+        author: otherUser,
+        createdAt: DateTime.now()
+            .subtract(const Duration(minutes: 3))
+            .millisecondsSinceEpoch,
+        id: const Uuid().v4(),
+        text: 'お疲れ様です！',
+      ),
+    ];
+
+    setState(() {
+      _messages = initialMessages;
+    });
   }
 
   void _addMessage(types.Message message) {
     setState(() {
       _messages = [message, ..._messages];
     });
-  }
-
-  Future<String?> _uploadImageToServer(String imagePath) async {
-    print("imagePath: $imagePath");
-    final url = Uri.parse('https://mglamsdglaskl.help/subdir/');
-    var request = http.MultipartRequest('POST', url);
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'file',
-        imagePath,
-      ),
-    );
-    try {
-      final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
-      return responseBody;
-    } catch (e) {
-      print('Error uploading image: $e');
-      return null;
-    }
   }
 
   Widget _customImageMessageBuilder(
@@ -339,82 +146,12 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     if (result == null) return;
 
-    final imageUrl = await _uploadImageToServer(result.path);
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.post(
-        Uri.parse('${dotenv.get('API_URL')}/messages'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'id': const Uuid().v4(),
-          'text': "",
-          'url': imageUrl,
-          'groupId': widget.groupId,
-          'type': 'image',
-        }),
-      );
-      if (response.statusCode == 201) {
-        final tempId = const Uuid().v4();
-        final tempMessage = types.ImageMessage(
-          author: _user,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          height: 0,
-          id: tempId,
-          name: result.name,
-          size: 0,
-          uri: result.path,
-          width: 0,
-          metadata: {"isUploading": true},
-        );
-        _addMessage(tempMessage);
-        if (imageUrl != null) {
-          final bytes = await result.readAsBytes();
-          final image = await decodeImageFromList(bytes);
-          final index = _messages.indexWhere((element) => element.id == tempId);
-          if (index != -1) {
-            final updatedMessage =
-                (_messages[index] as types.ImageMessage).copyWith(
-              height: image.height.toDouble(),
-              size: bytes.length,
-              uri: imageUrl,
-              width: image.width.toDouble(),
-              metadata: {"isUploading": false},
-            );
-            setState(() {
-              _messages[index] = updatedMessage;
-            });
-            _createNotification();
-            if (_groupInfo?["me"]?["sex"] == Sex.MALE.value ||
-                (_groupInfo?["me"]?["sex"] == Sex.FEMALE.value &&
-                    _groupInfo?["otherUser"]?["sex"] == Sex.FEMALE.value)) {
-              setState(() {
-                print("abcdef");
-                _currentPoint -= 50;
-              });
-            }
-          }
-        } else {
-          final index = _messages.indexWhere((element) => element.id == tempId);
-          if (index != -1) {
-            setState(() {
-              _messages.removeAt(index);
-            });
-          }
-          _showInsufficientPointDialog();
-        }
-      } else {
-        _showInsufficientPointDialog();
-      }
-    } catch (e) {
-      print("メッセージの送信に失敗しました");
+    // ポイントチェック
+    if (_currentPoint < 50) {
+      _showInsufficientPointDialog();
+      return;
     }
 
-    /*
     final tempId = const Uuid().v4();
     final tempMessage = types.ImageMessage(
       author: _user,
@@ -429,9 +166,8 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     _addMessage(tempMessage);
 
-    final imageUrl = await _uploadImageToServer(result.path);
-
-    if (imageUrl != null) {
+    // 画像の詳細を取得してメッセージを更新
+    try {
       final bytes = await result.readAsBytes();
       final image = await decodeImageFromList(bytes);
       final index = _messages.indexWhere((element) => element.id == tempId);
@@ -440,30 +176,29 @@ class _ChatScreenState extends State<ChatScreen> {
             (_messages[index] as types.ImageMessage).copyWith(
           height: image.height.toDouble(),
           size: bytes.length,
-          uri: imageUrl,
           width: image.width.toDouble(),
           metadata: {"isUploading": false},
         );
         setState(() {
           _messages[index] = updatedMessage;
-        });
-        _createNotification();
-        if (_groupInfo?["me"]?["sex"] == Sex.MALE.value) {
-          setState(() {
+          // ポイントを減らす
+          if (_groupInfo?["me"]?["sex"] == Sex.MALE.value ||
+              (_groupInfo?["me"]?["sex"] == Sex.FEMALE.value &&
+                  _groupInfo?["otherUser"]?["sex"] == Sex.FEMALE.value)) {
             _currentPoint -= 50;
-          });
-        }
+          }
+        });
       }
-    } else {
+    } catch (e) {
+      print('画像の処理に失敗しました: $e');
+      // エラーの場合、メッセージを削除
       final index = _messages.indexWhere((element) => element.id == tempId);
       if (index != -1) {
         setState(() {
           _messages.removeAt(index);
         });
       }
-      _showInsufficientPointDialog();
     }
-    */
   }
 
   void _handleAttachmentPressed() {
@@ -504,44 +239,6 @@ class _ChatScreenState extends State<ChatScreen> {
       _showImageModal(context, message.uri);
     } else if (message is types.FileMessage) {
       var localPath = message.uri;
-
-      if (message.uri.startsWith('http')) {
-        try {
-          final index =
-              _messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (_messages[index] as types.FileMessage).copyWith(
-            isLoading: true,
-          );
-
-          setState(() {
-            _messages[index] = updatedMessage;
-          });
-
-          final client = http.Client();
-          final request = await client.get(Uri.parse(message.uri));
-          final bytes = request.bodyBytes;
-          final documentsDir = (await getApplicationDocumentsDirectory()).path;
-          localPath = '$documentsDir/${message.name}';
-
-          if (!File(localPath).existsSync()) {
-            final file = File(localPath);
-            await file.writeAsBytes(bytes);
-          }
-        } finally {
-          final index =
-              _messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (_messages[index] as types.FileMessage).copyWith(
-            isLoading: null,
-          );
-
-          setState(() {
-            _messages[index] = updatedMessage;
-          });
-        }
-      }
-
       await OpenFilex.open(localPath);
     }
   }
@@ -588,6 +285,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSendPressed(types.PartialText message) async {
+    // ポイントチェック
+    if (_currentPoint < 50) {
+      _showInsufficientPointDialog();
+      return;
+    }
+
     final textMessage = types.TextMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -595,92 +298,45 @@ class _ChatScreenState extends State<ChatScreen> {
       text: message.text,
     );
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.post(
-        Uri.parse('${dotenv.get('API_URL')}/messages'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'id': const Uuid().v4(),
-          'text': message.text,
-          'groupId': widget.groupId,
-          'type': 'text',
-        }),
-      );
-      if (response.statusCode == 201) {
-        _addMessage(textMessage);
-        _createNotification();
-        if (_groupInfo?["me"]?["sex"] == Sex.MALE.value ||
-            (_groupInfo?["me"]?["sex"] == Sex.FEMALE.value &&
-                _groupInfo?["otherUser"]?["sex"] == Sex.FEMALE.value)) {
-          setState(() {
-            _currentPoint -= 50;
-          });
-        }
-      } else {
-        _showInsufficientPointDialog();
-      }
-    } catch (e) {
-      print("メッセージの送信に失敗しました");
+    _addMessage(textMessage);
+
+    // ポイントを減らす
+    if (_groupInfo?["me"]?["sex"] == Sex.MALE.value ||
+        (_groupInfo?["me"]?["sex"] == Sex.FEMALE.value &&
+            _groupInfo?["otherUser"]?["sex"] == Sex.FEMALE.value)) {
+      setState(() {
+        _currentPoint -= 50;
+      });
     }
   }
 
-  void _loadMessages() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('userToken');
-
-    final response = await http.get(
-      Uri.parse('${dotenv.get('API_URL')}/messages?groupId=${widget.groupId}'),
-      headers: <String, String>{
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
+  void _showInsufficientPointDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          icon: const Icon(Icons.warning, size: 40, color: Colors.orange),
+          title: 'ポイント不足',
+          message: 'メッセージを送信するのに十分なポイントがありません。',
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(fontSize: 14, color: Colors.black),
+              ),
+            ),
+          ],
+        );
       },
     );
-
-    final messages = (jsonDecode(response.body) as List).map((e) {
-      final data = e as Map<String, dynamic>;
-      final authorImage = data['author']?['avatar'] ?? "";
-
-      if (data['type'] == 'image') {
-        return types.ImageMessage(
-          author: types.User(
-            id: (data['author']?['id'] ?? '').toString(),
-            imageUrl: authorImage.isNotEmpty ? authorImage : null,
-          ),
-          createdAt: DateTime.parse(data['createdAt']).millisecondsSinceEpoch,
-          id: data['id'].toString(),
-          name: data['name'] ?? '',
-          uri: data['url'] ?? '',
-          size: 200 * 200, // 1MB
-          width: 200, // 一般的な画像の幅
-        );
-      }
-
-      return types.TextMessage(
-        author: types.User(
-          id: (data['author']?['id'] ?? '').toString(),
-          imageUrl: authorImage.isNotEmpty ? authorImage : null,
-        ),
-        id: data['id'].toString(),
-        text: data['text'] ?? '',
-        createdAt: DateTime.parse(data['createdAt']).millisecondsSinceEpoch,
-      );
-    }).toList();
-
-    setState(() {
-      _messages = messages;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = Provider.of<AuthState>(context);
     _user = types.User(
-      id: (authState.userInfo?['id'] ?? '').toString(),
+      id: (authState.userInfo?['id'] ?? 'current_user_id').toString(),
       imageUrl: authState.userInfo?['avatar'],
     );
 
@@ -731,13 +387,21 @@ class _ChatScreenState extends State<ChatScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(right: 16.0),
-                child: Text(
-                  '残り $_currentPoint pt',
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontFamily: 'Noto Sans JP',
-                  ),
+                child: IconButton(
+                  icon: const Icon(Icons.event, color: Colors.black),
+                  tooltip: "イベントリスト",
+                  onPressed: () {
+                    print('presss button');
+                    // イベントリスト画面に遷移
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MatchingEventListScreen(
+                          matchingId: widget.matchingId,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -763,7 +427,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                       _groupInfo?["otherUser"]?["avatar"])
                                   : null,
                           backgroundColor: Colors.grey,
-                          // radius: 20,
                         ),
                         const SizedBox(width: 8),
                         const Expanded(
@@ -780,7 +443,6 @@ class _ChatScreenState extends State<ChatScreen> {
                         SizedBox(
                           child: ElevatedButton(
                             onPressed: () {
-                              _createLike();
                               setState(() {
                                 _isMessageSendable = true;
                               });

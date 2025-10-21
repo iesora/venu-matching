@@ -6,9 +6,12 @@ import { Event } from 'src/entities/event.entity';
 import { CreatorEvent } from 'src/entities/createrEvent.entity';
 import { Venue } from 'src/entities/venue.entity';
 import { Creator } from 'src/entities/creator.entity';
+import { Matching } from 'src/entities/matching.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Event, CreatorEvent, Venue, Creator])],
+  imports: [
+    TypeOrmModule.forFeature([Event, CreatorEvent, Venue, Creator, Matching]),
+  ],
   controllers: [EventController],
   providers: [EventService],
 })

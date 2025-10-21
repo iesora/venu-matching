@@ -165,10 +165,6 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
             _creatorsTab(),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _fetchAll,
-          child: const Icon(Icons.refresh),
-        ),
       ),
     );
   }
@@ -190,10 +186,6 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
                       const Text('最新リクエスト (5件まで)',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
-                      TextButton(
-                        onPressed: _fetchRequests,
-                        child: const Text('再読み込み'),
-                      )
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -257,10 +249,6 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
                       const Text('会場',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
-                      TextButton(
-                        onPressed: _fetchVenues,
-                        child: const Text('再読み込み'),
-                      )
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -298,10 +286,6 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
                       const Text('クリエイター',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
-                      TextButton(
-                        onPressed: _fetchCreators,
-                        child: const Text('再読み込み'),
-                      )
                     ],
                   ),
                   const SizedBox(height: 8),

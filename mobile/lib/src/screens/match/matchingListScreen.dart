@@ -486,11 +486,6 @@ class MatchingListScreen extends HookWidget {
         title: const Text('マッチング'),
       ),
       body: _buildOfferTabs(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _fetchOfferData(context, fromMeMatchingData,
-            toMeMatchingData, completedMatchingData, isLoadingOffer),
-        child: const Icon(Icons.refresh),
-      ),
     );
   }
 }

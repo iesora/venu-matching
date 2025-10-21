@@ -8,10 +8,11 @@ import 'package:mobile/src/screens/editOpus.dart';
 import 'package:mobile/src/screens/auth/sign_in_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/src/loginState.dart';
-import 'package:mobile/src/widgets/custom_dialog.dart';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
 import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
 import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
+import 'package:mobile/src/screens/creator/create_creator_screen.dart';
+import 'package:mobile/src/screens/venu/create_venue_screen.dart';
 
 class ProfileScreen extends HookWidget {
   final Function(bool)? onToggleTabLayout;
@@ -1476,6 +1477,40 @@ class ProfileScreen extends HookWidget {
               secondChild: Column(
                 children: [
                   const Divider(height: 2, thickness: 1),
+                  ListTile(
+                    leading: const Icon(Icons.person_add),
+                    title: const Text('クリエイターを登録'),
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateCreatorScreen(),
+                        ),
+                      );
+                      // クリエイター作成成功時にデータを再取得
+                      if (result == true) {
+                        await _fetchUserCreators(
+                            context, creatorData, isLoadingCreator);
+                      }
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.location_on),
+                    title: const Text('会場を登録'),
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateVenueScreen(),
+                        ),
+                      );
+                      // 会場作成成功時にデータを再取得
+                      if (result == true) {
+                        await _fetchUserVenues(
+                            context, venueData, isLoadingVenue);
+                      }
+                    },
+                  ),
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.redAccent),
                     title: const Text('ログアウト',

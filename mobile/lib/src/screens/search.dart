@@ -294,14 +294,6 @@ class SearchScreen extends HookWidget {
                       ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            fetchVenues();
-            fetchCreators();
-          },
-          tooltip: '再読み込み',
-          child: const Icon(Icons.refresh),
-        ),
       ),
     );
   }

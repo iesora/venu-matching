@@ -1203,17 +1203,6 @@ class ProfileScreen extends HookWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () async {
-                      await _fetchOfferData(
-                          context,
-                          fromMeMatchingData,
-                          toMeMatchingData,
-                          completedMatchingData,
-                          isLoadingOffer);
-                    },
-                    child: const Text('再読み込み'),
-                  ),
                 ],
               ),
               Column(

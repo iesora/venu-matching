@@ -1249,139 +1249,114 @@ class ProfileScreen extends HookWidget {
       );
     }
 
-    // 退会処理（仮: 確認ダイアログ後に実行、ほんとうはAPIにリクエスト必要）
-    // Future<void> _withdraw() async {
-    //   final confirmed = await showDialog<bool>(
-    //     context: context,
-    //     builder: (context) => AlertDialog(
-    //       title: const Text('本当に退会しますか？'),
-    //       content: const Text('この操作は取り消せません。続行しますか？'),
-    //       actions: [
-    //         TextButton(
-    //             child: const Text('キャンセル'),
-    //             onPressed: () => Navigator.of(context).pop(false)),
-    //         TextButton(
-    //             child: const Text('退会'),
-    //             onPressed: () => Navigator.of(context).pop(true)),
-    //       ],
-    //     ),
+    //以下退会処理
+    // Future<void> _handleDeleteAccount(BuildContext context) async {
+    //   final prefs = await SharedPreferences.getInstance();
+    //   final token = prefs.getString('userToken');
+    //   final response = await http.delete(
+    //     Uri.parse('${dotenv.get('API_URL')}/user'),
+    //     headers: <String, String>{
+    //       'Authorization': 'Bearer $token',
+    //       'Content-Type': 'application/json',
+    //     },
     //   );
-    //   if (confirmed == true) {
-    //     // ここでAPIリクエストによる退会処理を行う（未実装）
-    //     // 便宜上ストレージクリア＋ログイン画面遷移
-    //     final prefs = await SharedPreferences.getInstance();
-    //     await prefs.clear();
-    //     Navigator.of(context)
-    //         .pushNamedAndRemoveUntil('/login', (route) => false);
+    //   if (response.statusCode == 200) {
+    //     showAnimatedSnackBar(
+    //       context,
+    //       message: '退会しました',
+    //       type: SnackBarType.success,
+    //     );
+    //     _handleLogout();
+    //   } else {
+    //     showAnimatedSnackBar(
+    //       context,
+    //       message: '退会に失敗しました',
+    //       type: SnackBarType.error,
+    //     );
+    //     Navigator.pop(context);
     //   }
     // }
 
-    Future<void> _handleDeleteAccount(BuildContext context) async {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('userToken');
-      final response = await http.delete(
-        Uri.parse('${dotenv.get('API_URL')}/user'),
-        headers: <String, String>{
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-      if (response.statusCode == 200) {
-        showAnimatedSnackBar(
-          context,
-          message: '退会しました',
-          type: SnackBarType.success,
-        );
-        _handleLogout();
-      } else {
-        showAnimatedSnackBar(
-          context,
-          message: '退会に失敗しました',
-          type: SnackBarType.error,
-        );
-        Navigator.pop(context);
-      }
-    }
+    // Future<void> _showDeleteAccountConfirmDialog(BuildContext context) async {
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     builder: (BuildContext context) {
+    //       return CustomDialog(
+    //         icon: const Icon(Icons.delete, size: 40, color: Colors.red),
+    //         title: '退会する',
+    //         message: "本当に退会しますか？",
+    //         actions: [
+    //           ElevatedButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //               _handleDeleteAccount(context);
+    //             },
+    //             style: ElevatedButton.styleFrom(
+    //               backgroundColor: Colors.deepOrangeAccent,
+    //               padding:
+    //                   const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    //               shape: RoundedRectangleBorder(
+    //                   borderRadius: BorderRadius.circular(8)),
+    //             ),
+    //             child: const Text(
+    //               "退会する",
+    //               style: TextStyle(
+    //                   color: Colors.white, fontWeight: FontWeight.bold),
+    //             ),
+    //           ),
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //             child: const Text('キャンセル'),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
 
-    Future<void> _showDeleteAccountConfirmDialog(BuildContext context) async {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CustomDialog(
-            icon: const Icon(Icons.delete, size: 40, color: Colors.red),
-            title: '退会する',
-            message: "本当に退会しますか？",
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _handleDeleteAccount(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrangeAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text(
-                  "退会する",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('キャンセル'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    void _showDeleteAccountDialog(BuildContext context) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CustomDialog(
-            icon: const Icon(Icons.delete, size: 40, color: Colors.red),
-            title: '退会する',
-            message: "一度退会するとこのアカウントを復元することはできません。\n退会しますか？",
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _showDeleteAccountConfirmDialog(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrangeAccent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text(
-                  "退会する",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('キャンセル'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+    // void _showDeleteAccountDialog(BuildContext context) {
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     builder: (BuildContext context) {
+    //       return CustomDialog(
+    //         icon: const Icon(Icons.delete, size: 40, color: Colors.red),
+    //         title: '退会する',
+    //         message: "一度退会するとこのアカウントを復元することはできません。\n退会しますか？",
+    //         actions: [
+    //           ElevatedButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //               _showDeleteAccountConfirmDialog(context);
+    //             },
+    //             style: ElevatedButton.styleFrom(
+    //               backgroundColor: Colors.deepOrangeAccent,
+    //               padding:
+    //                   const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    //               shape: RoundedRectangleBorder(
+    //                   borderRadius: BorderRadius.circular(8)),
+    //             ),
+    //             child: const Text(
+    //               "退会する",
+    //               style: TextStyle(
+    //                   color: Colors.white, fontWeight: FontWeight.bold),
+    //             ),
+    //           ),
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //             child: const Text('キャンセル'),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
+    //以上退会処理
 
     Widget _buildAccountExpandable() {
       return Card(
@@ -1432,16 +1407,16 @@ class ProfileScreen extends HookWidget {
                       await _handleLogout();
                     },
                   ),
-                  ListTile(
-                    leading:
-                        const Icon(Icons.delete_forever, color: Colors.red),
-                    title:
-                        const Text('退会', style: TextStyle(color: Colors.red)),
-                    onTap: () async {
-                      // await _handleDeleteAccount(context);
-                      _showDeleteAccountDialog(context);
-                    },
-                  ),
+                  // ListTile(
+                  //   leading:
+                  //       const Icon(Icons.delete_forever, color: Colors.red),
+                  //   title:
+                  //       const Text('退会', style: TextStyle(color: Colors.red)),
+                  //   onTap: () async {
+                  //     // await _handleDeleteAccount(context);
+                  //     _showDeleteAccountDialog(context);
+                  //   },
+                  // ),
                 ],
               ),
               crossFadeState: accountExpanded.value

@@ -227,6 +227,7 @@ class _EditOpusBottomSheetState extends State<EditOpusBottomSheet> {
         return AlertDialog(
           title: const Text('作品を削除'),
           content: const Text('本当にこの作品を削除しますか？'),
+          titleTextStyle: const TextStyle(fontSize: 18),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),

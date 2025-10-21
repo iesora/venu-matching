@@ -90,44 +90,48 @@ class ProfileScreen extends HookWidget {
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.only(top: 0),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(items.length, (index) {
-                final item = items[index];
-                final isActive = (selectedType.value == 'venue' &&
-                        selectedVenue.value?['id'] == item['id']) ||
-                    (selectedType.value == 'creator' &&
-                        selectedCreator.value?['id'] == item['id']);
-                return ElevatedButton(
-                    onPressed: () {
-                      if (selectedType.value == 'venue') {
-                        selectedVenue.value = item;
-                        selectedCreator.value = null;
-                      } else {
-                        selectedCreator.value = item;
-                        selectedVenue.value = null;
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isActive ? const Color(0xFF223a70) : Colors.white,
-                      foregroundColor:
-                          isActive ? Colors.white : const Color(0xFF223a70),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: const Color(0xFF223a70),
+            child: SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                runAlignment: WrapAlignment.start,
+                children: List.generate(items.length, (index) {
+                  final item = items[index];
+                  final isActive = (selectedType.value == 'venue' &&
+                          selectedVenue.value?['id'] == item['id']) ||
+                      (selectedType.value == 'creator' &&
+                          selectedCreator.value?['id'] == item['id']);
+                  return ElevatedButton(
+                      onPressed: () {
+                        if (selectedType.value == 'venue') {
+                          selectedVenue.value = item;
+                          selectedCreator.value = null;
+                        } else {
+                          selectedCreator.value = item;
+                          selectedVenue.value = null;
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            isActive ? const Color(0xFF223a70) : Colors.white,
+                        foregroundColor:
+                            isActive ? Colors.white : const Color(0xFF223a70),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: const Color(0xFF223a70),
+                          ),
                         ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                    ),
-                    child: Text(item['name'] ?? ''));
-              }),
+                      child: Text(item['name'] ?? ''));
+                }),
+              ),
             ),
-          ),
+          )
         ],
       );
     }
@@ -409,57 +413,130 @@ class ProfileScreen extends HookWidget {
                         context: context,
                         builder: (BuildContext alertContext) {
                           return AlertDialog(
+                            insetPadding: EdgeInsets.symmetric(horizontal: 65),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                // color: Colors.grey[300]!,
+                                width: 0.5,
+                              ),
                             ),
                             contentPadding:
-                                const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                                const EdgeInsets.fromLTRB(0, 0, 0, 0),
                             title: Text(
                               title,
+                              textAlign: TextAlign.center,
                             ),
+                            titlePadding:
+                                const EdgeInsets.fromLTRB(30, 30, 30, 0),
+                            // titleTextStyle:
+                            //     const TextStyle(textAlign: TextAlign.center),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  opus['description'] != null &&
-                                          (opus['description'] as String)
-                                              .isNotEmpty
-                                      ? opus['description']
-                                      : '説明がありません',
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 15),
+                                Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Text(
+                                    opus['description'] != null &&
+                                            (opus['description'] as String)
+                                                .isNotEmpty
+                                        ? opus['description']
+                                        : '説明がありません',
+                                    maxLines: 4,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 10),
                                 SizedBox(
                                   width: double.infinity,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(alertContext);
-                                          _openEditBottomSheet();
-                                        },
-                                        child: const Text('編集'),
+                                      const Divider(
+                                        height: 0,
+                                        thickness: 1,
+                                        color:
+                                            Color.fromARGB(255, 219, 212, 212),
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(alertContext);
-                                          deleteOpus(opus['id']);
-                                        },
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.red,
+                                      SizedBox(
+                                        height: 48,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(alertContext);
+                                            _openEditBottomSheet();
+                                          },
+                                          child: const Text(
+                                            '編集',
+                                            style: TextStyle(fontSize: 18),
+                                          ),
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(0),
+                                            ),
+                                          ),
                                         ),
-                                        child: const Text('削除'),
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(alertContext);
-                                        },
-                                        child: const Text('キャンセル'),
+                                      const Divider(
+                                        height: 0,
+                                        thickness: 1,
+                                        color:
+                                            Color.fromARGB(255, 219, 212, 212),
+                                      ),
+                                      SizedBox(
+                                        height: 48,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(alertContext);
+                                            deleteOpus(opus['id']);
+                                          },
+                                          style: TextButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(0),
+                                            ),
+                                            foregroundColor: Colors.red,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                          ),
+                                          child: const Text(
+                                            '削除',
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.red),
+                                          ),
+                                        ),
+                                      ),
+                                      const Divider(
+                                        height: 0,
+                                        thickness: 1,
+                                        color:
+                                            Color.fromARGB(255, 219, 212, 212),
+                                      ),
+                                      SizedBox(
+                                        height: 48,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(alertContext);
+                                          },
+                                          child: const Text(
+                                            'キャンセル',
+                                            style: TextStyle(fontSize: 18),
+                                          ),
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(0),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),

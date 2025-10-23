@@ -16,7 +16,6 @@ class MatchingListScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = useState<bool>(false);
     final loginType = useState<String?>(null);
     final loginRelationId = useState<int?>(null);
     final offerTabIndex = useState<int>(0);
@@ -267,111 +266,215 @@ class MatchingListScreen extends HookWidget {
                                 )
                               : null,
                         ),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              title:
-                                  Text(item[partnerType]['name'] ?? 'タイトル未設定'),
-                              trailing: Text(
-                                item['requestAt'] ?? '',
-                                style: const TextStyle(
-                                    fontSize: 13, color: Colors.grey),
-                              ),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                              onTap: () {
-                                // 詳細画面などに遷移する場合はここで
-                                if (partnerType == 'venue') {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => VenueDetailScreen(
-                                          venueId: item['venue']['id']),
-                                    ),
-                                  );
-                                } else {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CreatorDetailScreen(
-                                          creatorId: item['creator']['id']),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 8, left: 16, right: 16),
-                              child: Row(
+                        child: InkWell(
+                          onTap: () {
+                            if (partnerType == 'venue') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VenueDetailScreen(
+                                      venueId: item['venue']['id']),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreatorDetailScreen(
+                                      creatorId: item['creator']['id']),
+                                ),
+                              );
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // 画像部分
+                                  Container(
+                                    width: 68,
+                                    height: 68,
+                                    margin: const EdgeInsets.only(
+                                        left: 16, top: 16, bottom: 10),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(40),
+                                      color: Colors.grey[200],
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: (item[partnerType]?['imageUrl'] ??
+                                                '')
+                                            .toString()
+                                            .isNotEmpty
+                                        ? Image.network(
+                                            item[partnerType]['imageUrl'],
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                Icon(Icons.image_not_supported,
+                                                    color: Colors.grey[400],
+                                                    size: 28),
+                                          )
+                                        : Icon(Icons.image,
+                                            color: Colors.grey[400], size: 28),
+                                  ),
+                                  const SizedBox(width: 16),
                                   Expanded(
-                                    flex: 3,
-                                    child: TextButton.icon(
-                                      onPressed: () async {
-                                        await _rejectMatchingRequest(
-                                            item['id']);
-                                      },
-                                      icon: Icon(Icons.close,
-                                          color: Colors.blueGrey[500]!),
-                                      label: Text(
-                                        '拒否',
-                                        style: TextStyle(
-                                            color: Colors.blueGrey[500]!),
-                                      ),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.grey,
-                                        backgroundColor: Colors.transparent,
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          side: BorderSide(
-                                            color: Colors.blueGrey[100]!,
-                                            width: 1.5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          0, 16, 16, 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // メインの情報（名前・住所）
+                                          Text(
+                                            item[partnerType]['name'] ??
+                                                'タイトル未設定',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
+                                          // もし venue なら住所を表示
+                                          if (partnerType == 'venue')
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 2.0, bottom: 2.0),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const Icon(Icons.location_on,
+                                                      size: 15,
+                                                      color: Colors.grey),
+                                                  const SizedBox(width: 4),
+                                                  Expanded(
+                                                    child: Text(
+                                                      item[partnerType]
+                                                              ['address'] ??
+                                                          '',
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    flex: 7,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () async {
-                                        await _acceptMatchingRequest(
-                                            item['id']);
-                                      },
-                                      icon: const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
+                                  // 右端に日時 Paddingの外
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 0, right: 16),
+                                    child: Text(
+                                      (() {
+                                        final dateTimeStr = item['requestAt'];
+                                        if (dateTimeStr == null ||
+                                            dateTimeStr.isEmpty) {
+                                          return '';
+                                        }
+                                        try {
+                                          final dt = DateTime.parse(dateTimeStr)
+                                              .toLocal();
+                                          return '${dt.month.toString().padLeft(2, '0')}/'
+                                              '${dt.day.toString().padLeft(2, '0')} '
+                                              '${dt.hour.toString().padLeft(2, '0')}:'
+                                              '${dt.minute.toString().padLeft(2, '0')}';
+                                        } catch (_) {
+                                          return dateTimeStr;
+                                        }
+                                      })(),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
                                       ),
-                                      label: const Text('承認',
-                                          style:
-                                              TextStyle(color: Colors.white)),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Theme.of(context).primaryColor,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          side: BorderSide(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 8, left: 16, right: 16),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: TextButton.icon(
+                                        onPressed: () async {
+                                          await _rejectMatchingRequest(
+                                              item['id']);
+                                        },
+                                        icon: Icon(Icons.close,
+                                            color: Colors.blueGrey[500]!),
+                                        label: Text(
+                                          '拒否',
+                                          style: TextStyle(
+                                              color: Colors.blueGrey[500]!),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.grey,
+                                          backgroundColor: Colors.transparent,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: BorderSide(
+                                              color: Colors.blueGrey[100]!,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      flex: 7,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          await _acceptMatchingRequest(
+                                              item['id']);
+                                        },
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                        ),
+                                        label: const Text('承認',
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     } else {
@@ -386,17 +489,8 @@ class MatchingListScreen extends HookWidget {
                                 )
                               : null,
                         ),
-                        child: ListTile(
-                          title: Text(item[partnerType]['name'] ?? 'タイトル未設定'),
-                          trailing: Text(
-                            item['requestAt'] ?? '',
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.grey),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
+                        child: InkWell(
                           onTap: () {
-                            // 詳細画面などに遷移する場合はここで
                             if (offerTabIndex.value == 2) {
                               Navigator.push(
                                 context,
@@ -426,6 +520,117 @@ class MatchingListScreen extends HookWidget {
                               }
                             }
                           },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // 画像部分
+                              Container(
+                                width: 68,
+                                height: 68,
+                                margin: const EdgeInsets.only(
+                                    left: 16, top: 16, bottom: 16),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(40),
+                                  color: Colors.grey[200],
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: (item[partnerType]?['imageUrl'] ?? '')
+                                        .toString()
+                                        .isNotEmpty
+                                    ? Image.network(
+                                        item[partnerType]['imageUrl'],
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(Icons.image_not_supported,
+                                                    color: Colors.grey[400],
+                                                    size: 28),
+                                      )
+                                    : Icon(Icons.image,
+                                        color: Colors.grey[400], size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // メインの情報（名前・住所）
+                                      Text(
+                                        item[partnerType]['name'] ?? 'タイトル未設定',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      // もし venue なら住所を表示
+                                      if (partnerType == 'venue')
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 2.0, bottom: 2.0),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.location_on,
+                                                  size: 15, color: Colors.grey),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  item[partnerType]
+                                                          ['address'] ??
+                                                      '',
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // 右端に日時 Paddingの外
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 0, right: 16),
+                                child: Text(
+                                  (() {
+                                    final dateTimeStr = item['requestAt'];
+                                    if (dateTimeStr == null ||
+                                        dateTimeStr.isEmpty) {
+                                      return '';
+                                    }
+                                    try {
+                                      final dt =
+                                          DateTime.parse(dateTimeStr).toLocal();
+                                      return '${dt.month.toString().padLeft(2, '0')}/'
+                                          '${dt.day.toString().padLeft(2, '0')} '
+                                          '${dt.hour.toString().padLeft(2, '0')}:'
+                                          '${dt.minute.toString().padLeft(2, '0')}';
+                                    } catch (_) {
+                                      return dateTimeStr;
+                                    }
+                                  })(),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }

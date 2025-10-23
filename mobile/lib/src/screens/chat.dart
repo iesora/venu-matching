@@ -50,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _groupInfo = {
         "otherUser": {
           "id": "other_user_id",
-          "nickname": "チャット相手",
+          "nickname": "チャット",
           "avatar": null,
           "sex": Sex.FEMALE.value,
         },
@@ -343,19 +343,20 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         title: GestureDetector(
-          onTap: () {
-            if (_groupInfo?["otherUser"]?["id"] != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserDetailScreen(
-                    userId: _groupInfo!["otherUser"]["id"],
-                  ),
-                ),
-              );
-            }
-          },
+          // onTap: () {
+          //   if (_groupInfo?["otherUser"]?["id"] != null) {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => UserDetailScreen(
+          //           userId: _groupInfo!["otherUser"]["id"],
+          //         ),
+          //       ),
+          //     );
+          //   }
+          // },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -368,27 +369,23 @@ class _ChatScreenState extends State<ChatScreen> {
                   fontSize: 15,
                 ),
               ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.black,
-                size: 20,
-              ),
             ],
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context, true);
-          },
-        ),
+        // leading: IconButton(
+        //   icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
+        //   onPressed: () {
+        //     Navigator.pop(context, true);
+        //   },
+        // ),
         actions: [
           if (_groupInfo != null)
             Center(
               child: Padding(
-                padding: const EdgeInsets.only(right: 16.0),
+                padding: const EdgeInsets.only(right: 18.0),
                 child: IconButton(
-                  icon: const Icon(Icons.event, color: Colors.black),
+                  icon: Icon(Icons.event_note_outlined,
+                      color: Theme.of(context).primaryColor, size: 28),
                   tooltip: "イベントリスト",
                   onPressed: () {
                     print('presss button');
@@ -411,57 +408,57 @@ class _ChatScreenState extends State<ChatScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                if (!_isMessageSendable)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          backgroundImage:
-                              _groupInfo?["otherUser"]?["avatar"] != null
-                                  ? NetworkImage(
-                                      _groupInfo?["otherUser"]?["avatar"])
-                                  : null,
-                          backgroundColor: Colors.grey,
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'このユーザーとマッチングしていないため、メッセージを送信できません。マッチングしますか？',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'Noto Sans JP',
-                              fontSize: 12,
-                            ),
-                            softWrap: true,
-                          ),
-                        ),
-                        SizedBox(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _isMessageSendable = true;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                            ),
-                            child: const Text(
-                              'マッチングする',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                // if (!_isMessageSendable)
+                //   Padding(
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 12,
+                //       vertical: 4,
+                //     ),
+                //     child: Row(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         CircleAvatar(
+                //           backgroundImage:
+                //               _groupInfo?["otherUser"]?["avatar"] != null
+                //                   ? NetworkImage(
+                //                       _groupInfo?["otherUser"]?["avatar"])
+                //                   : null,
+                //           backgroundColor: Colors.grey,
+                //         ),
+                //         const SizedBox(width: 8),
+                //         const Expanded(
+                //           child: Text(
+                //             'このユーザーとマッチングしていないため、メッセージを送信できません。マッチングしますか？',
+                //             style: TextStyle(
+                //               color: Colors.black,
+                //               fontFamily: 'Noto Sans JP',
+                //               fontSize: 12,
+                //             ),
+                //             softWrap: true,
+                //           ),
+                //         ),
+                //         SizedBox(
+                //           child: ElevatedButton(
+                //             onPressed: () {
+                //               setState(() {
+                //                 _isMessageSendable = true;
+                //               });
+                //             },
+                //             style: ElevatedButton.styleFrom(
+                //               backgroundColor: Colors.blue,
+                //             ),
+                //             child: const Text(
+                //               'マッチングする',
+                //               style: TextStyle(
+                //                   color: Colors.white,
+                //                   fontSize: 12,
+                //                   fontWeight: FontWeight.bold),
+                //             ),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
                 Expanded(
                   child: Chat(
                     messages: _messages,

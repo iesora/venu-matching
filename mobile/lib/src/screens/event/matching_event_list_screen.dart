@@ -302,6 +302,7 @@ class MatchingEventListScreen extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         title: const Text('イベント管理'),
         backgroundColor: const Color(0xFFD5C0AA),
         foregroundColor: Colors.white,

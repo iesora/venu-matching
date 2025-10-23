@@ -1688,6 +1688,14 @@ class ProfileScreen extends HookWidget {
       await prefs.remove('relationType');
       // 必要に応じて他のストレージ情報も削除
       Provider.of<LoginState>(context, listen: false).logout();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('ログアウトしました'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignInScreen()),

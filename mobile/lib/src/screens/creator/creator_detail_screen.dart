@@ -166,6 +166,7 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         title: Text(_creator?['name'] ?? 'クリエーター詳細'),
       ),
       body: _isLoading

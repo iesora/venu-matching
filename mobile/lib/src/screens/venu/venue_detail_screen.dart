@@ -169,6 +169,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         title: Text(_venue?['name'] ?? '会場詳細'),
       ),
       body: _isLoading

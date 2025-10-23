@@ -148,7 +148,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('ビジネスホーム'),
+          title: const Text('ホーム'),
           bottom: const TabBar(
             tabs: [
               Tab(text: '概要'),

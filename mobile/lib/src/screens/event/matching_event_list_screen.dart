@@ -64,13 +64,20 @@ class MatchingEventListScreen extends HookWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CreateEventBottomSheet(
-        matchingId: matchingId,
-        requestorType: requestorType,
-        onSuccess: () {
-          _fetchMatchingEvents(events, isLoading, errorMessage, context);
-        },
-      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: CreateEventBottomSheet(
+            matchingId: matchingId,
+            requestorType: requestorType,
+            onSuccess: () {
+              _fetchMatchingEvents(events, isLoading, errorMessage, context);
+            },
+          ),
+        );
+      },
     );
   }
 

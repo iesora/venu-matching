@@ -426,154 +426,142 @@ class MatchingEventListScreen extends HookWidget {
                   final event = data[index];
                   if (eventTabIndex.value == 0) {
                     return Container(
-                        decoration: BoxDecoration(
-                          border: index < data.length - 1
-                              ? const Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFE0E0E0),
-                                    width: 1,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              title: Text(event['title'] ?? 'タイトル未設定',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16)),
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                              subtitle: Column(
+                      decoration: BoxDecoration(
+                        border: index < data.length - 1
+                            ? const Border(
+                                bottom: BorderSide(
+                                  color: Color(0xFFE0E0E0),
+                                  width: 1,
+                                ),
+                              )
+                            : null,
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EventDetailScreen(
+                                eventId: event['id'] as int,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 16),
+                          child: Column(
+                            children: [
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if ((event['description'] ?? '')
-                                      .toString()
-                                      .isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: Text(
-                                        event['description'],
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6.0),
-                                    child: Row(
-                                      children: [
-                                        Text('開催日時:'),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          (() {
-                                            final dateTimeStr =
-                                                event['startDate'];
-                                            if (dateTimeStr == null ||
-                                                dateTimeStr.isEmpty) {
-                                              return '';
-                                            }
-                                            try {
-                                              final dt =
-                                                  DateTime.parse(dateTimeStr)
-                                                      .toLocal();
-                                              return '${dt.month.toString().padLeft(2, '0')}/'
-                                                  '${dt.day.toString().padLeft(2, '0')} '
-                                                  '${dt.hour.toString().padLeft(2, '0')}:'
-                                                  '${dt.minute.toString().padLeft(2, '0')}';
-                                            } catch (_) {
-                                              return dateTimeStr;
-                                            }
-                                          })(),
-                                          style: const TextStyle(
-                                            fontSize: 13,
+                                  // 画像部分
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: event['imageUrl'] != null &&
+                                            event['imageUrl']
+                                                .toString()
+                                                .isNotEmpty
+                                        ? Image.network(
+                                            event['imageUrl'],
+                                            width: 90,
+                                            height: 68,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 90,
+                                                height: 68,
+                                                color: Colors.grey[300],
+                                                child: const Icon(
+                                                    Icons.image_not_supported,
+                                                    color: Colors.grey),
+                                              );
+                                            },
+                                          )
+                                        : Container(
+                                            width: 90,
+                                            height: 68,
+                                            color: Colors.grey[200],
+                                            child: const Icon(Icons.image,
+                                                color: Colors.grey),
                                           ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  // 右側（タイトル・説明・開催日）
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          event['title'] ?? 'タイトル未設定',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                          maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 16, bottom: 0, left: 0, right: 0),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 3,
-                                          child: TextButton.icon(
-                                            onPressed: () async {
-                                              await _rejectRequest(
-                                                  event['id'],
-                                                  events,
-                                                  isLoading,
-                                                  errorMessage,
-                                                  context);
-                                            },
-                                            icon: Icon(Icons.close,
-                                                color: Colors.blueGrey[500]!),
-                                            label: Text(
-                                              '拒否',
-                                              style: TextStyle(
-                                                  color: Colors.blueGrey[500]!),
-                                            ),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.grey,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 10),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                side: BorderSide(
-                                                  color: Colors.blueGrey[100]!,
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          flex: 7,
-                                          child: ElevatedButton.icon(
-                                            onPressed: () async {
-                                              await _acceptRequest(
-                                                  event['id'],
-                                                  events,
-                                                  isLoading,
-                                                  errorMessage,
-                                                  context);
-                                            },
-                                            icon: const Icon(
-                                              Icons.check,
-                                              color: Colors.white,
-                                            ),
-                                            label: const Text('承認',
+                                        // if ((event['description'] ?? '')
+                                        //     .toString()
+                                        //     .isNotEmpty)
+                                        //   Padding(
+                                        //     padding:
+                                        //         const EdgeInsets.only(top: 6.0),
+                                        //     child: Text(
+                                        //       event['description'],
+                                        //       style: const TextStyle(
+                                        //         fontSize: 14,
+                                        //         color: Colors.black87,
+                                        //       ),
+                                        //       maxLines: 2,
+                                        //       overflow: TextOverflow.ellipsis,
+                                        //     ),
+                                        //   ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 10.0),
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                '開催日時',
                                                 style: TextStyle(
-                                                    color: Colors.white)),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context)
-                                                  .primaryColor,
-                                              foregroundColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 10),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                side: BorderSide(
-                                                  color: Theme.of(context)
-                                                      .primaryColor,
-                                                  width: 1.5,
+                                                  fontSize: 13,
+                                                  color: Color.fromRGBO(
+                                                      0, 0, 0, 0.541),
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                            ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                (() {
+                                                  final dateTimeStr =
+                                                      event['startDate'];
+                                                  if (dateTimeStr == null ||
+                                                      dateTimeStr.isEmpty) {
+                                                    return '';
+                                                  }
+                                                  try {
+                                                    final dt = DateTime.parse(
+                                                            dateTimeStr)
+                                                        .toLocal();
+                                                    return '${dt.month.toString().padLeft(2, '0')}/'
+                                                        '${dt.day.toString().padLeft(2, '0')} '
+                                                        '${dt.hour.toString().padLeft(2, '0')}:'
+                                                        '${dt.minute.toString().padLeft(2, '0')}';
+                                                  } catch (_) {
+                                                    return dateTimeStr;
+                                                  }
+                                                })(),
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -581,20 +569,130 @@ class MatchingEventListScreen extends HookWidget {
                                   ),
                                 ],
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => EventDetailScreen(
-                                      eventId: event['id'] as int,
+                              // Padding(
+                              //   padding:
+                              //       const EdgeInsets.only(top: 5.0, left: 2),
+                              //   child: Row(
+                              //     children: [
+                              //       const Text(
+                              //         '開催日時',
+                              //         style: TextStyle(
+                              //           fontSize: 13,
+                              //           color: Color.fromRGBO(0, 0, 0, 0.541),
+                              //           fontWeight: FontWeight.bold,
+                              //         ),
+                              //       ),
+                              //       const SizedBox(width: 8),
+                              //       Text(
+                              //         (() {
+                              //           final dateTimeStr = event['startDate'];
+                              //           if (dateTimeStr == null ||
+                              //               dateTimeStr.isEmpty) {
+                              //             return '';
+                              //           }
+                              //           try {
+                              //             final dt = DateTime.parse(dateTimeStr)
+                              //                 .toLocal();
+                              //             return '${dt.month.toString().padLeft(2, '0')}/'
+                              //                 '${dt.day.toString().padLeft(2, '0')} '
+                              //                 '${dt.hour.toString().padLeft(2, '0')}:'
+                              //                 '${dt.minute.toString().padLeft(2, '0')}';
+                              //           } catch (_) {
+                              //             return dateTimeStr;
+                              //           }
+                              //         })(),
+                              //         style: const TextStyle(
+                              //           fontSize: 13,
+                              //           color: Colors.black87,
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 16, bottom: 0, left: 0, right: 0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: TextButton.icon(
+                                        onPressed: () async {
+                                          await _rejectRequest(
+                                              event['id'],
+                                              events,
+                                              isLoading,
+                                              errorMessage,
+                                              context);
+                                        },
+                                        icon: Icon(Icons.close,
+                                            color: Colors.blueGrey[500]!),
+                                        label: Text(
+                                          '拒否',
+                                          style: TextStyle(
+                                              color: Colors.blueGrey[500]!),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.grey,
+                                          backgroundColor: Colors.transparent,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: BorderSide(
+                                              color: Colors.blueGrey[100]!,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                          //     event, events, isLoading, errorMessage, context),
-                        ));
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      flex: 7,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () async {
+                                          await _acceptRequest(
+                                              event['id'],
+                                              events,
+                                              isLoading,
+                                              errorMessage,
+                                              context);
+                                        },
+                                        icon: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                        ),
+                                        label: const Text('承認',
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   } else {
                     return Container(
                       decoration: BoxDecoration(
@@ -607,63 +705,7 @@ class MatchingEventListScreen extends HookWidget {
                               )
                             : null,
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16),
-                        title: Text(
-                          event['title'] ?? 'タイトル未設定',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if ((event['description'] ?? '')
-                                .toString()
-                                .isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text(
-                                  event['description'],
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6.0),
-                              child: Row(
-                                children: [
-                                  Text('開催日時:'),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    (() {
-                                      final dateTimeStr = event['startDate'];
-                                      if (dateTimeStr == null ||
-                                          dateTimeStr.isEmpty) {
-                                        return '';
-                                      }
-                                      try {
-                                        final dt = DateTime.parse(dateTimeStr)
-                                            .toLocal();
-                                        return '${dt.month.toString().padLeft(2, '0')}/'
-                                            '${dt.day.toString().padLeft(2, '0')} '
-                                            '${dt.hour.toString().padLeft(2, '0')}:'
-                                            '${dt.minute.toString().padLeft(2, '0')}';
-                                      } catch (_) {
-                                        return dateTimeStr;
-                                      }
-                                    })(),
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: InkWell(
                         onTap: () {
                           Navigator.push(
                             context,
@@ -674,6 +716,172 @@ class MatchingEventListScreen extends HookWidget {
                             ),
                           );
                         },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 16),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 画像部分
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: event['imageUrl'] != null &&
+                                            event['imageUrl']
+                                                .toString()
+                                                .isNotEmpty
+                                        ? Image.network(
+                                            event['imageUrl'],
+                                            width: 90,
+                                            height: 68,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 90,
+                                                height: 68,
+                                                color: Colors.grey[300],
+                                                child: const Icon(
+                                                    Icons.image_not_supported,
+                                                    color: Colors.grey),
+                                              );
+                                            },
+                                          )
+                                        : Container(
+                                            width: 90,
+                                            height: 68,
+                                            color: Colors.grey[200],
+                                            child: const Icon(Icons.image,
+                                                color: Colors.grey),
+                                          ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  // 右側（タイトル・説明・開催日）
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          event['title'] ?? 'タイトル未設定',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        // if ((event['description'] ?? '')
+                                        //     .toString()
+                                        //     .isNotEmpty)
+                                        //   Padding(
+                                        //     padding:
+                                        //         const EdgeInsets.only(top: 6.0),
+                                        //     child: Text(
+                                        //       event['description'],
+                                        //       style: const TextStyle(
+                                        //         fontSize: 14,
+                                        //         color: Colors.black87,
+                                        //       ),
+                                        //       maxLines: 2,
+                                        //       overflow: TextOverflow.ellipsis,
+                                        //     ),
+                                        //   ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 10.0),
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                '開催日時',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color.fromRGBO(
+                                                      0, 0, 0, 0.541),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                (() {
+                                                  final dateTimeStr =
+                                                      event['startDate'];
+                                                  if (dateTimeStr == null ||
+                                                      dateTimeStr.isEmpty) {
+                                                    return '';
+                                                  }
+                                                  try {
+                                                    final dt = DateTime.parse(
+                                                            dateTimeStr)
+                                                        .toLocal();
+                                                    return '${dt.month.toString().padLeft(2, '0')}/'
+                                                        '${dt.day.toString().padLeft(2, '0')} '
+                                                        '${dt.hour.toString().padLeft(2, '0')}:'
+                                                        '${dt.minute.toString().padLeft(2, '0')}';
+                                                  } catch (_) {
+                                                    return dateTimeStr;
+                                                  }
+                                                })(),
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              //開催日時を他情報と独立させ画像下に配置する場合はここ
+                              // Padding(
+                              //   padding:
+                              //       const EdgeInsets.only(top: 5.0, left: 2),
+                              //   child: Row(
+                              //     children: [
+                              //       const Text(
+                              //         '開催日時',
+                              //         style: TextStyle(
+                              //           fontSize: 13,
+                              //           color: Color.fromRGBO(0, 0, 0, 0.541),
+                              //           fontWeight: FontWeight.bold,
+                              //         ),
+                              //       ),
+                              //       const SizedBox(width: 8),
+                              //       Text(
+                              //         (() {
+                              //           final dateTimeStr = event['startDate'];
+                              //           if (dateTimeStr == null ||
+                              //               dateTimeStr.isEmpty) {
+                              //             return '';
+                              //           }
+                              //           try {
+                              //             final dt = DateTime.parse(dateTimeStr)
+                              //                 .toLocal();
+                              //             return '${dt.month.toString().padLeft(2, '0')}/'
+                              //                 '${dt.day.toString().padLeft(2, '0')} '
+                              //                 '${dt.hour.toString().padLeft(2, '0')}:'
+                              //                 '${dt.minute.toString().padLeft(2, '0')}';
+                              //           } catch (_) {
+                              //             return dateTimeStr;
+                              //           }
+                              //         })(),
+                              //         style: const TextStyle(
+                              //           fontSize: 13,
+                              //           color: Colors.black87,
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   }

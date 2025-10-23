@@ -1811,6 +1811,91 @@ class ProfileScreen extends HookWidget {
     // }
     //以上退会処理
 
+    Future<void> _showLogoutConfirmDialog(BuildContext context) async {
+      await showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 24, horizontal: 18),
+                    child: Text(
+                      'ログアウトしますか？',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(12)),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'キャンセル',
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 48,
+                        // color: Colors.grey[300],
+                        color: Color.fromARGB(255, 219, 212, 212),
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(12)),
+                          onTap: () async {
+                            Navigator.of(context).pop();
+                            await _handleLogout();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'ログアウト',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     Widget _buildAccountExpandable() {
       return Card(
         shape: RoundedRectangleBorder(
@@ -1857,7 +1942,7 @@ class ProfileScreen extends HookWidget {
                     title: const Text('ログアウト',
                         style: TextStyle(color: Colors.redAccent)),
                     onTap: () async {
-                      await _handleLogout();
+                      await _showLogoutConfirmDialog(context);
                     },
                   ),
                   // ListTile(

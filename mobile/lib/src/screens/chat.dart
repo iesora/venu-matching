@@ -465,15 +465,35 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: Chat(
                     messages: _messages,
+                    onSendPressed: _handleSendPressed,
                     onAttachmentPressed: _handleAttachmentPressed,
                     onMessageTap: _handleMessageTap,
                     onPreviewDataFetched: _handlePreviewDataFetched,
-                    onSendPressed: _handleSendPressed,
                     showUserAvatars: true,
                     showUserNames: true,
                     user: _user,
-                    theme: const DefaultChatTheme(
+                    theme: DefaultChatTheme(
+                      inputContainerDecoration: BoxDecoration(
+                        color: Colors.white,
+                      ),
+                      inputPadding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       backgroundColor: Colors.white,
+                      inputTextColor: Colors.black,
+                      inputTextDecoration: InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      ),
+                      sendButtonIcon: Icon(
+                        Icons.send,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 28,
+                      ),
+                      attachmentButtonIcon: Icon(
+                        Icons.create_new_folder,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 30,
+                      ),
                     ),
                     inputOptions: InputOptions(
                       enabled: _isMessageSendable,

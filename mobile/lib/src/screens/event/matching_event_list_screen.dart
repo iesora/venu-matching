@@ -523,7 +523,7 @@ class MatchingEventListScreen extends HookWidget {
                                         foregroundColor: Colors.grey,
                                         backgroundColor: Colors.transparent,
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 20),
+                                            vertical: 10),
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(8),
@@ -559,7 +559,7 @@ class MatchingEventListScreen extends HookWidget {
                                             Theme.of(context).primaryColor,
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 20),
+                                            vertical: 10),
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(8),

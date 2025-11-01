@@ -19,6 +19,17 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RequestWithUser } from '../user/user.controller';
 
+export type GetCreatorsListByVenueQuery = {
+  venueId: number;
+  requestorId: number;
+};
+
+export type GetCreatorWithMatchingDetailQuery = {
+  creatorId: number;
+  venueId: number;
+  requestorId: number;
+};
+
 @Controller('creator')
 export class CreatorController {
   constructor(private readonly creatorService: CreatorService) {}
@@ -45,9 +56,26 @@ export class CreatorController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async getCreators(@Req() req: RequestWithUser) {
-    console.log('req.user.id', req.user.id);
-
     return await this.creatorService.getCreators(req.user.id);
+  }
+
+  //いいねのみ紐づけて返す。サポーターもしくはクリエイターからのリクエスト用
+  @Get('list')
+  @UseGuards(JwtAuthGuard)
+  async getCreatorsList(@Req() req: RequestWithUser) {
+    return await this.creatorService.getCreatorsList(req.user.id);
+  }
+
+  @Get('list/by-venue/:venueId')
+  @UseGuards(JwtAuthGuard)
+  async getCreatorsListByVenue(
+    @Param() params: { venueId: number },
+    @Req() req: RequestWithUser,
+  ) {
+    return await this.creatorService.getCreatorsListByVenue({
+      venueId: params.venueId,
+      requestorId: req.user.id,
+    });
   }
 
   @Get('user/:userId')
@@ -55,7 +83,6 @@ export class CreatorController {
     @Param() params: { userId: number },
     @Req() req: RequestWithUser,
   ) {
-    console.log('userId: ', params.userId);
     return await this.creatorService.getCreatorsByUserId(
       params.userId || req.user.id,
     );
@@ -70,6 +97,19 @@ export class CreatorController {
   async deleteCreator(@Param() params: { id: number }) {
     await this.creatorService.deleteCreator(params.id);
     return { message: 'Creator deleted successfully' };
+  }
+
+  @Get('detail/with-matching/:creatorId/:venueId')
+  @UseGuards(JwtAuthGuard)
+  async getCreatorWithMatchingDetail(
+    @Param() params: { creatorId: number; venueId: number },
+    @Req() req: RequestWithUser,
+  ) {
+    return await this.creatorService.getCreatorWithMatchingDetail({
+      creatorId: params.creatorId,
+      venueId: params.venueId,
+      requestorId: req.user.id,
+    });
   }
 
   // Opus endpoints

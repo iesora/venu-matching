@@ -40,9 +40,30 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
       _isLoading = true;
     });
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      if (token == null) {
+        print('トークンが取得できませんでした');
+        return;
+      }
+      final loginType = prefs.getString('relationType') ?? '';
+      final loginRelationId = prefs.getInt('relationId');
+      var url =
+          Uri.parse('${dotenv.get('API_URL')}/creator/${widget.creatorId}');
+      if (loginType == 'venue') {
+        print('venue login checked: ${loginRelationId}');
+        url = Uri.parse(
+            '${dotenv.get('API_URL')}/creator/detail/with-matching/${widget.creatorId}/${loginRelationId.toString()}');
+        print('url: ${url}');
+      } else {
+        print('venue login check failed');
+      }
       final response = await http.get(
-        Uri.parse('${dotenv.get('API_URL')}/creator/${widget.creatorId}'),
-        headers: const {'Content-Type': 'application/json'},
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -185,81 +206,86 @@ class _CreatorDetailScreenState extends State<CreatorDetailScreen> {
                   child: Visibility(
                     visible: _loginType == 'venue' && _loginRelationId != null,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final toUserId = _creator?['user'] != null
-                            ? _creator!['user']['id'] as int?
-                            : null;
-                        if (toUserId == null) {
-                          showAnimatedSnackBar(
-                            context,
-                            message: '送信先ユーザーが見つかりません',
-                            type: SnackBarType.error,
-                          );
-                          return;
-                        }
-                        try {
-                          final prefs = await SharedPreferences.getInstance();
-                          final token = prefs.getString('userToken');
-                          if (token == null) {
-                            showAnimatedSnackBar(
-                              context,
-                              message: 'ログイン情報の取得に失敗しました',
-                              type: SnackBarType.error,
-                            );
-                            return;
-                          }
-                          if (_loginType != 'venue' ||
-                              _loginRelationId == null) {
-                            showAnimatedSnackBar(
-                              context,
-                              message: '会場名義でログインしてください',
-                              type: SnackBarType.error,
-                            );
-                            return;
-                          }
-                          final url = Uri.parse(
-                              "${dotenv.get('API_URL')}/matching/request");
-                          final body = {
-                            'requestorType': _loginType,
-                            'creatorId': _creator?['id'],
-                            'venueId': _loginRelationId,
-                          };
-                          final res = await http.post(
-                            url,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': 'Bearer $token',
-                            },
-                            body: jsonEncode(body),
-                          );
-                          if (res.statusCode == 201 || res.statusCode == 200) {
-                            showAnimatedSnackBar(
-                              context,
-                              message: 'リクエストを送信しました',
-                              type: SnackBarType.success,
-                            );
-                          } else if (res.statusCode == 510) {
-                            print('リクエストエラー: ${res.statusCode}');
-                            showAnimatedSnackBar(
-                              context,
-                              message: 'すでにオファーが存在します',
-                              type: SnackBarType.error,
-                            );
-                          } else {
-                            showAnimatedSnackBar(
-                              context,
-                              message: '送信に失敗しました (${res.statusCode})',
-                              type: SnackBarType.error,
-                            );
-                          }
-                        } catch (_) {
-                          showAnimatedSnackBar(
-                            context,
-                            message: 'ネットワークエラー',
-                            type: SnackBarType.error,
-                          );
-                        }
-                      },
+                      onPressed: _creator?['matchings'] == null ||
+                              _creator?['matchings'].length == 0
+                          ? () async {
+                              final toUserId = _creator?['user'] != null
+                                  ? _creator!['user']['id'] as int?
+                                  : null;
+                              if (toUserId == null) {
+                                showAnimatedSnackBar(
+                                  context,
+                                  message: '送信先ユーザーが見つかりません',
+                                  type: SnackBarType.error,
+                                );
+                                return;
+                              }
+                              try {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                final token = prefs.getString('userToken');
+                                if (token == null) {
+                                  showAnimatedSnackBar(
+                                    context,
+                                    message: 'ログイン情報の取得に失敗しました',
+                                    type: SnackBarType.error,
+                                  );
+                                  return;
+                                }
+                                if (_loginType != 'venue' ||
+                                    _loginRelationId == null) {
+                                  showAnimatedSnackBar(
+                                    context,
+                                    message: '会場名義でログインしてください',
+                                    type: SnackBarType.error,
+                                  );
+                                  return;
+                                }
+                                final url = Uri.parse(
+                                    "${dotenv.get('API_URL')}/matching/request");
+                                final body = {
+                                  'requestorType': _loginType,
+                                  'creatorId': _creator?['id'],
+                                  'venueId': _loginRelationId,
+                                };
+                                final res = await http.post(
+                                  url,
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer $token',
+                                  },
+                                  body: jsonEncode(body),
+                                );
+                                if (res.statusCode == 201 ||
+                                    res.statusCode == 200) {
+                                  showAnimatedSnackBar(
+                                    context,
+                                    message: 'リクエストを送信しました',
+                                    type: SnackBarType.success,
+                                  );
+                                } else if (res.statusCode == 510) {
+                                  print('リクエストエラー: ${res.statusCode}');
+                                  showAnimatedSnackBar(
+                                    context,
+                                    message: 'すでにオファーが存在します',
+                                    type: SnackBarType.error,
+                                  );
+                                } else {
+                                  showAnimatedSnackBar(
+                                    context,
+                                    message: '送信に失敗しました (${res.statusCode})',
+                                    type: SnackBarType.error,
+                                  );
+                                }
+                              } catch (_) {
+                                showAnimatedSnackBar(
+                                  context,
+                                  message: 'ネットワークエラー',
+                                  type: SnackBarType.error,
+                                );
+                              }
+                            }
+                          : null,
                       child: const Text('リクエスト'),
                     ),
                   ),

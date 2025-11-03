@@ -20,7 +20,6 @@ export class LikeService {
 
   async createLike(body: CreateLikeRequest): Promise<Like> {
     const like = new Like();
-    console.log('body-createLike: ', body);
 
     //いいねした側のプロフィールを取得
     const requestor = await this.userRepository.findOne({
@@ -55,7 +54,6 @@ export class LikeService {
     //レコード保存
     try {
       const savedLike = await this.likeRepository.save(like);
-      console.log(savedLike);
       return savedLike;
     } catch (e) {
       // likely unique constraint violation (already liked)
@@ -75,25 +73,17 @@ export class LikeService {
   //いいね一覧のためのapi
   async getMyLikes(query: GetMyLikesRequest): Promise<Like[]> {
     const { userId, targetType } = query;
-    console.log('target: ', targetType);
-    const likes = await this.likeRepository
+    const qb = await this.likeRepository
       .createQueryBuilder('like')
-      .where('like.requestor_id = :userId', { userId })
-      .getMany();
-    console.log('likes: ', likes);
-
-    if (likes.length === 0) {
-      return [];
+      .where('like.requestor_id = :userId', { userId });
+    if (targetType === 'venue') {
+      qb.innerJoinAndSelect('like.venue', 'venue');
+    } else if (targetType === 'creator') {
+      qb.innerJoinAndSelect('like.creator', 'creator');
+    } else if (targetType === 'supporter') {
+      qb.innerJoinAndSelect('like.supporter', 'supporter');
     }
-    // if (targetType === 'venue') {
-    //   const venueLikeIds = likes
-    //     .filter((like) => like.venue !== null)
-    //     .map((like) => like.venue.id);
-    // } else if (targetType === 'creator') {
-    //   likes.filter((like) => like.creator !== null);
-    // } else if (targetType === 'supporter') {
-    //   likes.filter((like) => like.supporter !== null);
-    // }
+    const likes = await qb.getMany();
     return likes;
   }
 }

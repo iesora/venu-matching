@@ -12,6 +12,7 @@ import 'package:mobile/src/widgets/custom_dialog.dart';
 import 'package:mobile/src/widgets/custom_snackbar.dart';
 import 'package:mobile/src/screens/venu/venue_detail_screen.dart';
 import 'package:mobile/src/screens/creator/creator_detail_screen.dart';
+import 'package:mobile/src/widgets/like_list.dart';
 
 class ProfileScreen extends HookWidget {
   final Function(bool)? onToggleTabLayout;
@@ -878,6 +879,7 @@ class ProfileScreen extends HookWidget {
     Widget _buildCreatorProfile() {
       return Column(
         children: [
+          LikeList(),
           _buildCreatorInfoCard(selectedCreator.value!),
           _buildCreatorOpusesList(selectedCreator.value!),
         ],
@@ -891,7 +893,6 @@ class ProfileScreen extends HookWidget {
         ValueNotifier<List<dynamic>> toMeMatchingData,
         ValueNotifier<List<dynamic>> completedMatchingData,
         ValueNotifier<bool> isLoadingOffer) async {
-      print('fetchOfferData-is-running');
       try {
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('userToken');
@@ -925,7 +926,7 @@ class ProfileScreen extends HookWidget {
         );
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          print('オファーデータ: $data');
+          // print('オファーデータ: $data');
           fromMeMatchingData.value = data
               .where((matching) =>
                   matching['requestorType'] != relationType &&
@@ -1986,7 +1987,6 @@ class ProfileScreen extends HookWidget {
           await prefs.setString('relationType', 'supporter');
           await _fetchLoginMode();
           if (onToggleTabLayout != null) {
-            print('onToggleTabLayout-is-running');
             onToggleTabLayout!(false);
           }
         } else {
@@ -2134,7 +2134,13 @@ class ProfileScreen extends HookWidget {
                   selectedCreator.value != null)
                 _buildCreatorProfile(),
               if (selectedType.value == 'venue' && selectedVenue.value != null)
-                _buildVenueInfoCard(selectedVenue.value!),
+                Column(
+                  children: [
+                    LikeList(),
+                    _buildVenueInfoCard(selectedVenue.value!),
+                  ],
+                ),
+              if (selectedType.value == 'supporter') LikeList(),
               if ((selectedType.value == 'venue' &&
                       selectedVenue.value != null) ||
                   (selectedType.value == 'creator' &&

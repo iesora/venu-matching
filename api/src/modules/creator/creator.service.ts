@@ -154,7 +154,6 @@ export class CreatorService {
     const { venueId, requestorId } = query;
     const existCreators = await this.creatorRepository.find({
       relations: ['user', 'opuses'],
-      where: { user: { id: requestorId } },
     });
 
     //自分とのマッチングデータを全て取得

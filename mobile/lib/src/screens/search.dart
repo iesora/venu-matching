@@ -207,11 +207,10 @@ class SearchScreen extends HookWidget {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           venuList.value = data;
-          final likedVenueIds = data
+          final responseLikedVenueIds = data
               .where((item) => item['isLiked'] == true)
-              .map((item) => item['id'] as int)
-              .toSet();
-          likedVenueIds.value = likedVenueIds;
+              .map((item) => item['id'] as int);
+          likedVenueIds.value = Set<int>.from(responseLikedVenueIds);
         } else {
           print('エラー: ${response.statusCode}');
         }
@@ -244,11 +243,10 @@ class SearchScreen extends HookWidget {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           creatorList.value = data;
-          final likedCreatorIds = data
+          final responseLikedCreatorIds = data
               .where((item) => item['isLiked'] == true)
-              .map((item) => item['id'] as int)
-              .toSet();
-          likedCreatorIds.value = likedCreatorIds;
+              .map((item) => item['id'] as int);
+          likedCreatorIds.value = Set<int>.from(responseLikedCreatorIds);
         } else {
           print('エラー: ${response.statusCode}');
         }

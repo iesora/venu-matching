@@ -23,6 +23,9 @@ class SearchScreen extends HookWidget {
     final isLoading = useState<bool>(false);
     final loginType = useState<String?>(null);
     final loginRelationId = useState<int?>(null);
+    final likedVenueIds = useState<Set<int>>(<int>{});
+    final likedCreatorIds = useState<Set<int>>(<int>{});
+    final likeIdByTarget = useState<Map<String, int>>(<String, int>{});
 
     Future<void> fetchLoginInfo() async {
       final pref = await SharedPreferences.getInstance();
@@ -32,16 +35,170 @@ class SearchScreen extends HookWidget {
       loginRelationId.value = relationId;
     }
 
+    // いいね一覧を取得
+    // Future<void> fetchMyLikes() async {
+    //   try {
+    //     final prefs = await SharedPreferences.getInstance();
+    //     final token = prefs.getString('userToken');
+    //     final myType = prefs.getString('relationType');
+    //     final myId = prefs.getInt('relationId');
+    //     if (token == null || myType == null || myId == null) {
+    //       return;
+    //     }
+    //     final url = Uri.parse("${dotenv.get('API_URL')}/like/me/$myType/$myId");
+    //     final res = await http.get(url, headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': 'Bearer $token',
+    //     });
+    //     if (res.statusCode == 200) {
+    //       final List<dynamic> data = json.decode(res.body);
+    //       final venues = <int>{};
+    //       final creators = <int>{};
+    //       final idMap = <String, int>{};
+    //       for (final item in data) {
+    //         // 返却: like.id と venue/creator のいずれか
+    //         final likeId = item['id'] as int?;
+    //         final venue = item['venue'];
+    //         final creator = item['creator'];
+    //         if (venue != null && venue is Map && venue['id'] is int) {
+    //           final vId = venue['id'] as int;
+    //           venues.add(vId);
+    //           if (likeId != null) idMap['venue:$vId'] = likeId;
+    //         }
+    //         if (creator != null && creator is Map && creator['id'] is int) {
+    //           final cId = creator['id'] as int;
+    //           creators.add(cId);
+    //           if (likeId != null) idMap['creator:$cId'] = likeId;
+    //         }
+    //       }
+    //       likedVenueIds.value = venues;
+    //       likedCreatorIds.value = creators;
+    //       likeIdByTarget.value = idMap;
+    //     }
+    //   } catch (_) {}
+    // }
+
+    Future<void> toggleVenueLike(int venueId) async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      final myType = prefs.getString('relationType');
+      final myId = prefs.getInt('relationId');
+      if (token == null || myType == null || myId == null) return;
+
+      final key = 'venue:$venueId';
+      final isLiked = likedVenueIds.value.contains(venueId);
+      if (isLiked) {
+        final likeId = likeIdByTarget.value[key];
+        if (likeId == null) return;
+        final url = Uri.parse("${dotenv.get('API_URL')}/like/$likeId");
+        final res = await http.delete(url, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+        if (res.statusCode == 200 || res.statusCode == 204) {
+          final updatedLikedVenueIds = Set<int>.from(likedVenueIds.value)
+            ..remove(venueId);
+          likedVenueIds.value = updatedLikedVenueIds;
+          final map = Map<String, int>.from(likeIdByTarget.value);
+          map.remove(key);
+          likeIdByTarget.value = map;
+        }
+      } else {
+        final url = Uri.parse("${dotenv.get('API_URL')}/like");
+        final body = jsonEncode({
+          'targetType': 'venue',
+          'targetId': venueId,
+        });
+        final res = await http.post(url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: body);
+        if (res.statusCode == 200 || res.statusCode == 201) {
+          final item = json.decode(res.body);
+          final likeId = item['id'] as int?;
+          final updatedLikedVenueIds = Set<int>.from(likedVenueIds.value)
+            ..add(venueId);
+          likedVenueIds.value = updatedLikedVenueIds;
+          if (likeId != null) {
+            final map = Map<String, int>.from(likeIdByTarget.value);
+            map[key] = likeId;
+            likeIdByTarget.value = map;
+          }
+        }
+      }
+    }
+
+    Future<void> toggleCreatorLike(int creatorId) async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+      final myType = prefs.getString('relationType');
+      final myId = prefs.getInt('relationId');
+      if (token == null || myType == null || myId == null) return;
+
+      final key = 'creator:$creatorId';
+      final isLiked = likedCreatorIds.value.contains(creatorId);
+      if (isLiked) {
+        final likeId = likeIdByTarget.value[key];
+        if (likeId == null) return;
+        final url = Uri.parse("${dotenv.get('API_URL')}/like/$likeId");
+        final res = await http.delete(url, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+        if (res.statusCode == 200 || res.statusCode == 204) {
+          final updated = Set<int>.from(likedCreatorIds.value)
+            ..remove(creatorId);
+          likedCreatorIds.value = updated;
+          final map = Map<String, int>.from(likeIdByTarget.value);
+          map.remove(key);
+          likeIdByTarget.value = map;
+        }
+      } else {
+        final url = Uri.parse("${dotenv.get('API_URL')}/like");
+        final body = jsonEncode({
+          'targetType': 'creator',
+          'targetId': creatorId,
+        });
+        final res = await http.post(url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: body);
+        if (res.statusCode == 200 || res.statusCode == 201) {
+          final item = json.decode(res.body);
+          final likeId = item['id'] as int?;
+          final updated = Set<int>.from(likedCreatorIds.value)..add(creatorId);
+          likedCreatorIds.value = updated;
+          if (likeId != null) {
+            final map = Map<String, int>.from(likeIdByTarget.value);
+            map[key] = likeId;
+            likeIdByTarget.value = map;
+          }
+        }
+      }
+    }
+
     // 会場一覧を取得する関数
     Future<void> fetchVenues() async {
       isLoading.value = true;
-      final url = Uri.parse("${dotenv.get('API_URL')}/venue");
       try {
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('userToken');
         if (token == null) {
           print('トークンが取得できませんでした');
           return;
+        }
+        var url = Uri.parse("${dotenv.get('API_URL')}/venue/list");
+        //作成途中なので一旦全true
+        if (loginType.value == 'creator') {
+          url = Uri.parse(
+              //クリエイターからの場合はマッチングの有無も取得
+              "${dotenv.get('API_URL')}/venue/list/by-creator/${loginRelationId.value.toString()}");
+        } else {
+          url = Uri.parse("${dotenv.get('API_URL')}/venue/list");
         }
         final response = await http.get(url, headers: {
           'Content-Type': 'application/json',
@@ -50,6 +207,10 @@ class SearchScreen extends HookWidget {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           venuList.value = data;
+          final responseLikedVenueIds = data
+              .where((item) => item['isLiked'] == true)
+              .map((item) => item['id'] as int);
+          likedVenueIds.value = Set<int>.from(responseLikedVenueIds);
         } else {
           print('エラー: ${response.statusCode}');
         }
@@ -69,7 +230,11 @@ class SearchScreen extends HookWidget {
         print('トークンが取得できませんでした');
         return;
       }
-      final url = Uri.parse("${dotenv.get('API_URL')}/creator");
+      var url = Uri.parse("${dotenv.get('API_URL')}/creator/list");
+      if (loginType.value == 'venue') {
+        url = Uri.parse(
+            "${dotenv.get('API_URL')}/creator/list/by-venue/${loginRelationId.value.toString()}");
+      }
       try {
         final response = await http.get(url, headers: {
           'Content-Type': 'application/json',
@@ -78,6 +243,10 @@ class SearchScreen extends HookWidget {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           creatorList.value = data;
+          final responseLikedCreatorIds = data
+              .where((item) => item['isLiked'] == true)
+              .map((item) => item['id'] as int);
+          likedCreatorIds.value = Set<int>.from(responseLikedCreatorIds);
         } else {
           print('エラー: ${response.statusCode}');
         }
@@ -214,6 +383,15 @@ class SearchScreen extends HookWidget {
                             venu: venu,
                             isRequestButtonVisible:
                                 loginType.value == 'creator',
+                            isRequestButtonEnabled: venu['matchings'] == null ||
+                                venu['matchings'].length == 0,
+                            isLiked:
+                                likedVenueIds.value.contains(venu['id'] as int),
+                            onLike: () async {
+                              if (venu['id'] is int) {
+                                await toggleVenueLike(venu['id'] as int);
+                              }
+                            },
                             onRequest: () async {
                               final venueId = venu['id'];
                               final relationType =
@@ -259,6 +437,16 @@ class SearchScreen extends HookWidget {
                           return CreatorCard(
                             creator: creator,
                             isRequestButtonVisible: loginType.value == 'venue',
+                            isRequestButtonEnabled:
+                                creator['matchings'] == null ||
+                                    creator['matchings'].length == 0,
+                            isLiked: likedCreatorIds.value
+                                .contains(creator['id'] as int),
+                            onLike: () async {
+                              if (creator['id'] is int) {
+                                await toggleCreatorLike(creator['id'] as int);
+                              }
+                            },
                             onRequest: () async {
                               final relationType =
                                   await SharedPreferences.getInstance().then(

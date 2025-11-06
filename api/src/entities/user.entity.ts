@@ -13,6 +13,7 @@ import { Venue } from './venue.entity';
 import { ChatMessage } from './message.entity';
 import { ChatGroup } from './chatGroup.entity';
 import { ChatGroupUser } from './chatGroupUser.entity';
+import { Like } from './like.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -90,4 +91,12 @@ export class User {
 
   @OneToMany(() => ChatGroup, (chatGroup) => chatGroup.chatGroupUsers)
   chatGroups?: ChatGroup[];
+
+  //自分がしたいいね
+  @OneToMany(() => Like, (like) => like.requestor)
+  sendLikes?: Like[];
+
+  //自分がされたいいね
+  @OneToMany(() => Like, (like) => like.supporter)
+  receivedLikes?: Like[];
 }

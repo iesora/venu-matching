@@ -1,30 +1,32 @@
-import { Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ConfigModule } from "@nestjs/config";
-import { UserModule } from "./modules/user/user.module";
-import { User } from "./entities/user.entity";
-import { Creator } from "./entities/creator.entity";
-import { Venue } from "./entities/venue.entity";
-import { Matching } from "./entities/matching.entity";
-import { AuthModule } from "./modules/auth/auth.module";
-import { VenueModule } from "./modules/venue/venue.module";
-import { CreatorModule } from "./modules/creator/creator.module";
-import { Opus } from "./entities/opus.entity";
-import { MatchingModule } from "./modules/matching/matching.module";
-import { Event } from "./entities/event.entity";
-import { EventModule } from "./modules/event/event.module";
-import { CreatorEvent } from "./entities/createrEvent.entity";
-import { ChatGroup } from "./entities/chatGroup.entity";
-import { ChatGroupUser } from "./entities/chatGroupUser.entity";
-import { ChatMessage } from "./entities/message.entity";
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './modules/user/user.module';
+import { User } from './entities/user.entity';
+import { Creator } from './entities/creator.entity';
+import { Venue } from './entities/venue.entity';
+import { Matching } from './entities/matching.entity';
+import { AuthModule } from './modules/auth/auth.module';
+import { VenueModule } from './modules/venue/venue.module';
+import { CreatorModule } from './modules/creator/creator.module';
+import { Opus } from './entities/opus.entity';
+import { MatchingModule } from './modules/matching/matching.module';
+import { Event } from './entities/event.entity';
+import { EventModule } from './modules/event/event.module';
+import { CreatorEvent } from './entities/createrEvent.entity';
+import { ChatGroup } from './entities/chatGroup.entity';
+import { ChatGroupUser } from './entities/chatGroupUser.entity';
+import { ChatMessage } from './entities/message.entity';
+import { Like } from './entities/like.entity';
+import { LikeModule } from './modules/like/like.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: ".development.env" }),
+    ConfigModule.forRoot({ envFilePath: '.development.env' }),
     TypeOrmModule.forRoot({
-      type: "mysql",
+      type: 'mysql',
       host: process.env.DB_HOST,
       port: 3306,
       username: process.env.DB_USERNAME,
@@ -43,6 +45,7 @@ import { ChatMessage } from "./entities/message.entity";
         ChatGroup,
         ChatGroupUser,
         ChatMessage,
+        Like,
       ],
     }),
     UserModule,
@@ -51,6 +54,7 @@ import { ChatMessage } from "./entities/message.entity";
     CreatorModule,
     MatchingModule,
     EventModule,
+    LikeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,6 +5,9 @@ class VenuCard extends StatelessWidget {
   final VoidCallback onRequest;
   final VoidCallback? onTap;
   final bool? isRequestButtonVisible;
+  final bool? isRequestButtonEnabled;
+  final bool? isLiked;
+  final VoidCallback? onLike;
 
   const VenuCard({
     Key? key,
@@ -12,10 +15,14 @@ class VenuCard extends StatelessWidget {
     required this.onRequest,
     this.onTap,
     this.isRequestButtonVisible,
+    this.isRequestButtonEnabled,
+    this.isLiked,
+    this.onLike,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print('isRequestButtonEnabled${venu['id']}: $isRequestButtonEnabled');
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -82,12 +89,28 @@ class VenuCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 14),
                     ),
                   const SizedBox(height: 8),
-                  Visibility(
-                    visible: isRequestButtonVisible ?? true,
-                    child: ElevatedButton(
-                      onPressed: onRequest,
-                      child: const Text('リクエスト'),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Visibility(
+                        visible: isRequestButtonVisible ?? true,
+                        child: ElevatedButton(
+                          onPressed:
+                              isRequestButtonEnabled == true ? onRequest : null,
+                          child: const Text('リクエスト'),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: onLike,
+                        icon: Icon(
+                          isLiked == true
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isLiked == true ? Colors.red : Colors.grey,
+                          size: 28,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

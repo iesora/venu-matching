@@ -879,7 +879,6 @@ class ProfileScreen extends HookWidget {
     Widget _buildCreatorProfile() {
       return Column(
         children: [
-          LikeList(),
           _buildCreatorInfoCard(selectedCreator.value!),
           _buildCreatorOpusesList(selectedCreator.value!),
         ],
@@ -2134,18 +2133,13 @@ class ProfileScreen extends HookWidget {
                   selectedCreator.value != null)
                 _buildCreatorProfile(),
               if (selectedType.value == 'venue' && selectedVenue.value != null)
-                Column(
-                  children: [
-                    LikeList(),
-                    _buildVenueInfoCard(selectedVenue.value!),
-                  ],
-                ),
-              if (selectedType.value == 'supporter') LikeList(),
+                _buildVenueInfoCard(selectedVenue.value!),
               if ((selectedType.value == 'venue' &&
                       selectedVenue.value != null) ||
                   (selectedType.value == 'creator' &&
                       selectedCreator.value != null))
                 _buildOfferTabs(),
+              LikeList(),
             ],
           ),
         ),
